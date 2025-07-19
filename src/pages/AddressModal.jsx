@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import LocationSearchInput from "./LocationSearchInput";
+import { useAddressContext } from "../utils/AddressContext";
+import { useNavigate } from "react-router-dom";
+import { putRequest } from "../ApiService/apiHelper";
+import { API_ENDPOINTS } from "../ApiService/apiConstants";
+// import PlacesAutocomplete, {
+//   geocodeByAddress,
+//   getLatLng,
+// } from "react-places-autocomplete";
 
 const AddressModal = ({
   show,
@@ -11,37 +20,94 @@ const AddressModal = ({
   newAddress,
   handleAddressChange,
   handleSaveAddress,
+  // type,
 }) => {
+  const navigate = useNavigate();
+
+  const [coords, setCoords] = useState(null);
   const [searchInput, setSearchInput] = useState(""); // Search input for map
   const [mapAddress, setMapAddress] = useState(""); // Address selected from map
   const [houseNumber, setHouseNumber] = useState(""); // House number input
   const [landmark, setLandmark] = useState(""); // Landmark input
-
+  const { addressDataContext, setAddressDataContext } = useAddressContext();
+  const userData = JSON.parse(sessionStorage.getItem("user"));
   const handleLocationSelected = (loc) => {
     setMapAddress(loc);
   };
 
-  const handleSave = () => {
+  // const handleSelect = async (address) => {
+  //   setSearchInput(address);
+  //   const results = await geocodeByAddress(address);
+  //   const latLng = await getLatLng(results[0]);
+  //   console.log("Lat/Lng:", latLng);
+  //   // If you want, update your mapUrl with lat/lng instead
+  // };
+
+  const handleSave = async () => {
+    const addressObj = {
+      address: mapAddress,
+      houseNumber: houseNumber,
+      landmark: landmark,
+    };
     if (!houseNumber.trim()) return alert("House/Flat Number is required");
-    handleSaveAddress({
-      location: mapAddress,
-      houseNumber,
-      landmark,
-    });
+
+    // handleSaveAddress({
+    //   location: mapAddress,
+    //   houseNumber,
+    //   landmark,
+    // });
+    setAddressDataContext(addressObj);
+    sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
+    // await handleSaveAddress();
     setSearchInput("");
     setMapAddress("");
     setHouseNumber("");
     setLandmark("");
     handleClose(); // Close the modal
+    navigate("/deep-cleaning-packages");
+  };
+
+  const handleAddress = async () => {
+    const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const data = {
+      savedAddress: {
+        uniqueCode: uniqueCode,
+        address: mapAddress,
+        houseNumber: houseNumber,
+        landmark: landmark,
+      },
+    };
+
+    if (!houseNumber.trim()) return alert("House/Flat Number is required");
+
+    try {
+      const result = await putRequest(
+        `${API_ENDPOINTS.SAVE_ADDRESS}${userData?._id}`,
+        data
+      );
+      setAddressDataContext(data.savedAddress);
+      sessionStorage.setItem(
+        "selectedAddress",
+        JSON.stringify(data.savedAddress)
+      );
+      console.log("Address Saved", result);
+      handleClose();
+      navigate("/deep-cleaning-packages");
+      alert(result.message || "Address Saved");
+    } catch (error) {
+      console.error("Address failed:", error);
+    }
   };
 
   // Construct dynamic Google Maps embed URL
   const mapUrl = searchInput
-    ? `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(searchInput)}&zoom=14`
-    : `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=India&zoom=4`;
+    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBF48uqsKVyp9P2NlDX-heBJksvvT_8Cqk&q=${encodeURIComponent(
+        searchInput
+      )}&zoom=14`
+    : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBF48uqsKVyp9P2NlDX-heBJksvvT_8Cqk&q=India&zoom=4`;
 
   if (!show) return null;
-
+  // console.log("searchInput", searchInput);
   return (
     <div
       id="modal-backdrop"
@@ -83,6 +149,19 @@ const AddressModal = ({
                 style={{ borderRadius: 8, fontSize: 14 }}
               />
             </Form.Group>
+            {/* 
+            <LocationSearchInput setCoordinates={setCoords} />
+            {coords && (
+              <iframe
+                title="map"
+                width="100%"
+                height="300"
+                style={{ border: 0 }}
+                loading="lazy"
+                src={`https://www.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed`}
+              />
+            )} */}
+
             {/* Google Map iframe */}
             <div style={{ position: "relative", height: "400px" }}>
               <iframe
@@ -93,7 +172,8 @@ const AddressModal = ({
                 loading="lazy"
                 src={mapUrl}
               />
-              <div
+
+              {/* <div
                 style={{
                   position: "absolute",
                   left: "50%",
@@ -109,7 +189,7 @@ const AddressModal = ({
                 }}
               >
                 Place the pin accurately on map
-              </div>
+              </div> */}
             </div>
           </Col>
           <Col md={6}>
@@ -150,7 +230,17 @@ const AddressModal = ({
                   style={{ borderRadius: 8, fontSize: 14 }}
                 />
               </Form.Group>
-
+              <Form.Group className="mb-3">
+                <Form.Label>
+                  Street Location <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Control
+                  value={mapAddress}
+                  onChange={(e) => setMapAddress(e.target.value)}
+                  placeholder="Enter House/Flat Number"
+                  style={{ borderRadius: 8, fontSize: 14 }}
+                />
+              </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Landmark (Optional)</Form.Label>
                 <Form.Control
@@ -162,7 +252,7 @@ const AddressModal = ({
               </Form.Group>
 
               <Button
-                onClick={handleSave}
+                onClick={handleAddress}
                 disabled={!houseNumber.trim()}
                 style={{
                   width: "100%",

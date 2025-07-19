@@ -16,7 +16,6 @@ import { CartContext } from "./CartContext";
 import moment from "moment";
 import { Button, Form, Modal } from "react-bootstrap";
 import SlotSelectionModal from "./SlotSelectionModal";
-import "./checkout.css";
 
 const Checkout = () => {
   const location = useLocation();
@@ -41,7 +40,7 @@ const Checkout = () => {
     state: "",
     zipCode: "",
   });
-  const [showSlotModal, setShowSlotModal] = useState(true);
+  const [showSlotModal, setShowSlotModal] = useState(false);
   const [priceConfig, setPriceConfig] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
@@ -60,10 +59,10 @@ const Checkout = () => {
   const [houseNumber, setHouseNumber] = useState("");
   const [landmark, setLandmark] = useState("");
 
-  console.log("selectedAddress from session", selectedAddress);
+  // console.log("selectedAddress", selectedAddress);
   // console.log("cartItems", cartItems);
-  console.log("addressDataContext context api", addressDataContext);
-  // console.log("showSelectedSlot", showSelectedSlot);
+  // console.log("addressDataContext", addressDataContext);
+  console.log("showSelectedSlot", showSelectedSlot);
 
   const handleCurrentLocation = () => {
     const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
@@ -307,9 +306,9 @@ const Checkout = () => {
       paidAmount: calculateTotalAmount || 0,
     },
     address: {
-      houseFlatNumber: selectedAddress?.houseNumber,
-      streetArea: selectedAddress?.address,
-      landMark: selectedAddress?.landmark,
+      houseFlatNumber: selectedAddress.houseNumber,
+      streetArea: selectedAddress.address,
+      landMark: selectedAddress.landmark,
       lat: 25.1145815,
       long: 55.1396246,
     },
@@ -353,7 +352,7 @@ const Checkout = () => {
     alert("Enquiry Submitted!");
     // window.location.assign("/");
   };
-  // console.log("priceConfig", priceConfig);
+  console.log("priceConfig", priceConfig);
   return (
     <div className="d-none d-lg-block">
       <div
@@ -374,11 +373,10 @@ const Checkout = () => {
           <div
             style={{
               backgroundColor: "#fff",
-              borderRadius: "12px",
+              borderRadius: "8px",
               padding: "20px",
               marginBottom: "20px",
-              border: "1px solid #e3e3e3",
-              // boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
             }}
           >
             <h3
@@ -450,66 +448,68 @@ const Checkout = () => {
                 />
                 <span style={{ fontSize: "14px", color: "#666" }}>Address</span>{" "}
               </div>
-              {/* {selectedAddress && ( */}
-              {/* <> */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  justifyContent: "space-between",
-
-                  borderRadius: "10px",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <p
+              {selectedAddress && (
+                <>
+                  <div
                     style={{
-                      fontSize: "14px",
-                      color: "#333",
-                      marginTop: "5px",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                    title={
-                      selectedAddress?.houseNumber || selectedAddress?.address
-                        ? `${selectedAddress?.houseNumber || ""}, ${
-                            selectedAddress?.address || ""
-                          }`
-                        : ""
-                    }
-                  >
-                    {`${selectedAddress?.tag || "Home"} - ${
-                      selectedAddress?.houseNumber || ""
-                    }${
-                      selectedAddress?.address
-                        ? `, ${
-                            selectedAddress.address.length > 50
-                              ? selectedAddress.address.substring(0, 50) + "..."
-                              : selectedAddress.address
-                          }`
-                        : ""
-                    }`}
-                  </p>
-                </div>
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
 
-                <button
-                  onClick={() => setIsLocationModalVisible(true)}
-                  style={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    padding: "5px 10px",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    color: "#333",
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-              {/* </> */}
-              {/* )} */}
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <p
+                        style={{
+                          fontSize: "14px",
+                          color: "#333",
+                          marginTop: "5px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={
+                          selectedAddress?.houseNumber ||
+                          selectedAddress?.address
+                            ? `${selectedAddress?.houseNumber || ""}, ${
+                                selectedAddress?.address || ""
+                              }`
+                            : ""
+                        }
+                      >
+                        {`${selectedAddress?.tag || "Home"} - ${
+                          selectedAddress?.houseNumber || ""
+                        }${
+                          selectedAddress?.address
+                            ? `, ${
+                                selectedAddress.address.length > 50
+                                  ? selectedAddress.address.substring(0, 50) +
+                                    "..."
+                                  : selectedAddress.address
+                              }`
+                            : ""
+                        }`}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setIsLocationModalVisible(true)}
+                      style={{
+                        backgroundColor: "#fff",
+                        border: "1px solid #ddd",
+                        borderRadius: "8px",
+                        padding: "5px 10px",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        color: "#333",
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
             <div>
@@ -675,293 +675,240 @@ const Checkout = () => {
         <div
           style={{
             flex: "1",
-            display: "flex",
-            flexDirection: "column",
-            maxHeight: "70vh",
           }}
         >
-          <div
-            className="hide-scroll"
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              paddingRight: "10px", // To avoid layout shift when hiding scrollbar
-              marginBottom: "100px", // space for fixed bottom section
-            }}
-          >
-            {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
-            (serviceType === "house-painters" &&
-              priceConfig?.siteVisitCharge > 0) ? (
-              <div
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: "12px",
-                  height: "fit-content",
-                  padding: "1rem",
-                  border: "1px solid #e3e3e3",
-                  // boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                {serviceType === "deep-cleaning" && cartItems.length > 0 ? (
-                  <>
-                    {cartItems.map((item, index) => (
-                      <div
-                        className="row"
-                        key={index}
-                        style={{ marginBottom: "15px", alignItems: "center" }}
-                      >
-                        <p
-                          className="col-md-6"
-                          style={{
-                            fontSize: "14px",
-                            color: "#333",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          {item.service} - {item.name}
-                        </p>
-                        <div
-                          className="col-md-3"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          <button
-                            onClick={() =>
-                              updateCartItem(
-                                item.name,
-                                item.price,
-                                -1,
-                                item.service
-                              )
-                            }
-                            style={{
-                              backgroundColor: "#f0f0f0",
-                              border: "none",
-                              color: "red",
-                              padding: "5px 10px",
-                              borderRadius: "5px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            -
-                          </button>
-                          <span>{item.quantity}</span>
-                          <button
-                            onClick={() =>
-                              updateCartItem(
-                                item.name,
-                                item.price,
-                                1,
-                                item.service
-                              )
-                            }
-                            style={{
-                              backgroundColor: "#f0f0f0",
-                              border: "none",
-                              color: "red",
-                              padding: "5px 10px",
-                              borderRadius: "5px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            +
-                          </button>
-                        </div>
-                        <p
-                          className="col-md-3"
-                          style={{
-                            fontSize: "14px",
-                            color: "#333",
-                            fontWeight: "600",
-                          }}
-                        >
-                          ₹{item.price * item.quantity}
-                        </p>
-                      </div>
-                    ))}
-                  </>
-                ) : serviceType === "deep-cleaning" &&
-                  cartItems.length === 0 ? (
-                  <div
-                    className="col-md-12"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontSize: "24px",
-                        color: "#333",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Your Cart is Empty
-                    </p>
-                  </div>
-                ) : null}
-
-                {serviceType === "house-painters" &&
-                  priceConfig?.siteVisitCharge > 0 && (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ fontSize: "13px", color: "#333" }}>
-                        House Painters & Waterproofing
-                      </span>
-                      <span style={{ fontSize: "13px", color: "#333" }}>
-                        ₹{priceConfig.siteVisitCharge}
-                      </span>
-                    </div>
-                  )}
-              </div>
-            ) : null}
-            {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
-            (serviceType === "house-painters" &&
-              priceConfig?.siteVisitCharge > 0) ? (
-              <div
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: "12px",
-                  height: "fit-content",
-                  padding: "1rem",
-                  border: "1px solid #e3e3e3",
-                  marginTop: 15,
-                  marginBottom: "10px",
-                  // boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                <h4
-                  style={{
-                    display: "block",
-                    color: "#333",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                  }}
-                >
-                  Payment Summary
-                </h4>
-                <hr />
-                <div
-                  style={{
-                    marginBottom: "10px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span style={{ fontSize: "13px", color: "#333" }}>
-                    Item total
-                  </span>
-                  <span style={{ fontSize: "13px", color: "#333" }}>
-                    ₹
-                    {serviceType === "house-painters"
-                      ? priceConfig?.siteVisitCharge
-                      : calculateTotalAmount}
-                  </span>
-                </div>
-                {serviceType === "deep-cleaning" && (
-                  <div
-                    style={{
-                      marginBottom: "10px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontWeight: 500,
-                    }}
-                  >
-                    <span style={{ fontSize: "14px", color: "#333" }}>
-                      Advance payment
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "black",
-                          fontWeight: 300,
-                        }}
-                      >
-                        ₹2839 payable after service
-                      </div>
-                    </span>
-                    <span style={{ fontSize: "14px", color: "#333" }}>
-                      ₹
-                      {serviceType === "house-painters"
-                        ? priceConfig?.siteVisitCharge
-                        : calculateTotalAmount}{" "}
-                    </span>
-                  </div>
-                )}
-                <hr />
-                <div
-                  style={{
-                    marginBottom: "10px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span
-                    style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
-                  >
-                    Amount to pay
-                  </span>
-                  <span
-                    style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
-                  >
-                    ₹
-                    {serviceType === "house-painters"
-                      ? priceConfig?.siteVisitCharge
-                      : calculateTotalAmount}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-
-            {serviceType === "house-painters" &&
-            (!priceConfig || priceConfig?.siteVisitCharge <= 0) ? (
-              <button
-                onClick={showSelectedSlot ? handleEnquiry : null}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  backgroundColor: showSelectedSlot ? "red" : "#7c7c7c17",
-                  color: showSelectedSlot ? "white" : "#a3a3a3ff",
-                  border: showSelectedSlot
-                    ? "1px solid red"
-                    : "1px solid #ffffff17",
-                  borderRadius: "10px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  cursor: showSelectedSlot ? "pointer" : "not-allowed",
-                }}
-              >
-                Enquiry
-              </button>
-            ) : null}
-          </div>
           {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
           (serviceType === "house-painters" &&
             priceConfig?.siteVisitCharge > 0) ? (
             <div
               style={{
                 backgroundColor: "#fff",
-                boxShadow: "0 -2px 6px rgba(0,0,0,0.1)",
+                borderRadius: "5px",
+                height: "fit-content",
                 padding: "1rem",
-                position: "fixed",
-                bottom: 0,
-                // left: 0,
-                // right: "75%",
-                zIndex: 10,
-                width: "44%",
-                borderTopLeftRadius: "10px",
-                borderTopRightRadius: "10px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
               }}
             >
+              {serviceType === "deep-cleaning" && cartItems.length > 0 ? (
+                <>
+                  {cartItems.map((item, index) => (
+                    <div
+                      className="row"
+                      key={index}
+                      style={{ marginBottom: "15px", alignItems: "center" }}
+                    >
+                      <p
+                        className="col-md-6"
+                        style={{
+                          fontSize: "14px",
+                          color: "#333",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        {item.service} - {item.name}
+                      </p>
+                      <div
+                        className="col-md-3"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        <button
+                          onClick={() =>
+                            updateCartItem(
+                              item.name,
+                              item.price,
+                              -1,
+                              item.service
+                            )
+                          }
+                          style={{
+                            backgroundColor: "#f0f0f0",
+                            border: "none",
+                            color: "red",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          -
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                          onClick={() =>
+                            updateCartItem(
+                              item.name,
+                              item.price,
+                              1,
+                              item.service
+                            )
+                          }
+                          style={{
+                            backgroundColor: "#f0f0f0",
+                            border: "none",
+                            color: "red",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p
+                        className="col-md-3"
+                        style={{
+                          fontSize: "14px",
+                          color: "#333",
+                          fontWeight: "600",
+                        }}
+                      >
+                        ₹{item.price * item.quantity}
+                      </p>
+                    </div>
+                  ))}
+                </>
+              ) : serviceType === "deep-cleaning" && cartItems.length === 0 ? (
+                <div
+                  className="col-md-12"
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: "24px",
+                      color: "#333",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Your Cart is Empty
+                  </p>
+                </div>
+              ) : null}
+
+              {serviceType === "house-painters" &&
+                priceConfig?.siteVisitCharge > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span style={{ fontSize: "13px", color: "#333" }}>
+                      House Painters & Waterproofing
+                    </span>
+                    <span style={{ fontSize: "13px", color: "#333" }}>
+                      ₹{priceConfig.siteVisitCharge}
+                    </span>
+                  </div>
+                )}
+            </div>
+          ) : null}
+          {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
+          (serviceType === "house-painters" &&
+            priceConfig?.siteVisitCharge > 0) ? (
+            <div
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: "5px",
+                height: "fit-content",
+                padding: "1rem",
+                marginTop: 15,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            >
+              <h4
+                style={{
+                  display: "block",
+                  color: "#333",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                }}
+              >
+                Payment Summary
+              </h4>
+              <hr />
+              <div
+                style={{
+                  marginBottom: "10px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span style={{ fontSize: "13px", color: "#333" }}>
+                  Item total
+                </span>
+                <span style={{ fontSize: "13px", color: "#333" }}>
+                  ₹
+                  {serviceType === "house-painters"
+                    ? priceConfig?.siteVisitCharge
+                    : calculateTotalAmount}
+                </span>
+              </div>
+              {serviceType === "deep-cleaning" && (
+                <div
+                  style={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontWeight: 500,
+                  }}
+                >
+                  <span style={{ fontSize: "14px", color: "#333" }}>
+                    Advance payment
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "black",
+                        fontWeight: 300,
+                      }}
+                    >
+                      ₹2839 payable after service
+                    </div>
+                  </span>
+                  <span style={{ fontSize: "14px", color: "#333" }}>
+                    ₹
+                    {serviceType === "house-painters"
+                      ? priceConfig?.siteVisitCharge
+                      : calculateTotalAmount}{" "}
+                  </span>
+                </div>
+              )}
+              <hr />
+              <div
+                style={{
+                  marginBottom: "10px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span
+                  style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
+                >
+                  Amount to pay
+                </span>
+                <span
+                  style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
+                >
+                  ₹
+                  {serviceType === "house-painters"
+                    ? priceConfig?.siteVisitCharge
+                    : calculateTotalAmount}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
+          {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
+          (serviceType === "house-painters" &&
+            priceConfig?.siteVisitCharge > 0) ? (
+            <div>
               <div
                 style={{
                   marginBottom: "10px",
@@ -1006,6 +953,28 @@ const Checkout = () => {
                 </button>
               </div>
             </div>
+          ) : null}
+          {serviceType === "house-painters" &&
+          (!priceConfig || priceConfig?.siteVisitCharge <= 0) ? (
+            <button
+              onClick={showSelectedSlot ? handleEnquiry : null}
+              style={{
+                width: "100%",
+                padding: "10px",
+                backgroundColor: showSelectedSlot ? "red" : "#7c7c7c17",
+                color: showSelectedSlot ? "white" : "#a3a3a3ff",
+                border: showSelectedSlot
+                  ? "1px solid red"
+                  : "1px solid #ffffff17",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+                cursor: showSelectedSlot ? "pointer" : "not-allowed",
+              }}
+            >
+              Enquiry
+            </button>
           ) : null}
         </div>
       </div>

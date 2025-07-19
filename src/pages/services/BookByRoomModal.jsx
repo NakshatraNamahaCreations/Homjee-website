@@ -1,276 +1,317 @@
-import React, { useContext } from 'react';
-import { CartContext } from '../CartContext';
-import unfurnished_typesofcleaning from '../../../public/media/bookbyroomtypeofclening.webp';
-import unfurnished_whatweclean from '../../../public/media/bookbyroomwhatweclean.webp';
-import unfurnished_includes from '../../../public/media/unfurnishedinclued.webp';
-import unfurnished_Excludes from '../../../public/media/unfurnishedexclude.webp';
-import furnished_kitchen from '/media/kitchen.jpeg';
-import furnished_floor from '../../../public/media/spotlessbook.webp';
-import floor from '/media/floor.jpeg';
-import furnished_bathroom from '../../../public/media/bathroom.webp';
-import furnished_bolcany from '/media/bolcany.jpeg';
-import furnished_whatwedo from '/media/whatwedo.jpeg';
-import kitcheninclude from '../../../public/media/kitcheninclude.webp';
-import kitchenexclude from '../../../public/media/kitchenexclude.webp';
-import bathroombook from '../../../public/media/bathroombook.webp';
-import bathroomexcludesbook from '../../../public/media/bathroomexcludesbook.webp';
-import bathroombookmychoose from '../../../public/media/bathroombookmychoose.webp';
+import React, { useContext } from "react";
+import { CartContext } from "../CartContext";
+import furnishedTypesOfCleaning from "/media/bunglowtypeofservices.webp";
+import furnishedWhatWeClean from "/media/whatweclean.jpeg";
+import furnishedKitchen from "/media/kitchen.jpeg";
+import furnishedFloor from "/media/floor.jpeg";
+import furnishedBathroom from "/media/bathroom.webp";
+import furnishedBalcony from "/media/bolcany.jpeg"; // Verify if should be 'balcony'
+import furnishedIncludes from "/media/bunglowincludes.webp";
+import furnishedExcludes from "/media/Excludes.jpeg";
+import furnishedWhatWeDo from "/media/whatwedo.jpeg";
 
-const UnfurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
+const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
   const { updateCartItem, getQuantity } = useContext(CartContext);
+  const serviceName = "Unfurnished Bungalow";
 
-  const serviceName = 'Book by room'; 
-
-  if (!pkgGroup) {
+  if (!pkgGroup || !Array.isArray(pkgGroup)) {
+    console.warn("pkgGroup is missing or not an array");
     return null;
   }
 
-  const getImagesForPackage = (pkgName) => {
-    if (pkgName.startsWith("Bedroom Cleaning")) {
-      return [
-        unfurnished_typesofcleaning,
-        unfurnished_whatweclean,
-        furnished_floor,
-        unfurnished_includes,
-        unfurnished_Excludes
-      ];
-    } else if (pkgName.startsWith("Living Room Cleaning")) {
-      return [
-        unfurnished_typesofcleaning,
-        unfurnished_whatweclean,
-        furnished_floor,
-        unfurnished_Excludes
-      ];
-    } else if (pkgName.startsWith("Kitchen Cleaning")) {
-      return [
-        furnished_kitchen,
-        floor,
-        kitcheninclude,
-        kitchenexclude,
-        furnished_whatwedo
-      ];
-    } else if (pkgName.startsWith("Bathroom Cleaning")) {
-      return [
-        bathroombook,
-        bathroomexcludesbook,
-        bathroombookmychoose,
-      ];
-    } else if (pkgName.startsWith("Balcony Cleaning")) {
-      return [
-        bathroombook,
-        bathroomexcludesbook,
-        bathroombookmychoose,
-      ];
-    } else {
-      return [unfurnished_includes, unfurnished_Excludes];
-    }
-  };
+  const totalQuantity = pkgGroup.reduce(
+    (total, pkg) => total + getQuantity(pkg.name, serviceName),
+    0
+  );
+  const totalPrice = pkgGroup.reduce(
+    (total, pkg) => total + getQuantity(pkg.name, serviceName) * pkg.price,
+    0
+  );
+
+  // Group packages by prefix for UI organization
+  const groupedPackages = pkgGroup.reduce((acc, pkg) => {
+    const prefix = pkg.name.split(" - ")[0];
+    if (!acc[prefix]) acc[prefix] = [];
+    acc[prefix].push(pkg);
+    return acc;
+  }, {});
 
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
         zIndex: 1000,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
       }}
       onClick={closeModal}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
       <div
         style={{
-          backgroundColor: '#fff',
-          borderRadius: '10px',
-          width: '450px',
-          maxHeight: '80vh',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+          backgroundColor: "#fff",
+          borderRadius: "10px",
+          width: "500px",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <style>
           {`
-            div::-webkit-scrollbar {
+            .modal-content::-webkit-scrollbar {
               display: none;
+            }
+            .modal-content {
+              scrollbar-width: none;
+              -ms-overflow-style: none;
             }
           `}
         </style>
         <div
+          className="modal-content"
           style={{
-            overflowY: 'auto',
-            padding: '20px',
+            overflowY: "auto",
+            padding: "20px",
             flex: 1,
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
           }}
         >
           <button
             onClick={closeModal}
             style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: '#333',
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              backgroundColor: "transparent",
+              border: "none",
+              fontSize: "18px",
+              cursor: "pointer",
+              color: "#333",
             }}
+            aria-label="Close modal"
           >
             ✕
           </button>
-            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '10px', color: '#333' }}>
-            {serviceName} - {pkgGroup[0].name.split(' - ')[0]}
+          <h2
+            id="modal-title"
+            style={{
+              fontSize: "20px",
+              fontWeight: "600",
+              marginBottom: "10px",
+              color: "#333",
+            }}
+          >
+            {serviceName} - Bungalow Cleaning
           </h2>
-          {/* <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '15px' }}>
-            {pkgGroup[0].name.split(' - ')[0]} 
-          </h3> */}
-          {pkgGroup.map((pkg, index) => (
-            <div
-              key={index}
-              style={{
-                border: '1px solid #e0e0e0',
-                borderRadius: '10px',
-                padding: '15px',
-                marginBottom: '15px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-              }}
-              onClick={() => {
-                if (getQuantity(pkg.name) === 0) {
-                  updateCartItem(pkg.name, pkg.price, 1);
-                }
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <h4 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '5px' }}>
-                  {pkg.name.split(' - ')[1]}
-                </h4>
-                <p style={{ fontWeight: '600', fontSize: '15px', marginBottom: '8px' }}>
-                  ₹{pkg.price} • {pkg.name.includes("Premium") ? '6 hrs' : '5 hrs'}
-                </p>
-                <ul style={{ paddingLeft: '20px', fontSize: '13px', marginBottom: '8px', color: '#333' }}>
-                  <li>{pkg.details}</li>
-                  <li>{pkg.extras}</li>
-                </ul>
-              </div>
-              <div style={{ marginLeft: '15px', marginTop: '8px' }}>
-                {getQuantity(pkg.name) > 0 ? (
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      border: '1px solid red',
-                      borderRadius: '20px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateCartItem(pkg.name, pkg.price, -1);
-                      }}
+          {Object.entries(groupedPackages).map(([prefix, packages]) => (
+            <div key={prefix} style={{ marginBottom: "20px" }}>
+              <h3
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  marginBottom: "10px",
+                  color: "#333",
+                }}
+              >
+                {prefix}
+              </h3>
+              {packages.map((pkg, index) => (
+                <div
+                  key={pkg.id || index}
+                  style={{
+                    border: `1px solid ${
+                      getQuantity(pkg.name, serviceName) > 0 ? "red" : "#e0e0e0"
+                    }`,
+                    borderRadius: "10px",
+                    padding: "15px",
+                    marginBottom: "15px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    backgroundColor:
+                      getQuantity(pkg.name, serviceName) > 0
+                        ? "rgba(255, 0, 0, 0.05)"
+                        : "#fff",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <h4
                       style={{
-                        padding: '5px 10px',
-                        backgroundColor: '#fff',
-                        border: 'none',
-                        fontSize: '16px',
-                        color: 'red',
-                        cursor: 'pointer',
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        marginBottom: "5px",
                       }}
                     >
-                      −
-                    </button>
-                    <span style={{ padding: '5px 15px', fontSize: '14px' }}>
-                      {getQuantity(pkg.name)}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateCartItem(pkg.name, pkg.price, 1);
-                      }}
+                      {pkg.name?.split(" - ")[1] || "Unknown Package"}
+                    </h4>
+                    <p
                       style={{
-                        padding: '5px 10px',
-                        backgroundColor: 'red',
-                        color: '#fff',
-                        border: 'none',
-                        fontSize: '16px',
-                        cursor: 'pointer',
+                        fontWeight: "600",
+                        fontSize: "15px",
+                        marginBottom: "8px",
                       }}
                     >
-                      +
-                    </button>
+                      ₹{pkg.price || 0} •{" "}
+                      {pkg.name?.includes("Premium") ? "6 hrs" : "5 hrs"}
+                    </p>
+                    <ul
+                      style={{
+                        paddingLeft: "20px",
+                        fontSize: "13px",
+                        marginBottom: "8px",
+                        color: "#333",
+                      }}
+                    >
+                      <li>{pkg.details || "No details available"}</li>
+                      <li>{pkg.extras || "No extras available"}</li>
+                    </ul>
                   </div>
-                ) : (
-                  <button
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: 'red',
-                      border: '1px solid red',
-                      padding: '8px 18px',
-                      borderRadius: '10px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Add
-                  </button>
-                )}
-              </div>
+                  <div style={{ marginLeft: "15px", marginTop: "8px" }}>
+                    {getQuantity(pkg.name, serviceName) > 0 ? (
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          border: "1px solid red",
+                          borderRadius: "20px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateCartItem(
+                              pkg.name,
+                              pkg.price,
+                              -1,
+                              serviceName
+                            );
+                          }}
+                          style={{
+                            padding: "5px 10px",
+                            backgroundColor: "#fff",
+                            border: "none",
+                            fontSize: "16px",
+                            color: "red",
+                            cursor: "pointer",
+                          }}
+                          aria-label={`Remove ${pkg.name} from cart`}
+                        >
+                          −
+                        </button>
+                        <span style={{ padding: "5px 15px", fontSize: "14px" }}>
+                          {getQuantity(pkg.name, serviceName)}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateCartItem(pkg.name, pkg.price, 1, serviceName);
+                          }}
+                          style={{
+                            padding: "5px 10px",
+                            backgroundColor: "red",
+                            color: "#fff",
+                            border: "none",
+                            fontSize: "16px",
+                            cursor: "pointer",
+                          }}
+                          aria-label={`Replace with ${pkg.name} in cart`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        style={{
+                          backgroundColor: "transparent",
+                          color: "red",
+                          border: "1px solid red",
+                          padding: "8px 18px",
+                          borderRadius: "10px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                        }}
+                        onClick={() =>
+                          updateCartItem(pkg.name, pkg.price, 1, serviceName)
+                        }
+                        aria-label={`Add ${pkg.name} to cart`}
+                      >
+                        Add
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
-          <div style={{ textAlign: 'center', marginTop: '15px' }}>
-            {getImagesForPackage(pkgGroup[0].name).map((imgSrc, i) => (
+          <div style={{ textAlign: "center", marginTop: "15px" }}>
+            {[
+              { src: furnishedTypesOfCleaning, alt: "Types of cleaning" },
+              { src: furnishedWhatWeClean, alt: "What we clean" },
+              { src: furnishedKitchen, alt: "Kitchen" },
+              { src: furnishedBathroom, alt: "Bathroom" },
+              { src: furnishedBalcony, alt: "Balcony" },
+              { src: furnishedFloor, alt: "Floor" },
+              { src: furnishedIncludes, alt: "Includes" },
+              { src: furnishedExcludes, alt: "Excludes" },
+              { src: furnishedWhatWeDo, alt: "What we do" },
+            ].map((image, index) => (
               <img
-                key={i}
-                src={imgSrc}
-                alt={`${pkgGroup[0].name} detail ${i}`}
+                key={index}
+                src={image.src}
+                alt={image.alt}
                 style={{
-                  width: '400px',
-                  height: 'auto',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  marginBottom: '15px',
+                  width: "450px",
+                  height: "auto",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
                 }}
+                onError={(e) =>
+                  console.error(`Failed to load image: ${image.src}`)
+                }
               />
             ))}
           </div>
         </div>
-        {pkgGroup.some((pkg) => getQuantity(pkg.name) > 0) && (
+        {totalQuantity > 0 && (
           <div
             style={{
-              borderTop: '1px solid #ddd',
-              padding: '12px 20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              backgroundColor: '#fff',
+              borderTop: "1px solid #ddd",
+              padding: "12px 20px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "#fff",
             }}
           >
-            <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
-              {pkgGroup.reduce((total, pkg) => total + getQuantity(pkg.name), 0)} × ₹
-              {pkgGroup.reduce((total, pkg) => total + getQuantity(pkg.name) * pkg.price, 0)}
+            <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+              {totalQuantity} × ₹{totalPrice}
             </div>
             <button
               onClick={closeModal}
               style={{
-                backgroundColor: 'red',
-                color: '#fff',
-                border: 'none',
-                padding: '10px 25px',
-                borderRadius: '10px',
-                fontSize: '15px',
-                cursor: 'pointer',
+                backgroundColor: "red",
+                color: "#fff",
+                border: "none",
+                padding: "10px 25px",
+                borderRadius: "10px",
+                fontSize: "15px",
+                cursor: "pointer",
               }}
+              aria-label="Confirm and close modal"
             >
               Done
             </button>
@@ -281,4 +322,4 @@ const UnfurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
   );
 };
 
-export default UnfurnishedApartmentModal;
+export default UnfurnishedBungalowModal;

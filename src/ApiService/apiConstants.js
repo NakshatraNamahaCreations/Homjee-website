@@ -1,4 +1,5 @@
-export const API_BASE_URL = "http://localhost:9000/api";
+// export const API_BASE_URL = "http://localhost:9000/api"; // development
+export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
 
 export const API_ENDPOINTS = {
   // USER AUTH

@@ -278,6 +278,17 @@ const Checkout = () => {
     cartItems && cartItems.length > 0
       ? cartItems.reduce((acc, val) => acc + val.price * (val.quantity || 1), 0)
       : 0;
+
+  const checkEnquiry = () => {
+    if (serviceType === "house-painters" && priceConfig?.siteVisitCharge > 0) {
+      return false;
+    } else if (serviceType === "deep-cleaning") {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   const data = {
     customer: {
       customerId: userData?._id,
@@ -317,6 +328,7 @@ const Checkout = () => {
       slotDate: showSelectedSlot?.date,
       slotTime: showSelectedSlot?.time,
     },
+    isEnquiry: checkEnquiry,
   };
 
   const handleProceedToCheckout = async () => {
@@ -924,7 +936,7 @@ const Checkout = () => {
             {serviceType === "house-painters" &&
             (!priceConfig || priceConfig?.siteVisitCharge <= 0) ? (
               <button
-                onClick={showSelectedSlot ? handleEnquiry : null}
+                onClick={showSelectedSlot ? handleProceedToCheckout : null}
                 style={{
                   width: "100%",
                   padding: "10px",

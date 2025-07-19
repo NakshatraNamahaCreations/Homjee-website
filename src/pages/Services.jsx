@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Carousel, Form, Modal } from "react-bootstrap";
 import { FaMapMarkerAlt } from "react-icons/fa";
@@ -41,7 +41,7 @@ import bgProfessionalimage from "../assets/bgProfessionalimage.png";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import { postRequest, putRequest } from "../ApiService/apiHelper";
+import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
 
@@ -63,7 +63,7 @@ const Services = () => {
   const [mapUrl, setMapUrl] = useState("");
   const [mapAddress, setMapAddress] = useState("");
   const [showAnotherPopup, setAnotherPopup] = useState(false);
-
+  const [userAddress, setUserAddress] = useState(null);
   const { setAddressDataContext } = useAddressContext();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const userData = JSON.parse(sessionStorage.getItem("user"));
@@ -152,6 +152,23 @@ const Services = () => {
     // navigate("/deep-cleaning-packages");
   };
 
+  const fetchUserAddress = async () => {
+    try {
+      const response = await getRequest(
+        `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`
+      );
+      console.log("API Res", `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`);
+      setUserAddress(response.address);
+    } catch (error) {
+      console.error("GET error:", error.response || error);
+      throw error.response ? error.response.data : error;
+    }
+  };
+
+  useEffect(() => {
+    fetchUserAddress();
+  }, [userData?._id]);
+
   const handleAddress = async () => {
     console.log("function called");
     const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -232,8 +249,7 @@ const Services = () => {
             );
             setMapAddress(address || `${city || ""} ${town || ""}`);
 
-            setAnotherPopup(false);
-            // ✅ Show location confirmation modal
+            setIsLocationModalVisible(false);
             setShowLocationPopup(true);
           } else {
             alert("Could not fetch a valid address from your location.");
@@ -814,11 +830,11 @@ const Services = () => {
                   setIsLocationModalVisible(false);
                 }}
               >
-                + Add another address
+                + Add new address
               </div>
-              {userData && userData?.savedAddress?.length > 0 && (
+              {userAddress && userAddress?.length > 0 && (
                 <div className="mt-4">
-                  {userData?.savedAddress?.map((ele, idx) => (
+                  {userAddress?.map((ele, idx) => (
                     <div key={idx}>
                       <div
                         className="row"
@@ -960,7 +976,10 @@ const Services = () => {
             centered
             backdrop="static"
             keyboard={false}
-            onHide={() => setShowLocationPopup(false)}
+            onHide={() => {
+              setShowLocationPopup(false);
+              setIsLocationModalVisible(true);
+            }}
           >
             <Modal.Header closeButton>
               <Modal.Title>

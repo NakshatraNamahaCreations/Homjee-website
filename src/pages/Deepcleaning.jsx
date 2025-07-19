@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Carousel, Form, Modal } from "react-bootstrap";
 import { FaMapMarkerAlt } from "react-icons/fa";
@@ -41,7 +41,7 @@ import bgProfessionalimage from "../assets/bgProfessionalimage.png";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import { postRequest, putRequest } from "../ApiService/apiHelper";
+import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
 // import { NotificationManager } from "react-notifications";
@@ -63,7 +63,7 @@ const Deepcleaning = () => {
 
   const { setAddressDataContext } = useAddressContext();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [userAddress, setUserAddress] = useState(null);
 
   const [showLocationPopup, setShowLocationPopup] = useState(false);
   const [mapUrl, setMapUrl] = useState("");
@@ -147,6 +147,24 @@ const Deepcleaning = () => {
       // NotificationManager.error(error.message || "Login failed");
     }
   };
+
+  const fetchUserAddress = async () => {
+    try {
+      const response = await getRequest(
+        `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`
+      );
+      console.log("API Res", `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`);
+      setUserAddress(response.address);
+    } catch (error) {
+      console.error("GET error:", error.response || error);
+      throw error.response ? error.response.data : error;
+    }
+  };
+
+  useEffect(() => {
+    fetchUserAddress();
+  }, [userData?._id]);
+
   const handleCloseModal = () => {
     setShowModal(false);
     setOtp(["", "", "", "", "", ""]);
@@ -295,9 +313,7 @@ const Deepcleaning = () => {
               `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
             );
             setMapAddress(address || `${city || ""} ${town || ""}`);
-
-            setAnotherPopup(false);
-            // ✅ Show location confirmation modal
+            setIsLocationModalVisible(false);
             setShowLocationPopup(true);
           } else {
             alert("Could not fetch a valid address from your location.");
@@ -396,7 +412,7 @@ const Deepcleaning = () => {
       });
     }
   };
-
+  console.log("userAddress", userAddress);
   return (
     <>
       {/* Hero Section */}
@@ -825,7 +841,7 @@ const Deepcleaning = () => {
               </div>
             </>
           )}
-
+          {/* saved adress */}
           <Modal
             centered
             backdrop="static"
@@ -845,16 +861,17 @@ const Deepcleaning = () => {
                   marginBottom: "10px",
                   cursor: "pointer",
                 }}
-                onClick={() => {
-                  setAnotherPopup(true);
-                  setIsLocationModalVisible(false);
-                }}
+                onClick={handleCurrentLocation}
+                // onClick={() => {
+                // setShowLocationPopup(true);
+                // setIsLocationModalVisible(false);
+                // }}
               >
-                + Add another address
+                + Add new address
               </div>
-              {userData && userData?.savedAddress?.length > 0 && (
+              {userAddress && userAddress?.length > 0 && (
                 <div className="mt-4">
-                  {userData?.savedAddress?.map((ele, idx) => (
+                  {userAddress?.map((ele, idx) => (
                     <div key={idx}>
                       <div
                         className="row"
@@ -867,19 +884,12 @@ const Deepcleaning = () => {
                         onClick={() => handleSelectAddress(ele)}
                       >
                         <div className="col-md-1">
-                          {/* <input
-                              type="radio"
-                              name="selectedAddress"
-                              checked={ele.uniqueCode === selectedAddressId}
-                              onChange={() => handleSelectAddress(ele)}
-                            /> */}
-                          <Form.Check // prettier-ignore
+                          <Form.Check
                             type="radio"
                             id={ele.uniqueCode}
                             name="selectedAddress"
                             checked={ele.uniqueCode === selectedAddressId}
                             onChange={() => handleSelectAddress(ele)}
-                            // label={`default ${type}`}
                           />
                         </div>
 
@@ -936,7 +946,7 @@ const Deepcleaning = () => {
             </Modal.Body>
           </Modal>
           {/* asking current location */}
-          <Modal
+          {/* <Modal
             centered
             backdrop="static"
             keyboard={false}
@@ -968,9 +978,8 @@ const Deepcleaning = () => {
                 <FaMapMarkerAlt style={{ marginRight: 8 }} />
                 Use current location
               </div>
-            </Modal.Body>
-            {/* <Modal.Footer>vcbnvcnbvc</Modal.Footer> */}
-          </Modal>
+            </Modal.Body> 
+          </Modal> */}
           {/* showing current location */}
           <Modal
             show={showLocationPopup}
@@ -980,7 +989,8 @@ const Deepcleaning = () => {
             keyboard={false}
             onHide={() => {
               setShowLocationPopup(false);
-              setAnotherPopup(true);
+              // setAnotherPopup(true);
+              setIsLocationModalVisible(true);
             }}
           >
             <Modal.Header closeButton>

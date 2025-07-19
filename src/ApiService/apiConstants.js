@@ -1,5 +1,5 @@
-// export const API_BASE_URL = "http://localhost:9000/api"; // development
-export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
+export const API_BASE_URL = "http://localhost:9000/api"; // development
+// export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
 
 export const API_ENDPOINTS = {
   // USER AUTH
@@ -17,6 +17,5 @@ export const API_ENDPOINTS = {
   GET_BOOKINGS_BY_CUSTOMER_ID: "/bookings/get-bookings-by-customerid",
 
   // SERVICE CONFIG
-
   GET_SERVICE_PRICE_CONFIG: "/service/latest",
 };

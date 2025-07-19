@@ -48,7 +48,6 @@ import thirtytwo from "/media/thirtytwo.webp";
 import thirtythree from "/media/thirtythree.webp";
 import thirtyfour from "/media/thirtyfour.webp";
 import thirtyfive from "/media/thirtyfive.webp";
-import { useSelectedSlotContext } from "../utils/SlotContext";
 
 // Map services to their corresponding images
 const serviceImages = {
@@ -735,12 +734,10 @@ const DeepCleaningPackages = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { cartItems, updateCartItem, getQuantity, totalPrice } =
-    useContext(CartContext);
+  const { cartItems, updateCartItem, getQuantity } = useContext(CartContext);
+
   const serviceRefs = useRef({});
   const [selectedPackageGroup, setSelectedPackageGroup] = useState(null);
-
-  const { selectedSlot } = useSelectedSlotContext();
 
   const getDisplayTitle = (service) => {
     if (service.includes("bungalow")) {
@@ -1161,6 +1158,7 @@ const DeepCleaningPackages = () => {
                             border: "1px solid red",
                             borderRadius: "20px",
                             overflow: "hidden",
+                            backgroundColor: "white",
                           }}
                         >
                           <button

@@ -328,7 +328,7 @@ const Checkout = () => {
       slotDate: showSelectedSlot?.date,
       slotTime: showSelectedSlot?.time,
     },
-    isEnquiry: checkEnquiry,
+    // isEnquiry: checkEnquiry,
   };
 
   const handleProceedToCheckout = async () => {

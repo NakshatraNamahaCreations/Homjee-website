@@ -44,6 +44,7 @@ import "swiper/css/pagination";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
+import Autocomplete from "react-google-autocomplete";
 
 const Services = () => {
   const navigate = useNavigate();
@@ -60,6 +61,8 @@ const Services = () => {
   const [houseNumber, setHouseNumber] = useState("");
   const [landmark, setLandmark] = useState("");
   const [showLocationPopup, setShowLocationPopup] = useState(false);
+  const [mapLat, setMapLat] = useState(null);
+  const [mapLng, setMapLng] = useState(null);
   const [mapUrl, setMapUrl] = useState("");
   const [mapAddress, setMapAddress] = useState("");
   const [showAnotherPopup, setAnotherPopup] = useState(false);
@@ -67,6 +70,8 @@ const Services = () => {
   const { setAddressDataContext } = useAddressContext();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const userData = JSON.parse(sessionStorage.getItem("user"));
+
+  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   const inputRefs = useRef([]);
   //   const handleProceedClick = () => {
@@ -640,6 +645,7 @@ const Services = () => {
               type="text"
               placeholder="Enter WhatsApp Phone Number"
               value={phoneNumber}
+              maxLength={10}
               onChange={handlePhoneNumberChange}
               style={{
                 padding: "12px 20px",
@@ -817,7 +823,42 @@ const Services = () => {
               <Modal.Title>Saved Address</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              <div>
+                <Autocomplete
+                  apiKey={GOOGLE_MAPS_API_KEY}
+                  onPlaceSelected={(place) => {
+                    if (place.geometry) {
+                      const lat = place.geometry.location.lat();
+                      const lng = place.geometry.location.lng();
+                      const formattedAddress = place.formatted_address;
+
+                      setMapLat(lat);
+                      setMapLng(lng);
+                      setMapAddress(formattedAddress);
+
+                      // Update map URL
+                      const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                      setMapUrl(url);
+
+                      // Close Autocomplete Modal and open Map Modal
+                      setIsLocationModalVisible(false);
+                      setShowLocationPopup(true);
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#f1f1f1",
+                    border: "1px solid #dfdfdf",
+                    borderRadius: "6px",
+                    padding: "7px 8px",
+                    color: "black",
+                    fontSize: "14px",
+                    outlineWidth: 0,
+                  }}
+                />
+              </div>
               <div
+                className="mt-2"
                 style={{
                   color: "#e60000",
                   fontSize: 14,
@@ -825,15 +866,16 @@ const Services = () => {
                   marginBottom: "10px",
                   cursor: "pointer",
                 }}
-                onClick={() => {
-                  setAnotherPopup(true);
-                  setIsLocationModalVisible(false);
-                }}
+                onClick={handleCurrentLocation}
+                // onClick={() => {
+                //   setAnotherPopup(true);
+                //   setIsLocationModalVisible(false);
+                // }}
               >
                 + Add new address
               </div>
               {userAddress && userAddress?.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-2">
                   {userAddress?.map((ele, idx) => (
                     <div key={idx}>
                       <div
@@ -922,7 +964,7 @@ const Services = () => {
             </Modal.Body>
           </Modal>
           {/* asking current location */}
-          <Modal
+          {/* <Modal
             centered
             backdrop="static"
             keyboard={false}
@@ -966,9 +1008,8 @@ const Services = () => {
                 <FaMapMarkerAlt style={{ marginRight: 8 }} />
                 Use current location
               </div>
-            </Modal.Body>
-            {/* <Modal.Footer>vcbnvcnbvc</Modal.Footer> */}
-          </Modal>
+            </Modal.Body> 
+          </Modal> */}
           {/* showing current location */}
           <Modal
             show={showLocationPopup}

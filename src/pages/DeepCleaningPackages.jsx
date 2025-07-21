@@ -72,6 +72,7 @@ const modalComponents = {
 const cleaningServices = {
   "Furnished apartment": [
     {
+      _id: "CLA1BHK001",
       name: "1 BHK Cleaning - Classic",
       reviews: "4.80 (15K reviews)",
       price: 3199,
@@ -80,6 +81,7 @@ const cleaningServices = {
       image: one,
     },
     {
+      _id: "PRE1BHK002",
       name: "1 BHK Cleaning - Premium",
       reviews: "4.85 (12K reviews)",
       price: 4199,
@@ -88,6 +90,7 @@ const cleaningServices = {
       extras: "Includes upholstery cleaning, excludes paint marks removal",
     },
     {
+      _id: "PLA1BHK003",
       name: "1 BHK Cleaning - Platinum",
       reviews: "4.90 (10K reviews)",
       price: 5199,

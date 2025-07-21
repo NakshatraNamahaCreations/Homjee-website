@@ -17,6 +17,7 @@ import moment from "moment";
 import { Button, Form, Modal } from "react-bootstrap";
 import SlotSelectionModal from "./SlotSelectionModal";
 import "./checkout.css";
+import Autocomplete from "react-google-autocomplete";
 
 const Checkout = () => {
   const location = useLocation();
@@ -26,6 +27,8 @@ const Checkout = () => {
   const userData = JSON.parse(sessionStorage.getItem("user"));
   const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
   const showSelectedSlot = JSON.parse(sessionStorage.getItem("selectedSlots"));
+
+  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   const { phoneNumber: initialPhoneNumber, openAddressModal } =
     location.state || { phoneNumber: "", openAddressModal: false };
@@ -54,7 +57,11 @@ const Checkout = () => {
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [showAnotherPopup, setAnotherPopup] = useState(false);
   const [showLocationPopup, setShowLocationPopup] = useState(false);
+
+  const [mapLat, setMapLat] = useState(null);
+  const [mapLng, setMapLng] = useState(null);
   const [mapUrl, setMapUrl] = useState("");
+
   const [mapAddress, setMapAddress] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [houseNumber, setHouseNumber] = useState("");
@@ -284,16 +291,15 @@ const Checkout = () => {
       return false;
     } else if (serviceType === "deep-cleaning") {
       return false;
-    } else {
-      return true;
     }
+    return true;
   };
 
   const data = {
     customer: {
       customerId: userData?._id,
       phone: userData?.mobileNumber,
-      name: "Kiruthika",
+      name: userData?.userName,
     },
     service:
       serviceType === "house-painters"
@@ -328,7 +334,7 @@ const Checkout = () => {
       slotDate: showSelectedSlot?.date,
       slotTime: showSelectedSlot?.time,
     },
-    // isEnquiry: checkEnquiry,
+    isEnquiry: checkEnquiry(),
   };
 
   const handleProceedToCheckout = async () => {
@@ -430,13 +436,16 @@ const Checkout = () => {
                 </span>
               </div>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              // style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <p
-                  style={{ fontSize: "16px", fontWeight: "600", color: "#333" }}
+                <div
+                  style={{ fontSize: "14px", color: "#333", fontWeight: "600" }}
                 >
+                  {userData?.userName || null}
+                </div>
+                <div style={{ fontSize: "14px", color: "#333" }}>
                   +91 {userData?.mobileNumber || null}
-                </p>
+                </div>
               </div>
             </div>
 
@@ -897,14 +906,15 @@ const Checkout = () => {
                           fontWeight: 300,
                         }}
                       >
-                        ₹2839 payable after service
+                        ₹0
+                        {/* ₹2839 payable after service */}
                       </div>
                     </span>
                     <span style={{ fontSize: "14px", color: "#333" }}>
-                      ₹
-                      {serviceType === "house-painters"
+                      ₹ 0
+                      {/* {serviceType === "house-painters"
                         ? priceConfig?.siteVisitCharge
-                        : calculateTotalAmount}{" "}
+                        : calculateTotalAmount}{" "} */}
                     </span>
                   </div>
                 )}
@@ -948,7 +958,7 @@ const Checkout = () => {
                   borderRadius: "10px",
                   fontSize: "14px",
                   fontWeight: "500",
-                  cursor: "pointer",
+                  // cursor: "pointer",
                   cursor: showSelectedSlot ? "pointer" : "not-allowed",
                 }}
               >
@@ -1009,7 +1019,7 @@ const Checkout = () => {
                     borderRadius: "10px",
                     fontSize: "14px",
                     fontWeight: "500",
-                    cursor: "pointer",
+                    // cursor: "pointer",
                     marginTop: "10px",
                     cursor: showSelectedSlot ? "pointer" : "not-allowed",
                   }}
@@ -1033,7 +1043,42 @@ const Checkout = () => {
           <Modal.Title>Saved Address</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <div>
+            <Autocomplete
+              apiKey={GOOGLE_MAPS_API_KEY}
+              onPlaceSelected={(place) => {
+                if (place.geometry) {
+                  const lat = place.geometry.location.lat();
+                  const lng = place.geometry.location.lng();
+                  const formattedAddress = place.formatted_address;
+
+                  setMapLat(lat);
+                  setMapLng(lng);
+                  setMapAddress(formattedAddress);
+
+                  // Update map URL
+                  const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                  setMapUrl(url);
+
+                  // Close Autocomplete Modal and open Map Modal
+                  setIsLocationModalVisible(false);
+                  setShowLocationPopup(true);
+                }
+              }}
+              style={{
+                width: "100%",
+                backgroundColor: "#f1f1f1",
+                border: "1px solid #dfdfdf",
+                borderRadius: "6px",
+                padding: "7px 8px",
+                color: "black",
+                fontSize: "14px",
+                outlineWidth: 0,
+              }}
+            />
+          </div>
           <div
+            className="mt-2"
             style={{
               color: "#e60000",
               fontSize: 14,
@@ -1041,15 +1086,16 @@ const Checkout = () => {
               marginBottom: "10px",
               cursor: "pointer",
             }}
-            onClick={() => {
-              setAnotherPopup(true);
-              setIsLocationModalVisible(false);
-            }}
+            onClick={handleCurrentLocation}
+            // onClick={() => {
+            //   setAnotherPopup(true);
+            //   setIsLocationModalVisible(false);
+            // }}
           >
             + Add another address
           </div>
           {userData && userData?.savedAddress?.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-2">
               {userData?.savedAddress?.map((ele, idx) => (
                 <div key={idx}>
                   <div
@@ -1131,7 +1177,7 @@ const Checkout = () => {
         </Modal.Body>
       </Modal>
       {/* asking current location */}
-      <Modal
+      {/* <Modal
         centered
         backdrop="static"
         keyboard={false}
@@ -1164,8 +1210,7 @@ const Checkout = () => {
             Use current location
           </div>
         </Modal.Body>
-        {/* <Modal.Footer>vcbnvcnbvc</Modal.Footer> */}
-      </Modal>
+       </Modal> */}
       {/* showing current location */}
       <Modal
         show={showLocationPopup}

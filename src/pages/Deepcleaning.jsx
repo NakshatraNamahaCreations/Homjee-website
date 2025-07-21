@@ -45,6 +45,7 @@ import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
 // import { NotificationManager } from "react-notifications";
+import Autocomplete from "react-google-autocomplete";
 
 const Deepcleaning = () => {
   const navigate = useNavigate();
@@ -66,6 +67,8 @@ const Deepcleaning = () => {
   const [userAddress, setUserAddress] = useState(null);
 
   const [showLocationPopup, setShowLocationPopup] = useState(false);
+  const [mapLat, setMapLat] = useState(null);
+  const [mapLng, setMapLng] = useState(null);
   const [mapUrl, setMapUrl] = useState("");
   const [mapAddress, setMapAddress] = useState("");
   const [coords, setCoords] = useState(null);
@@ -75,6 +78,7 @@ const Deepcleaning = () => {
   const [showAnotherPopup, setAnotherPopup] = useState(false);
 
   const userData = JSON.parse(sessionStorage.getItem("user"));
+  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   // const handleProceedClick = async () => {
   //   try {
@@ -679,6 +683,7 @@ const Deepcleaning = () => {
               placeholder="Enter WhatsApp Phone Number"
               value={phoneNumber}
               onChange={handlePhoneNumberChange}
+              maxLength={10}
               style={{
                 padding: "12px 20px",
                 borderRadius: "12px",
@@ -853,12 +858,46 @@ const Deepcleaning = () => {
               <Modal.Title>Saved Address</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              <div>
+                <Autocomplete
+                  apiKey={GOOGLE_MAPS_API_KEY}
+                  onPlaceSelected={(place) => {
+                    if (place.geometry) {
+                      const lat = place.geometry.location.lat();
+                      const lng = place.geometry.location.lng();
+                      const formattedAddress = place.formatted_address;
+
+                      setMapLat(lat);
+                      setMapLng(lng);
+                      setMapAddress(formattedAddress);
+
+                      // Update map URL
+                      const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                      setMapUrl(url);
+
+                      // Close Autocomplete Modal and open Map Modal
+                      setIsLocationModalVisible(false);
+                      setShowLocationPopup(true);
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#f1f1f1",
+                    border: "1px solid #dfdfdf",
+                    borderRadius: "6px",
+                    padding: "7px 8px",
+                    color: "black",
+                    fontSize: "14px",
+                    outlineWidth: 0,
+                  }}
+                />
+              </div>
               <div
+                className="mt-2"
                 style={{
                   color: "#e60000",
                   fontSize: 14,
                   textAlign: "left",
-                  marginBottom: "10px",
                   cursor: "pointer",
                 }}
                 onClick={handleCurrentLocation}
@@ -870,7 +909,7 @@ const Deepcleaning = () => {
                 + Add new address
               </div>
               {userAddress && userAddress?.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-2">
                   {userAddress?.map((ele, idx) => (
                     <div key={idx}>
                       <div
@@ -989,7 +1028,6 @@ const Deepcleaning = () => {
             keyboard={false}
             onHide={() => {
               setShowLocationPopup(false);
-              // setAnotherPopup(true);
               setIsLocationModalVisible(true);
             }}
           >

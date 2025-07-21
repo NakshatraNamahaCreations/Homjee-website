@@ -7,7 +7,7 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
   if (!show) return null;
 
   // Generate dates for the next 5 days starting from today (July 02, 2025)
-  const today = new Date("2025-07-02");
+  const today = new Date();
   const dates = Array.from({ length: 5 }, (_, i) => {
     const date = new Date(today);
     date.setDate(today.getDate() + i);

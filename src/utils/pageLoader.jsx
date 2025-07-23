@@ -1,7 +1,7 @@
 import React from "react";
 import "./loader.css"; // Import CSS for the loader
 
-const Loader = () => {
+const pageLoader = () => {
   return (
     <div className="global-loader-overlay">
       <div className="global-spinner"></div>
@@ -9,4 +9,4 @@ const Loader = () => {
   );
 };
 
-export default Loader;
+export default pageLoader;

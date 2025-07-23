@@ -48,7 +48,7 @@ import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
 import { useSelectedSlotContext } from "../utils/SlotContext";
 import SlotSelectionModal from "./SlotSelectionModal";
-import Loader from "../utils/loader";
+import pageLoader from "../utils/pageLoader";
 
 const Deepcleaning = () => {
   const navigate = useNavigate();
@@ -428,7 +428,7 @@ const Deepcleaning = () => {
   };
 
   if (responseLoader) {
-    return <Loader />; // Show loader while waiting for response
+    return <pageLoader />; // Show loader while waiting for response
   }
 
   return (

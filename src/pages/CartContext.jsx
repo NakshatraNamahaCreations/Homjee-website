@@ -92,6 +92,22 @@ export const CartProvider = ({ children }) => {
     return quantity;
   };
 
+  // const getQuantity = (name, service) => {
+  //   const item = cartItems.find(
+  //     (item) => item.name === name && item.service === service
+  //   );
+  //   return item ? item.quantity : 0;
+  // };
+
+  const getQuantityByPrefix = (prefix, service) => {
+    return (
+      cartItems.find(
+        (item) =>
+          item.name.split(" - ")[0] === prefix && item.service === service
+      )?.quantity || 0
+    );
+  };
+
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
@@ -99,7 +115,13 @@ export const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider
-      value={{ cartItems, updateCartItem, getQuantity, totalPrice }}
+      value={{
+        cartItems,
+        updateCartItem,
+        getQuantity,
+        getQuantityByPrefix,
+        totalPrice,
+      }}
     >
       {children}
     </CartContext.Provider>

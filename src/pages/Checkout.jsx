@@ -44,7 +44,7 @@ const Checkout = () => {
     state: "",
     zipCode: "",
   });
-  const [showSlotModal, setShowSlotModal] = useState(true);
+  const [showSlotModal, setShowSlotModal] = useState(false);
   const [priceConfig, setPriceConfig] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);

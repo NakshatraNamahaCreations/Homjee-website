@@ -45,6 +45,8 @@ import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
+import SlotSelectionModal from "./SlotSelectionModal";
+import { useSelectedSlotContext } from "../utils/SlotContext";
 
 const Services = () => {
   const navigate = useNavigate();
@@ -53,7 +55,7 @@ const Services = () => {
   const [showModal, setShowModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [userName, setUserName] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [joinedOtp, setJoinedOTP] = useState(null);
   const [otpValue, setOtpValue] = useState(null);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
@@ -71,9 +73,21 @@ const Services = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const userData = JSON.parse(sessionStorage.getItem("user"));
 
+  const isNewUser = sessionStorage.getItem("isNewUser") === "true";
+  const [showSlotModal, setShowSlotModal] = useState(false);
+  const { setSelectedSlot } = useSelectedSlotContext();
+
   const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
+  console.log("isNewUser", isNewUser);
   const inputRefs = useRef([]);
+
+  // useEffect(() => {
+  //   if (inputRefs.current[0]) {
+  //     inputRefs.current[0].focus();
+  //   }
+  // }, []);
+
   //   const handleProceedClick = () => {
   //   setShowModal(true);
   // };
@@ -120,7 +134,7 @@ const Services = () => {
       alert("Please enter OTP");
     }
     try {
-      const data = { otp: joinedOtp, mobileNumber: phoneNumber };
+      const data = { otp: joinedOtp, mobileNumber: phoneNumber, userName };
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
       console.log("OTP Verified", result);
       alert(result.message || "OTP verified successfully");
@@ -128,9 +142,12 @@ const Services = () => {
       if (result.data) {
         sessionStorage.setItem("user", JSON.stringify(result.data));
       }
+      sessionStorage.setItem("isNewUser", result.isNewUser);
       console.log("otp verified");
+      // setJoinedOTP(null);
+      setOtp(["", "", "", ""]);
       setShowModal(false);
-      setIsLocationModalVisible(true);
+      setShowLocationPopup(true);
     } catch (error) {
       alert(error.message || "Invalid OTP");
       console.error("Login failed:", error);
@@ -138,6 +155,7 @@ const Services = () => {
   };
 
   const ResendOTP = async () => {
+    setOtp(["", "", "", ""]);
     try {
       const result = await postRequest(API_ENDPOINTS.RESEND_OTP, formData);
       console.log("OTP Re-sent", result);
@@ -199,23 +217,26 @@ const Services = () => {
         JSON.stringify(data.savedAddress)
       );
       setShowLocationPopup(false);
-      setAnotherPopup(false);
+      // setAnotherPopup(false);
       console.log("Address Saved", result);
       // handleClose();
-      navigate("/checkout", {
-        state: {
-          serviceType: "house-painters",
-        },
-      });
+      setShowSlotModal(true);
+      // navigate("/checkout", {
+      //   state: {
+      //     serviceType: "house-painters",
+      //   },
+      // });
       alert(result.message || "Address Saved");
     } catch (error) {
       console.error("Address failed:", error);
     }
   };
 
-  const handleCurrentLocation = () => {
-    const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+  const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
+  // const handleCurrentLocation = () => {
+
+  useEffect(() => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by this browser.");
       return;
@@ -254,8 +275,8 @@ const Services = () => {
             );
             setMapAddress(address || `${city || ""} ${town || ""}`);
 
-            setIsLocationModalVisible(false);
-            setShowLocationPopup(true);
+            // setIsLocationModalVisible(false);
+            // setShowLocationPopup(true);
           } else {
             alert("Could not fetch a valid address from your location.");
           }
@@ -282,7 +303,9 @@ const Services = () => {
         maximumAge: 0, // Always fetch fresh location
       }
     );
-  };
+  }, []);
+
+  // };
 
   const handleSubmitOTP = () => {
     setShowModal(false); // Hide OTP modal
@@ -300,7 +323,7 @@ const Services = () => {
     const joinString = newOtp?.join("");
     setJoinedOTP(joinString);
     setOtp(newOtp);
-    if (value && index < 7) {
+    if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
   };
@@ -377,6 +400,28 @@ const Services = () => {
       // Redirect to checkout page with location info
       navigate("/checkout", { state: { phoneNumber, openAddressModal: true } });
     }
+  };
+
+  const handleCloseSlotModal = () => {
+    setShowSlotModal(false);
+  };
+
+  const availableSlots = [
+    { date: "2025-06-06", time: "10:00 AM - 12:00 PM" },
+    { date: "2025-06-06", time: "02:00 PM - 04:00 PM" },
+    { date: "2025-06-07", time: "09:00 AM - 11:00 AM" },
+  ];
+
+  const handleSelectSlot = (slot) => {
+    // console.log("slot", slot);
+    setSelectedSlot(slot);
+    sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
+    setShowSlotModal(false);
+    navigate("/checkout", {
+      state: {
+        serviceType: "house-painters",
+      },
+    });
   };
 
   return (
@@ -762,7 +807,7 @@ const Services = () => {
                       maxLength="1"
                       value={digit}
                       onChange={(e) => handleOtpChange(e, index)}
-                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      // onKeyDown={(e) => handleKeyDown(e, index)}
                       ref={(el) => (inputRefs.current[index] = el)}
                       style={{
                         width: "40px",
@@ -866,7 +911,7 @@ const Services = () => {
                   marginBottom: "10px",
                   cursor: "pointer",
                 }}
-                onClick={handleCurrentLocation}
+                // onClick={handleCurrentLocation}
                 // onClick={() => {
                 //   setAnotherPopup(true);
                 //   setIsLocationModalVisible(false);
@@ -1019,7 +1064,7 @@ const Services = () => {
             keyboard={false}
             onHide={() => {
               setShowLocationPopup(false);
-              setIsLocationModalVisible(true);
+              // setIsLocationModalVisible(true);
             }}
           >
             <Modal.Header closeButton>
@@ -1117,6 +1162,12 @@ const Services = () => {
             </Modal.Body>
             {/* <Modal.Footer>vcbnvcnbvc</Modal.Footer> */}
           </Modal>
+          <SlotSelectionModal
+            show={showSlotModal}
+            onClose={handleCloseSlotModal}
+            availableSlots={availableSlots}
+            handleSelectSlot={handleSelectSlot}
+          />
         </div>
       </div>
       <div className="d-block d-lg-none">

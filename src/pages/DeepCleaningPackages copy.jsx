@@ -48,8 +48,6 @@ import thirtytwo from "/media/thirtytwo.webp";
 import thirtythree from "/media/thirtythree.webp";
 import thirtyfour from "/media/thirtyfour.webp";
 import thirtyfive from "/media/thirtyfive.webp";
-import SlotSelectionModal from "./SlotSelectionModal";
-import { useSelectedSlotContext } from "../utils/SlotContext";
 
 // Map services to their corresponding images
 const serviceImages = {
@@ -738,36 +736,10 @@ const cleaningServices = {
 const DeepCleaningPackages = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showSlotModal, setShowSlotModal] = useState(false);
-
-  // Predefined slots for demonstration
-  const availableSlots = [
-    { date: "2025-06-06", time: "10:00 AM - 12:00 PM" },
-    { date: "2025-06-06", time: "02:00 PM - 04:00 PM" },
-    { date: "2025-06-07", time: "09:00 AM - 11:00 AM" },
-  ];
-
-  // Function to handle closing the slot modal
-  const handleCloseSlotModal = () => {
-    setShowSlotModal(false);
-  };
-  const { selectedSlot, setSelectedSlot } = useSelectedSlotContext();
-  // Function to handle selecting a slot
-  const handleSelectSlot = (slot) => {
-    // console.log("slot", slot);
-    setSelectedSlot(slot);
-    sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
-    setShowSlotModal(false);
-    navigate("/checkout", {
-      state: {
-        serviceType: "deep-cleaning",
-      },
-    });
-  };
 
   const { cartItems, updateCartItem, getQuantity } = useContext(CartContext);
 
-  console.log("cartItems---suman", cartItems);
+  console.log("cartItems---", cartItems);
 
   const serviceRefs = useRef({});
   const [selectedPackageGroup, setSelectedPackageGroup] = useState(null);
@@ -836,17 +808,6 @@ const DeepCleaningPackages = () => {
       }
     }
   }, [modalType]);
-
-  const TotalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  console.log("TotalPrice", TotalPrice);
-
-  const Advanceamount = 10000;
-
-  const balanceamount = Advanceamount - TotalPrice;
 
   return (
     <div
@@ -946,6 +907,175 @@ const DeepCleaningPackages = () => {
           }}
           className="scroll-section"
         >
+          {/* {Object.keys(cleaningServices).map((service, serviceIndex) => (
+            <div
+              key={serviceIndex}
+              ref={(el) => (serviceRefs.current[service] = el)}
+            >
+              <h2
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "600",
+                  marginBottom: "20px",
+                  position: "sticky",
+                  top: "0",
+                  backgroundColor: "#fff",
+                  zIndex: 1,
+                  paddingBottom: "10px",
+                  // borderBottom: '1px solid #e0e0e0',
+                }}
+              >
+                {getDisplayTitle(service)}
+              </h2>
+              {groupPackages(cleaningServices[service]).map(
+                (pkgGroup, index) => (
+                  <div
+                    key={`${serviceIndex}-${index}`}
+                    style={{
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "10px",
+                      padding: "15px",
+                      marginBottom: "20px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: "20px",
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <h3
+                        style={{
+                          fontSize: "16px",
+                          fontWeight: "600",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {pkgGroup[0].name.split(" - ")[0]} cleaning
+                      </h3>
+                      <p style={{ margin: "0", color: "#333" }}>
+                        Starts at ₹{pkgGroup[0].price}
+                      </p>
+                      <ul
+                        style={{
+                          paddingLeft: "20px",
+                          fontSize: "13px",
+                          margin: "10px 0",
+                        }}
+                      >
+                        <li>{pkgGroup[0].details}</li>
+                        <li>{pkgGroup[0].extras}</li>
+                      </ul>
+                      <p
+                        style={{
+                          color: "red",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => openModal(pkgGroup, service)}
+                      >
+                        View details
+                      </p>
+                    </div>
+                    <div style={{ width: "150px", textAlign: "center" }}>
+                      <img
+                        src={pkgGroup[0].image}
+                        alt={pkgGroup[0].name}
+                        style={{
+                          width: "80%",
+                          height: "100px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          marginBottom: "-15px",
+                        }}
+                      />
+                      {getQuantity(pkgGroup[0].name) > 0 ? (
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            border: "1px solid red",
+                            borderRadius: "20px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <button
+                            onClick={() =>
+                              updateCartItem(
+                                pkgGroup[0].name,
+                                pkgGroup[0].price,
+                                -1,
+                                service
+                              )
+                            }
+                            style={{
+                              padding: "5px 10px",
+                              backgroundColor: "#fff",
+                              border: "none",
+                              fontSize: "16px",
+                              color: "red",
+                              cursor: "pointer",
+                            }}
+                          >
+                            −
+                          </button>
+                          <span
+                            style={{ padding: "5px 15px", fontSize: "14px" }}
+                          >
+                            {getQuantity(pkgGroup[0].name)}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateCartItem(
+                                pkgGroup[0].name,
+                                pkgGroup[0].price,
+                                1,
+                                service
+                              )
+                            }
+                            style={{
+                              padding: "5px 10px",
+                              backgroundColor: "red",
+                              color: "#fff",
+                              border: "none",
+                              fontSize: "16px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (service === "Mini services") {
+                              updateCartItem(
+                                pkgGroup[0].name,
+                                pkgGroup[0].price,
+                                1,
+                                service
+                              );
+                            } else {
+                              openModal(pkgGroup, service);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: "red",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "15px",
+                            padding: "8px 15px",
+                            fontSize: "14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Add
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          ))} */}
           {Object.keys(cleaningServices).map((service, serviceIndex) => (
             <div
               key={serviceIndex}
@@ -1083,133 +1213,31 @@ const DeepCleaningPackages = () => {
                           </button>
                         </div>
                       ) : (
-                        (() => {
-                          const isAnyInCart = pkgGroup.some((pkg) =>
-                            cartItems.some(
-                              (item) =>
-                                item.name === pkg.name &&
-                                item.service.toLowerCase() ===
-                                  service.toLowerCase()
-                            )
-                          );
-
-                          if (isAnyInCart) {
-                            const specificCartItem = cartItems.find(
-                              (cartItem) =>
-                                pkgGroup.some(
-                                  (pkg) =>
-                                    pkg.name === cartItem.name &&
-                                    cartItem.service.toLowerCase() ===
-                                      service.toLowerCase()
-                                )
-                            );
-
-                            if (specificCartItem) {
-                              return (
-                                <div
-                                  onClick={() => {
-                                    if (service === "Mini services") {
-                                      updateCartItem(
-                                        pkgGroup[0].name,
-                                        pkgGroup[0].price,
-                                        1,
-                                        service
-                                      );
-                                    } else {
-                                      openModal(pkgGroup, service);
-                                    }
-                                  }}
-                                  style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    border: "1px solid red",
-                                    borderRadius: "20px",
-                                    overflow: "hidden",
-                                    backgroundColor: "white",
-                                  }}
-                                >
-                                  <button
-                                    style={{
-                                      padding: "5px 10px",
-                                      backgroundColor: "#fff",
-                                      border: "none",
-                                      fontSize: "16px",
-                                      color: "red",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    −
-                                  </button>
-                                  <span
-                                    style={{
-                                      padding: "5px 15px",
-                                      fontSize: "14px",
-                                    }}
-                                  >
-                                    {specificCartItem.quantity}
-                                  </span>
-                                  <button
-                                    style={{
-                                      padding: "5px 10px",
-                                      backgroundColor: "red",
-                                      color: "#fff",
-                                      border: "none",
-                                      fontSize: "16px",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    +
-                                  </button>
-                                </div>
+                        <button
+                          onClick={() => {
+                            if (service === "Mini services") {
+                              updateCartItem(
+                                pkgGroup[0].name,
+                                pkgGroup[0].price,
+                                1,
+                                service
                               );
+                            } else {
+                              openModal(pkgGroup, service);
                             }
-                            return (
-                              <button
-                                disabled
-                                style={{
-                                  backgroundColor: "red",
-                                  color: "#fff",
-                                  border: "none",
-                                  borderRadius: "15px",
-                                  padding: "8px 15px",
-                                  fontSize: "14px",
-                                  cursor: "not-allowed",
-                                }}
-                              >
-                                Error
-                              </button>
-                            );
-                          } else {
-                            // If no variant from this group is in the cart, show the "Add" button
-                            return (
-                              <button
-                                onClick={() => {
-                                  if (service === "Mini services") {
-                                    updateCartItem(
-                                      pkgGroup[0].name,
-                                      pkgGroup[0].price,
-                                      1,
-                                      service
-                                    );
-                                  } else {
-                                    openModal(pkgGroup, service);
-                                  }
-                                }}
-                                style={{
-                                  backgroundColor: "red",
-                                  color: "#fff",
-                                  border: "none",
-                                  borderRadius: "15px",
-                                  padding: "8px 15px",
-                                  fontSize: "14px",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Add
-                              </button>
-                            );
-                          }
-                        })()
+                          }}
+                          style={{
+                            backgroundColor: "red",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "15px",
+                            padding: "8px 15px",
+                            fontSize: "14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Add
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1231,15 +1259,16 @@ const DeepCleaningPackages = () => {
         </div>
       </div>
       {/* right section */}
-      {/* <div
+      <div
         style={{
           width: "450px",
           backgroundColor: "#fff",
           padding: "15px",
-          borderRadius: "10px", 
+          borderRadius: "10px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
           display: "flex",
           flexDirection: "column",
-          maxHeight: "600px", 
+          maxHeight: "600px", // adjust as needed
         }}
       >
         {cartItems.length > 0 && (
@@ -1252,9 +1281,9 @@ const DeepCleaningPackages = () => {
           >
             Cart
           </h2>
-        )} */}
-      {/* Scrollable Cart Items Section */}
-      {/* <div
+        )}
+        {/* Scrollable Cart Items Section */}
+        <div
           style={{
             overflowY: "auto",
             overflowX: "hidden",
@@ -1343,244 +1372,100 @@ const DeepCleaningPackages = () => {
               </p>
             </div>
           )}
-        </div> */}
+        </div>
 
-      <div
-        style={{
-          width: "450px",
-          backgroundColor: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          maxHeight: "600px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "20px",
-            fontWeight: "600",
-            marginBottom: "20px",
-          }}
-        >
-          Cart
-        </h2>
-        {cartItems.length > 0 ? (
+        {/* Fixed Bottom Section Inside the Card */}
+        {cartItems.length > 0 && (
           <div
             style={{
-              overflowY: "auto",
-              overflowX: "hidden",
-              flex: 1,
-              marginBottom: "10px",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
+              backgroundColor: "white",
+              borderTop: "1px solid #eee",
+              paddingTop: "10px",
             }}
-            className="hide-scroll"
           >
-            {cartItems.map((item, index) => (
-              <div
-                className="row"
-                key={index}
-                style={{ marginBottom: "15px", alignItems: "center" }}
-              >
-                <p
-                  className="col-md-5"
-                  style={{
-                    fontSize: "14px",
-                    color: "#333",
-                    marginBottom: "5px",
-                  }}
-                >
-                  {item.service} - {item.name}
-                </p>
-                <div
-                  className="col-md-4"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    marginBottom: "5px",
-                  }}
-                >
-                  <button
-                    onClick={() =>
-                      updateCartItem(item.name, item.price, -1, item.service)
-                    }
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      color: "red",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button
-                    onClick={() =>
-                      updateCartItem(item.name, item.price, 1, item.service)
-                    }
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      color: "red",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-                <p
-                  className="col-md-3"
-                  style={{
-                    fontSize: "14px",
-                    color: "#333",
-                    fontWeight: "600",
-                  }}
-                >
-                  ₹{item.price * item.quantity}
-                </p>
-              </div>
-            ))}
-
-            {Advanceamount > TotalPrice ? (
-              <div
-                className="row"
-                style={{
-                  backgroundColor: "lightgrey",
-                  padding: "6px",
-                  borderRadius: "5px",
-                  marginBottom: "10px",
-                }}
-              >
-                <div className="text-center" style={{ fontSize: "12px" }}>
-                  Shop for ₹{balanceamount} more to checkout
-                </div>
-              </div>
-            ) : (
-              ""
-            )}
-
-            <div className="d-flex" style={{ justifyContent: "space-between" }}>
-              <div className="" style={{ fontSize: "13px" }}>
-                ₹{TotalPrice}
-              </div>
-              <div className="" style={{ fontSize: "13px" }}>
-                Total Price
-              </div>
-            </div>
-
             <button
-              onClick={() => {
-                Advanceamount > TotalPrice ? null : setShowSlotModal(true);
-              }}
+              onClick={() =>
+                navigate("/checkout", {
+                  state: {
+                    serviceType: "deep-cleaning",
+                  },
+                })
+              }
               style={{
-                width: "100%",
-                backgroundColor:
-                  Advanceamount > TotalPrice ? "rgb(0 0 0 / 9%)" : "#fff",
-                color:
-                  Advanceamount > TotalPrice ? "rgba(0, 0, 0, 0.125)" : "red",
-                border: Advanceamount > TotalPrice ? 0 : "1px solid red",
+                backgroundColor: "red",
+                color: "white",
+                border: "1px solid red",
                 padding: "10px",
                 borderRadius: "20px",
-                fontSize: "14px",
-                fontWeight: "600",
-                // cursor: "pointer",
-                marginBottom: "10px",
-                cursor: Advanceamount > TotalPrice ? "not-allowed" : "pointer",
-                marginTop: "10px",
+                fontSize: "15px",
+                // fontWeight: "600",
+                cursor: "pointer",
+                width: "100%",
+                marginBottom: "15px",
               }}
             >
-              {/* ₹{totalPrice}  */}
               Proceed for Slot Selection
             </button>
-          </div>
-        ) : (
-          <>
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Homjee Promise
+                </h3>
+                <ul
+                  style={{
+                    padding: 0,
+                    listStyle: "none",
+                    fontSize: "14px",
+                    color: "#333",
+                  }}
+                >
+                  <li
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "5px",
+                    }}
+                  >
+                    <span style={{ marginRight: "5px" }}>✔</span> Verified
+                    Professionals
+                  </li>
+                  <li
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "5px",
+                    }}
+                  >
+                    <span style={{ marginRight: "5px" }}>✔</span> Safe Chemicals
+                  </li>
+                  <li style={{ display: "flex", alignItems: "center" }}>
+                    <span style={{ marginRight: "5px" }}>✔</span> Superior Stain
+                    Removal
+                  </li>
+                </ul>
+              </div>
               <img
-                src="https://img.icons8.com/ios/50/000000/shopping-cart.png"
-                alt="Empty Cart"
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  marginBottom: "10px",
-                }}
+                src={sparkling}
+                alt="Sparkling Clean Hygienic"
+                style={{ width: "60px", height: "60px", borderRadius: "50%" }}
               />
-              <p style={{ fontSize: "14px", color: "#666" }}>
-                No items in your cart
-              </p>
             </div>
-          </>
-        )}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <h3
-              style={{
-                fontSize: "16px",
-                fontWeight: "600",
-                marginBottom: "10px",
-              }}
-            >
-              Homjee Promise
-            </h3>
-            <ul
-              style={{
-                padding: 0,
-                listStyle: "none",
-                fontSize: "14px",
-                color: "#333",
-              }}
-            >
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "5px",
-                }}
-              >
-                <span style={{ marginRight: "5px" }}>✔</span> Verified
-                Professionals
-              </li>
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "5px",
-                }}
-              >
-                <span style={{ marginRight: "5px" }}>✔</span> Safe Chemicals
-              </li>
-              <li style={{ display: "flex", alignItems: "center" }}>
-                <span style={{ marginRight: "5px" }}>✔</span> Superior Stain
-                Removal
-              </li>
-            </ul>
           </div>
-          <img
-            src={sparkling}
-            alt="Sparkling Clean Hygienic"
-            style={{ width: "60px", height: "60px", borderRadius: "50%" }}
-          />
-        </div>
+        )}
       </div>
-      <SlotSelectionModal
-        show={showSlotModal}
-        onClose={handleCloseSlotModal}
-        availableSlots={availableSlots}
-        handleSelectSlot={handleSelectSlot}
-      />
 
       {/* Modal */}
       {ModalComponent && selectedPackageGroup && (

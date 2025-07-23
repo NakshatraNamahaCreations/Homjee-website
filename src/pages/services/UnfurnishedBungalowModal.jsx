@@ -12,7 +12,7 @@ import furnishedWhatWeDo from "/media/whatwedo.jpeg";
 
 const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
   const { updateCartItem, getQuantity } = useContext(CartContext);
-  const serviceName = "Unfurnished Bungalow";
+  const serviceName = "Unfurnished bungalow/duplex";
 
   if (!pkgGroup || !Array.isArray(pkgGroup)) {
     console.warn("pkgGroup is missing or not an array");

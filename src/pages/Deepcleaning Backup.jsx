@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Carousel, Form, Modal } from "react-bootstrap";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import serviceBg from "../assets/service-bg.svg";
 import exterior from "../assets/exterior.png";
 import map from "../assets/map.png";
@@ -42,47 +43,67 @@ import bgProfessionalimage from "../assets/bgProfessionalimage.png";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import { FaMapMarkerAlt } from "react-icons/fa";
-import Autocomplete from "react-google-autocomplete";
-import { useAddressContext } from "../utils/AddressContext";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
-import moment from "moment";
+import { useAddressContext } from "../utils/AddressContext";
+// import { NotificationManager } from "react-notifications";
+import Autocomplete from "react-google-autocomplete";
+import { useSelectedSlotContext } from "../utils/SlotContext";
+import SlotSelectionModal from "./SlotSelectionModal";
+import PageLoader from "../utils/PageLoader";
 
-const Packersmovers = () => {
+const Deepcleaning = () => {
   const navigate = useNavigate();
   // const activeIndex = 0;
+  const [responseLoader, setResponseLoader] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
-  const [responseLoader, setResponseLoader] = useState(false);
-  const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
   const [joinedOtp, setJoinedOTP] = useState(null);
   const [otpValue, setOtpValue] = useState(null);
+  // const [searchInput, setSearchInput] = useState("");
   const [userName, setUserName] = useState("");
+  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+  const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
+  const inputRefs = useRef([]);
+
   const { setAddressDataContext } = useAddressContext();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [userAddress, setUserAddress] = useState(null);
 
   const [showLocationPopup, setShowLocationPopup] = useState(false);
-  const [mapUrl, setMapUrl] = useState("");
-  const [mapAddress, setMapAddress] = useState("");
-  const [houseNumber, setHouseNumber] = useState("");
-  const [landmark, setLandmark] = useState("");
-
-  const userData = JSON.parse(sessionStorage.getItem("user"));
-  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
-  const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
+
   const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
 
+  const [mapAddress, setMapAddress] = useState("");
+  const [mapUrl, setMapUrl] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [landmark, setLandmark] = useState("");
+
+  const [locationRequested, setLocationRequested] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [showAnotherPopup, setAnotherPopup] = useState(false);
+
+  const userData = JSON.parse(sessionStorage.getItem("user"));
+  // const isNewUser = sessionStorage.getItem("isNewUser") === "true";
+  const [showSlotModal, setShowSlotModal] = useState(false);
+  const { setSelectedSlot } = useSelectedSlotContext();
+  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+
+  // const handleProceedClick = async () => {
+  //   try {
+  //     setShowModal(true);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  console.log("userAddress", userAddress);
   const formData = {
     mobileNumber: phoneNumber,
     userName: userName,
@@ -92,10 +113,7 @@ const Packersmovers = () => {
     setResponseLoader(true);
     e.preventDefault();
     if (!phoneNumber || !userName) {
-      return alert("Please enter your Name and Phone number");
-    }
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      return alert("Invalid Mobile Number. Please enter a 10-digit number.");
+      alert("Please enter your Name and Phone number");
     }
     try {
       const result = await postRequest(
@@ -103,7 +121,6 @@ const Packersmovers = () => {
         formData
       );
       setResponseLoader(false);
-      console.log("Login Success", result);
       alert(result.message || "Login successful");
       setOtpValue(result.otp);
       setShowModal(true);
@@ -119,15 +136,13 @@ const Packersmovers = () => {
       alert("Please enter OTP");
     }
     try {
-      const data = { otp: joinedOtp, mobileNumber: phoneNumber };
+      const data = { otp: joinedOtp, mobileNumber: phoneNumber, userName };
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
-      console.log("OTP Verified", result);
       alert(result.message || "OTP verified successfully");
       if (result.data) {
         sessionStorage.setItem("user", JSON.stringify(result.data));
       }
       sessionStorage.setItem("isNewUser", result.isNewUser);
-      // console.log("otp verified");
       setOtp(["", "", "", ""]);
       setShowModal(false);
       setShowLocationPopup(true);
@@ -214,6 +229,7 @@ const Packersmovers = () => {
         );
       } else {
         setIsNewUser(true);
+        setLocationRequested(true);
         setMapAddress("");
         setMapUrl("");
         getCurrentLocation();
@@ -229,8 +245,164 @@ const Packersmovers = () => {
     }
   }, [userData?._id]);
 
-  const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
-  const inputRefs = useRef([]);
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setOtp(["", "", "", ""]);
+  };
+
+  const handlePhoneNumberChange = (e) => {
+    setPhoneNumber(e.target.value);
+  };
+
+  const handleOtpChange = (e, index) => {
+    const value = e.target.value;
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    const joinString = newOtp?.join("");
+    // setOtp(joinString);
+    setJoinedOTP(joinString);
+    setOtp(newOtp);
+    if (value && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  // console.log("joinedOtp", joinedOtp);
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+  const handleSelectAddress = (addr) => {
+    console.log(addr);
+    setAddressDataContext(addr);
+    setSelectedAddressId(addr.uniqueCode);
+    sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
+    // navigate("/deep-cleaning-packages");
+  };
+
+  const handleAddress = async () => {
+    console.log("function called");
+    const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const data = {
+      savedAddress: {
+        uniqueCode: uniqueCode,
+        address: mapAddress,
+        houseNumber: houseNumber,
+        landmark: landmark,
+        latitude: latitude,
+        longitude: longitude,
+      },
+    };
+
+    if (!houseNumber.trim()) return alert("House/Flat Number is required");
+
+    try {
+      const result = await putRequest(
+        `${API_ENDPOINTS.SAVE_ADDRESS}${userData?._id}`,
+        data
+      );
+      setAddressDataContext(data.savedAddress);
+      sessionStorage.setItem(
+        "selectedAddress",
+        JSON.stringify(data.savedAddress)
+      );
+      setShowLocationPopup(false);
+      setAnotherPopup(false);
+      console.log("Address Saved", result);
+      navigate("/deep-cleaning-packages");
+      alert(result.message || "Address Saved");
+    } catch (error) {
+      console.error("Address failed:", error);
+    }
+  };
+
+  const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+
+  // useEffect(() => {
+  //   if (locationRequested) {
+  //     if (!navigator.geolocation) {
+  //       alert("Geolocation is not supported by this browser.");
+  //       return;
+  //     }
+
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setLatitude(latitude);
+  //         setLongitude(longitude);
+  //         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
+
+  //         try {
+  //           const response = await fetch(geocodingUrl);
+  //           const data = await response.json();
+
+  //           if (data.status === "OK" && data.results.length > 0) {
+  //             const address = data.results[0].formatted_address;
+  //             setMapAddress(address);
+  //             setMapUrl(
+  //               `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
+  //             );
+  //           }
+  //         } catch (error) {
+  //           alert("Error getting location.");
+  //         }
+  //       },
+  //       (error) => alert("Location error: " + error.message),
+  //       {
+  //         enableHighAccuracy: true,
+  //         timeout: 15000,
+  //         maximumAge: 0,
+  //       }
+  //     );
+  //   }
+  // }, []);
+
+  // const getCurrentLocation = () => {
+  //   if (!navigator.geolocation) {
+  //     alert("Geolocation is not supported by this browser.");
+  //     return;
+  //   }
+  //   navigator.geolocation.getCurrentPosition(
+  //     async (position) => {
+  //       const { latitude, longitude } = position.coords;
+  //       setLatitude(latitude);
+  //       setLongitude(longitude);
+  //       const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
+  //       try {
+  //         const response = await fetch(geocodingUrl);
+  //         const data = await response.json();
+  //         if (data.status === "OK" && data.results.length > 0) {
+  //           const address = data.results[0].formatted_address;
+  //           setMapAddress(address);
+  //           setMapUrl(
+  //             `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
+  //           );
+  //           setHouseNumber("");
+  //           setLandmark("");
+  //           setShowOptionOpoup(false);
+  //           setShowLocationPopup(true);
+  //         }
+  //       } catch (error) {
+  //         alert("Error getting location.");
+  //       }
+  //     },
+  //     (error) => alert("Location error: " + error.message),
+  //     {
+  //       enableHighAccuracy: true,
+  //       timeout: 15000,
+  //       maximumAge: 0,
+  //     }
+  //   );
+  // };
+
+  console.log("latitude", latitude);
+  console.log("longitude", longitude);
+
+  // console.log("mapAddress", mapAddress);
+
   const features = [
     "Final Pay after 100% quality satisfaction",
     "Full material procurement",
@@ -286,139 +458,57 @@ const Packersmovers = () => {
     "Will the painting process cause disruptions to my daily routine?",
   ];
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setOtp(["", "", "", ""]);
-  };
-
-  const handleSubmitOTP = () => {
-    setShowModal(false); // Close OTP modal
-    setIsLocationModalVisible(true);
-  };
-
-  const handlePhoneNumberChange = (e) => {
-    setPhoneNumber(e.target.value);
-  };
-
-  const handleOtpChange = (e, index) => {
-    const value = e.target.value;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    const joinString = newOtp?.join("");
-    // setOtp(joinString);
-    setJoinedOTP(joinString);
-    setOtp(newOtp);
-    if (value && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleSelectAddress = (addr) => {
-    console.log(addr);
-    setAddressDataContext(addr);
-    setSelectedAddressId(addr.uniqueCode);
-    sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
-    // navigate("/deep-cleaning-packages");
-  };
-
-  const data = {
-    customer: {
-      customerId: userData?._id,
-      phone: userData?.mobileNumber,
-      name: userData?.userName,
-    },
-    service: [
-      {
-        category: "Packers & Movers",
-        serviceName: "Packers & Movers",
-        price: 0,
-        quantity: 0,
-      },
-    ],
-    bookingDetails: {
-      bookingDate: moment().toISOString(),
-      bookingTime: moment().format("LT"),
-      paidAmount: 0,
-    },
-    address: {
-      houseFlatNumber: selectedAddress?.houseNumber || "",
-      streetArea: selectedAddress?.address || "",
-      landMark: selectedAddress?.landmark || "",
-      location: {
-        type: "Point",
-        coordinates: [
-          selectedAddress?.longitude || 0,
-          selectedAddress?.latitude || 0,
-        ],
-      },
-    },
-    isEnquiry: true,
-    selectedSlot: {
-      slotDate: null,
-      slotTime: null,
-    },
-  };
-
-  const handleProceedToCheckout = async () => {
-    try {
-      const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
-      console.log("Booking Success", result);
-      setShowSuccessModal(true);
-      // alert("Enquiry Verified! Thank you! We'll get back to you shortly.");
-      // window.location.assign("/");
-    } catch (error) {
-      console.error("Booking failed:", error);
-    }
-  };
-
-  const handleAddress = async () => {
-    console.log("function called");
-    const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const data = {
-      savedAddress: {
-        uniqueCode: uniqueCode,
-        address: mapAddress,
-        houseNumber: houseNumber,
-        landmark: landmark,
-        latitude: latitude,
-        longitude: longitude,
-      },
-    };
-
-    if (!houseNumber.trim()) return alert("House/Flat Number is required");
-
-    try {
-      const result = await putRequest(
-        `${API_ENDPOINTS.SAVE_ADDRESS}${userData?._id}`,
-        data
-      );
-      setAddressDataContext(data.savedAddress);
-      sessionStorage.setItem(
-        "selectedAddress",
-        JSON.stringify(data.savedAddress)
-      );
-      console.log("Address Saved", result);
-      await handleProceedToCheckout();
-      fetchUserAddress();
-      setShowLocationPopup(false);
-      setIsLocationModalVisible(true);
-    } catch (error) {
-      console.error("Address failed:", error);
-    }
-  };
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggle = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  useEffect(() => {
+    if (showModal && inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, [showModal]);
+
+  const handleLocationSelected = (location) => {
+    if (location === "Current Location") {
+      // Redirect to checkout page with location info
+      navigate("/checkoutcleaning", {
+        state: { phoneNumber, openAddressModal: true },
+      });
+    }
+  };
+  // console.log("userAddress API return", userAddress);
+
+  const handleCloseSlotModal = () => {
+    setShowSlotModal(false);
+  };
+
+  const availableSlots = [
+    { date: "2025-06-06", time: "10:00 AM - 12:00 PM" },
+    { date: "2025-06-06", time: "02:00 PM - 04:00 PM" },
+    { date: "2025-06-07", time: "09:00 AM - 11:00 AM" },
+  ];
+
+  const handleSelectSlot = (slot) => {
+    // console.log("slot", slot);
+    setSelectedSlot(slot);
+    sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
+    setShowSlotModal(false);
+    navigate("/checkout", {
+      state: {
+        serviceType: "house-painters",
+      },
+    });
+  };
+
+  // if (responseLoader) {
+  //   return <PageLoader />; // Show loader while waiting for response
+  // }
+
   return (
     <>
+      {responseLoader && <PageLoader />}
       {/* Hero Section */}
       <div className="d-none d-lg-block">
         <div
@@ -624,9 +714,9 @@ const Packersmovers = () => {
             borderRadius: "30px",
             padding: "40px 20px",
             width: "1200px",
-            // maxWidth: '1350px',
             margin: "40px auto",
             textAlign: "center",
+            position: "relative",
           }}
         >
           <h2
@@ -674,7 +764,7 @@ const Packersmovers = () => {
                 fontSize: "14px",
                 backgroundColor: "#fff5f1",
                 outline: "none",
-                color: "black",
+                color: "#000",
               }}
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
@@ -693,13 +783,14 @@ const Packersmovers = () => {
                 minWidth: "500px",
                 fontSize: "14px",
                 outline: "none",
-                color: "black",
+                color: "#000",
               }}
             />
           </div>
 
           <button
-            onClick={handleProceedClick}
+            // onClick={() => setResponseLoader(true)}
+            onClick={responseLoader ? null : handleProceedClick}
             style={{
               marginTop: "30px",
               padding: "12px 40px",
@@ -718,7 +809,6 @@ const Packersmovers = () => {
           {/* OTP Modal */}
           {showModal && !isLocationModalVisible && (
             <>
-              {/* Backdrop */}
               <div
                 style={{
                   position: "fixed",
@@ -731,7 +821,7 @@ const Packersmovers = () => {
                 }}
                 onClick={handleCloseModal}
               />
-              {/* Modal Content */}
+
               <div
                 style={{
                   position: "fixed",
@@ -963,7 +1053,7 @@ const Packersmovers = () => {
             textAlign: "center",
           }}
         >
-          For All Your Home Painting Needs
+          For All Your Deep Cleaning Needs
         </h2>
         <img
           src={vectoricon}
@@ -2013,6 +2103,208 @@ const Packersmovers = () => {
               </React.Fragment>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* package */}
+      {/* Desktop Version */}
+      <div className="d-none d-lg-block">
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "30px",
+            padding: "50px 20px",
+            width: "1200px",
+            margin: "40px auto",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: "30px" }}>
+            <h2 style={{ fontSize: "28px", fontWeight: "600" }}>
+              Choose Your Package
+            </h2>
+            <p style={{ fontSize: "16px", color: "#666" }}>
+              Select the best package that suits your needs
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "30px",
+            }}
+          >
+            {[
+              {
+                name: "Basic",
+                price: "₹999",
+                features: ["1 Room Cleaning", "1 Bathroom", "Dry Dusting"],
+              },
+              {
+                name: "Standard",
+                price: "₹1999",
+                features: [
+                  "2 BHK Cleaning",
+                  "2 Bathrooms",
+                  "Wet & Dry Dusting",
+                ],
+              },
+              {
+                name: "Premium",
+                price: "₹2999",
+                features: [
+                  "3 BHK Full Cleaning",
+                  "3 Bathrooms",
+                  "Deep Sanitization",
+                ],
+              },
+            ].map((pkg, index) => (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: "20px",
+                  padding: "30px 20px",
+                  textAlign: "center",
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                <h4 style={{ fontWeight: "600", marginBottom: "10px" }}>
+                  {pkg.name}
+                </h4>
+                <h3
+                  style={{
+                    color: "#e60000",
+                    fontWeight: "700",
+                    marginBottom: "20px",
+                  }}
+                >
+                  {pkg.price}
+                </h3>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    marginBottom: "20px",
+                  }}
+                >
+                  {pkg.features.map((f, i) => (
+                    <li
+                      key={i}
+                      style={{ marginBottom: "8px", fontSize: "14px" }}
+                    >
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  style={{
+                    backgroundColor: "#e60000",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "30px",
+                    padding: "10px 24px",
+                    fontWeight: 500,
+                    fontSize: "15px",
+                  }}
+                >
+                  Select
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Version */}
+      <div className="d-block d-lg-none">
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
+            padding: "30px 16px",
+            margin: "20px",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            <h3 style={{ fontSize: "22px", fontWeight: "600" }}>
+              Choose Your Package
+            </h3>
+            <p style={{ fontSize: "14px", color: "#777" }}>
+              Select a plan that fits your need
+            </p>
+          </div>
+
+          {[
+            {
+              name: "Basic",
+              price: "₹999",
+              features: ["1 Room Cleaning", "1 Bathroom", "Dry Dusting"],
+            },
+            {
+              name: "Standard",
+              price: "₹1999",
+              features: ["2 BHK Cleaning", "2 Bathrooms", "Wet & Dry Dusting"],
+            },
+            {
+              name: "Premium",
+              price: "₹2999",
+              features: [
+                "3 BHK Full Cleaning",
+                "3 Bathrooms",
+                "Deep Sanitization",
+              ],
+            },
+          ].map((pkg, index) => (
+            <div
+              key={index}
+              style={{
+                border: "1px solid #eee",
+                borderRadius: "16px",
+                padding: "24px 16px",
+                marginBottom: "20px",
+                textAlign: "center",
+                backgroundColor: "#fdfdfd",
+              }}
+            >
+              <h4 style={{ fontWeight: "600", marginBottom: "8px" }}>
+                {pkg.name}
+              </h4>
+              <h3
+                style={{
+                  color: "#e60000",
+                  fontWeight: "700",
+                  marginBottom: "16px",
+                }}
+              >
+                {pkg.price}
+              </h3>
+              <ul
+                style={{ listStyle: "none", padding: 0, marginBottom: "16px" }}
+              >
+                {pkg.features.map((f, i) => (
+                  <li key={i} style={{ marginBottom: "6px", fontSize: "13px" }}>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                style={{
+                  backgroundColor: "#e60000",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "25px",
+                  padding: "8px 20px",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                }}
+              >
+                Select
+              </Button>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -4312,6 +4604,170 @@ const Packersmovers = () => {
           </div>
         </div>
       </div>
+      {/* saved adress */}
+      <Modal
+        centered
+        backdrop="static"
+        keyboard={false}
+        show={isLocationModalVisible}
+        onHide={() => setIsLocationModalVisible(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Saved Address</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <Autocomplete
+              apiKey={GOOGLE_MAPS_API_KEY}
+              onPlaceSelected={(place) => {
+                if (place.geometry) {
+                  const lat = place.geometry.location.lat();
+                  const lng = place.geometry.location.lng();
+                  const formattedAddress = place.formatted_address;
+
+                  setMapAddress(formattedAddress);
+
+                  const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                  setMapUrl(url);
+
+                  setIsLocationModalVisible(false);
+                  setShowLocationPopup(true);
+                }
+              }}
+              style={{
+                width: "100%",
+                backgroundColor: "#f1f1f1",
+                border: "1px solid #dfdfdf",
+                borderRadius: "6px",
+                padding: "7px 8px",
+                color: "black",
+                fontSize: "14px",
+                outlineWidth: 0,
+              }}
+            />
+          </div>
+          <div
+            className="mt-2"
+            style={{
+              color: "#e60000",
+              fontSize: 14,
+              textAlign: "left",
+              cursor: "pointer",
+            }}
+            // onClick={handleCurrentLocation}
+            // onClick={() => {
+            // setShowLocationPopup(true);
+            // setIsLocationModalVisible(false);
+            // }}
+          >
+            + Add new address
+          </div>
+          {userAddress && userAddress !== null && (
+            <div className="mt-2">
+              {/* <div
+                        className="row"
+                        style={{
+                          marginBottom: 10,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        onClick={() => handleSelectAddress(ele)}
+                      >
+                        <div className="col-md-1">
+                          <Form.Check
+                            type="radio"
+                            id={ele.uniqueCode}
+                            name="selectedAddress"
+                            checked={ele.uniqueCode === selectedAddressId}
+                            onChange={() => handleSelectAddress(ele)}
+                          />
+                        </div>
+
+                        <div
+                          className="col-md-11"
+                          style={{
+                            fontSize: "12px",
+                            textAlign: "left",
+                          }}
+                        >
+                          {ele.houseNumber}, {ele.address}
+                        </div>
+                      </div> */}
+            </div>
+          )}
+          {selectedAddressId !== null && (
+            <div
+              // onClick={handleCurrentLocation}
+              onClick={() => navigate("/deep-cleaning-packages")}
+              style={{
+                backgroundColor: "#FF0000",
+                color: "white",
+                cursor: "pointer",
+                padding: "10px",
+                fontSize: "14px",
+                fontWeight: 500,
+                borderRadius: 8,
+                textAlign: "center",
+              }}
+            >
+              Procced
+            </div>
+          )}
+
+          <div
+            style={{
+              textAlign: "center",
+              color: "#888",
+              fontSize: 12,
+              marginTop: 20,
+            }}
+          >
+            powered by{" "}
+            <span style={{ color: "#4285F4", fontWeight: 600 }}>G</span>
+            <span style={{ color: "#EA4335", fontWeight: 600 }}>o</span>
+            <span style={{ color: "#FBBC05", fontWeight: 600 }}>o</span>
+            <span style={{ color: "#4285F4", fontWeight: 600 }}>g</span>
+            <span style={{ color: "#34A853", fontWeight: 600 }}>l</span>
+            <span style={{ color: "#EA4335", fontWeight: 600 }}>e</span>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* asking current location */}
+      {/* <Modal
+            centered
+            backdrop="static"
+            keyboard={false}
+            show={showAnotherPopup}
+            onHide={() => {
+              setAnotherPopup(false);
+              setIsLocationModalVisible(true);
+            }}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>
+                <h5>Add New Address</h5>
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <div
+                onClick={handleCurrentLocation}
+                style={{
+                  color: "#FF0000",
+                  cursor: "pointer",
+                  padding: "10px",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8,
+                }}
+              >
+                <FaMapMarkerAlt style={{ marginRight: 8 }} />
+                Use current location
+              </div>
+            </Modal.Body> 
+          </Modal> */}
       {/* showing current location */}
       <Modal
         show={showLocationPopup}
@@ -4532,26 +4988,12 @@ const Packersmovers = () => {
           </div>
         </Modal.Body>
       </Modal>
-      <Modal
-        show={showSuccessModal}
-        size="small"
-        centered
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Body>
-          <div style={{ textAlign: "center" }}>
-            Enquiry Verified! Thank you! We'll get back to you shortly.
-            <br />
-            <Button
-              onClick={() => window.location.assign("/")}
-              style={{ marginTop: "20px" }}
-            >
-              Ok
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
+      <SlotSelectionModal
+        show={showSlotModal}
+        onClose={handleCloseSlotModal}
+        availableSlots={availableSlots}
+        handleSelectSlot={handleSelectSlot}
+      />
     </>
   );
 };
@@ -4566,4 +5008,4 @@ const dotStyle = {
   display: "inline-block",
 };
 
-export default Packersmovers;
+export default Deepcleaning;

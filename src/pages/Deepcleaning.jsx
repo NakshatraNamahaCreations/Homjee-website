@@ -4,6 +4,8 @@ import { Button, Carousel, Form, Modal } from "react-bootstrap";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import serviceBg from "../assets/service-bg.svg";
 import exterior from "../assets/exterior.png";
+import map from "../assets/map.png";
+import searchLocation from "../assets/search-location.png";
 import woodpolish from "../assets/woodpolish.png";
 import texture from "../assets/texture.png";
 import waterproofing from "../assets/waterproofing.png";
@@ -48,7 +50,7 @@ import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
 import { useSelectedSlotContext } from "../utils/SlotContext";
 import SlotSelectionModal from "./SlotSelectionModal";
-import pageLoader from "../utils/pageLoader";
+import PageLoader from "../utils/PageLoader";
 
 const Deepcleaning = () => {
   const navigate = useNavigate();
@@ -65,18 +67,14 @@ const Deepcleaning = () => {
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
   const inputRefs = useRef([]);
-
   const { setAddressDataContext } = useAddressContext();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [userAddress, setUserAddress] = useState(null);
-
   const [showLocationPopup, setShowLocationPopup] = useState(false);
-
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
-
-  const [showOptions, setShowOptions] = useState(false);
-
+  const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
+  const [showOptionOpoup, setShowOptionOpoup] = useState(false);
   const [mapAddress, setMapAddress] = useState("");
   const [mapUrl, setMapUrl] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
@@ -91,6 +89,8 @@ const Deepcleaning = () => {
   const [showSlotModal, setShowSlotModal] = useState(false);
   const { setSelectedSlot } = useSelectedSlotContext();
   const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+
+  const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   // const handleProceedClick = async () => {
   //   try {
@@ -118,16 +118,11 @@ const Deepcleaning = () => {
         formData
       );
       setResponseLoader(false);
-      // console.log("Login Success", result);
       alert(result.message || "Login successful");
       setOtpValue(result.otp);
-      // setUserName("");
-      // setPhoneNumber("");
-      // NotificationManager.success(result.message || "Login successful");
       setShowModal(true);
     } catch (error) {
       console.error("Login failed:", error);
-      // NotificationManager.error(error.message || "Login failed");
     } finally {
       setResponseLoader(false);
     }
@@ -140,15 +135,11 @@ const Deepcleaning = () => {
     try {
       const data = { otp: joinedOtp, mobileNumber: phoneNumber, userName };
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
-      // console.log("OTP Verified", result);
       alert(result.message || "OTP verified successfully");
-      // console.log("otp verified");
       if (result.data) {
         sessionStorage.setItem("user", JSON.stringify(result.data));
       }
       sessionStorage.setItem("isNewUser", result.isNewUser);
-      // console.log("otp verified");
-      // setJoinedOTP(null);
       setOtp(["", "", "", ""]);
       setShowModal(false);
       setShowLocationPopup(true);
@@ -171,6 +162,49 @@ const Deepcleaning = () => {
     }
   };
 
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setLatitude(latitude);
+        setLongitude(longitude);
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
+        try {
+          const response = await fetch(geocodingUrl);
+          const data = await response.json();
+          if (data.status === "OK" && data.results.length > 0) {
+            const address = data.results[0].formatted_address;
+            setMapAddress(address);
+            setMapUrl(
+              `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
+            );
+            setHouseNumber("");
+            setLandmark("");
+            setShowOptionOpoup(false);
+            setShowLocationPopup(true);
+          }
+        } catch (error) {
+          alert("Error getting location.");
+        }
+      },
+      (error) => alert("Location error: " + error.message),
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
+    );
+  };
+  useEffect(() => {
+    if (isNewUser && showLocationPopup) {
+      getCurrentLocation();
+    }
+  }, [isNewUser, showLocationPopup]);
+
   const fetchUserAddress = async () => {
     try {
       const response = await getRequest(
@@ -181,6 +215,7 @@ const Deepcleaning = () => {
         setUserAddress(response.address);
         const urlMap = `https://www.google.com/maps?q=${response.address.latitude},${response.address.longitude}&z=15&output=embed`;
         setMapUrl(urlMap);
+        setMapAddress(response.address.address);
         setLatitude(response.address.latitude);
         setLongitude(response.address.longitude);
         setHouseNumber((prev) =>
@@ -189,12 +224,12 @@ const Deepcleaning = () => {
         setLandmark((prev) =>
           prev.trim() ? prev : response.address?.landmark || ""
         );
-
-        // setHouseNumber(response.address?.houseNumber || "");
-        // setLandmark(response.address?.landmark || "");
       } else {
         setIsNewUser(true);
-        setLocationRequested(true);
+        // setLocationRequested(true);
+        setMapAddress("");
+        setMapUrl("");
+        getCurrentLocation();
       }
     } catch (error) {
       console.error("GET error:", error.response || error);
@@ -205,7 +240,7 @@ const Deepcleaning = () => {
     if (userData?._id) {
       fetchUserAddress();
     }
-  }, [userData]);
+  }, [userData?._id]);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -274,59 +309,12 @@ const Deepcleaning = () => {
       setShowLocationPopup(false);
       setAnotherPopup(false);
       console.log("Address Saved", result);
-      // handleClose();
       navigate("/deep-cleaning-packages");
       alert(result.message || "Address Saved");
     } catch (error) {
       console.error("Address failed:", error);
     }
   };
-
-  const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
-
-  useEffect(() => {
-    if (locationRequested) {
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by this browser.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          setLatitude(latitude);
-          setLongitude(longitude);
-          const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
-
-          try {
-            const response = await fetch(geocodingUrl);
-            const data = await response.json();
-
-            if (data.status === "OK" && data.results.length > 0) {
-              const address = data.results[0].formatted_address;
-              setMapAddress(address);
-              setMapUrl(
-                `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
-              );
-            }
-          } catch (error) {
-            alert("Error getting location.");
-          }
-        },
-        (error) => alert("Location error: " + error.message),
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0,
-        }
-      );
-    }
-  }, [locationRequested]);
-
-  console.log("latitude", latitude);
-  console.log("longitude", longitude);
-
-  // console.log("mapAddress", mapAddress);
 
   const features = [
     "Final Pay after 100% quality satisfaction",
@@ -427,12 +415,13 @@ const Deepcleaning = () => {
     });
   };
 
-  if (responseLoader) {
-    return <pageLoader />; // Show loader while waiting for response
-  }
+  // if (responseLoader) {
+  //   return <PageLoader />; // Show loader while waiting for response
+  // }
 
   return (
     <>
+      {responseLoader && <PageLoader />}
       {/* Hero Section */}
       <div className="d-none d-lg-block">
         <div
@@ -4528,170 +4517,7 @@ const Deepcleaning = () => {
           </div>
         </div>
       </div>
-      {/* saved adress */}
-      <Modal
-        centered
-        backdrop="static"
-        keyboard={false}
-        show={isLocationModalVisible}
-        onHide={() => setIsLocationModalVisible(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Saved Address</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            <Autocomplete
-              apiKey={GOOGLE_MAPS_API_KEY}
-              onPlaceSelected={(place) => {
-                if (place.geometry) {
-                  const lat = place.geometry.location.lat();
-                  const lng = place.geometry.location.lng();
-                  const formattedAddress = place.formatted_address;
 
-                  setMapAddress(formattedAddress);
-
-                  const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-                  setMapUrl(url);
-
-                  setIsLocationModalVisible(false);
-                  setShowLocationPopup(true);
-                }
-              }}
-              style={{
-                width: "100%",
-                backgroundColor: "#f1f1f1",
-                border: "1px solid #dfdfdf",
-                borderRadius: "6px",
-                padding: "7px 8px",
-                color: "black",
-                fontSize: "14px",
-                outlineWidth: 0,
-              }}
-            />
-          </div>
-          <div
-            className="mt-2"
-            style={{
-              color: "#e60000",
-              fontSize: 14,
-              textAlign: "left",
-              cursor: "pointer",
-            }}
-            // onClick={handleCurrentLocation}
-            // onClick={() => {
-            // setShowLocationPopup(true);
-            // setIsLocationModalVisible(false);
-            // }}
-          >
-            + Add new address
-          </div>
-          {userAddress && userAddress !== null && (
-            <div className="mt-2">
-              {/* <div
-                        className="row"
-                        style={{
-                          marginBottom: 10,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                        onClick={() => handleSelectAddress(ele)}
-                      >
-                        <div className="col-md-1">
-                          <Form.Check
-                            type="radio"
-                            id={ele.uniqueCode}
-                            name="selectedAddress"
-                            checked={ele.uniqueCode === selectedAddressId}
-                            onChange={() => handleSelectAddress(ele)}
-                          />
-                        </div>
-
-                        <div
-                          className="col-md-11"
-                          style={{
-                            fontSize: "12px",
-                            textAlign: "left",
-                          }}
-                        >
-                          {ele.houseNumber}, {ele.address}
-                        </div>
-                      </div> */}
-            </div>
-          )}
-          {selectedAddressId !== null && (
-            <div
-              // onClick={handleCurrentLocation}
-              onClick={() => navigate("/deep-cleaning-packages")}
-              style={{
-                backgroundColor: "#FF0000",
-                color: "white",
-                cursor: "pointer",
-                padding: "10px",
-                fontSize: "14px",
-                fontWeight: 500,
-                borderRadius: 8,
-                textAlign: "center",
-              }}
-            >
-              Procced
-            </div>
-          )}
-
-          <div
-            style={{
-              textAlign: "center",
-              color: "#888",
-              fontSize: 12,
-              marginTop: 20,
-            }}
-          >
-            powered by{" "}
-            <span style={{ color: "#4285F4", fontWeight: 600 }}>G</span>
-            <span style={{ color: "#EA4335", fontWeight: 600 }}>o</span>
-            <span style={{ color: "#FBBC05", fontWeight: 600 }}>o</span>
-            <span style={{ color: "#4285F4", fontWeight: 600 }}>g</span>
-            <span style={{ color: "#34A853", fontWeight: 600 }}>l</span>
-            <span style={{ color: "#EA4335", fontWeight: 600 }}>e</span>
-          </div>
-        </Modal.Body>
-      </Modal>
-      {/* asking current location */}
-      {/* <Modal
-            centered
-            backdrop="static"
-            keyboard={false}
-            show={showAnotherPopup}
-            onHide={() => {
-              setAnotherPopup(false);
-              setIsLocationModalVisible(true);
-            }}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>
-                <h5>Add New Address</h5>
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <div
-                onClick={handleCurrentLocation}
-                style={{
-                  color: "#FF0000",
-                  cursor: "pointer",
-                  padding: "10px",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  borderRadius: 8,
-                }}
-              >
-                <FaMapMarkerAlt style={{ marginRight: 8 }} />
-                Use current location
-              </div>
-            </Modal.Body> 
-          </Modal> */}
       {/* showing current location */}
       <Modal
         show={showLocationPopup}
@@ -4705,58 +4531,11 @@ const Deepcleaning = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            <h5>Current Location</h5>
+            <h5>Address</h5>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="row">
-            {/* <div className="col-md-6">
-              <div>
-                {showOptions && (
-                  <Autocomplete
-                    apiKey={GOOGLE_MAPS_API_KEY}
-                    onPlaceSelected={(place) => {
-                      if (place.geometry) {
-                        const lat = place.geometry.location.lat();
-                        const lng = place.geometry.location.lng();
-                        const formattedAddress = place.formatted_address;
-                        setLatitude(lat);
-                        setLongitude(lng);
-                        // setMapLat(lat);
-                        // setMapLng(lng);
-                        setMapAddress(formattedAddress);
-
-                        // Update map URL
-                        const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-                        setMapUrl(url);
-
-                        // Close Autocomplete Modal and open Map Modal
-                        setIsLocationModalVisible(false);
-                        setShowLocationPopup(true);
-                      }
-                    }}
-                    style={{
-                      width: "100%",
-                      backgroundColor: "#f1f1f1",
-                      border: "1px solid #dfdfdf",
-                      borderRadius: "6px",
-                      padding: "7px 8px",
-                      color: "black",
-                      fontSize: "14px",
-                      outlineWidth: 0,
-                    }}
-                  />
-                )}
-              </div>
-              <iframe
-                title="map"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                loading="lazy"
-                src={mapUrl}
-              />
-            </div> */}
             <div className="col-md-6">
               <div
                 style={{
@@ -4765,25 +4544,7 @@ const Deepcleaning = () => {
                   gap: "10px",
                 }}
               >
-                {/* Change Button */}
-                {/* <Button
-                  onClick={() => setShowOptions(!showOptions)}
-                  style={{
-                    backgroundColor: "red",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 8,
-                    alignSelf: "flex-start", // left align
-                    padding: "6px 12px",
-                    fontSize: 14,
-                    fontWeight: 500,
-                  }}
-                >
-                  {showOptions ? "Cancel" : "Change"}
-                </Button> */}
-
-                {/* Autocomplete Input */}
-                {showOptions && (
+                {showSearchBarOptions ? (
                   <Autocomplete
                     apiKey={GOOGLE_MAPS_API_KEY}
                     onPlaceSelected={(place) => {
@@ -4814,18 +4575,29 @@ const Deepcleaning = () => {
                       outline: "none",
                     }}
                   />
-                )}
+                ) : null}
 
-                {/* Map iframe */}
                 <div style={{ height: "300px", width: "100%" }}>
-                  <iframe
-                    title="map"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    src={mapUrl}
-                  />
+                  {mapUrl ? (
+                    <iframe
+                      title="map"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      src={mapUrl}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        color: "#999",
+                        textAlign: "center",
+                        paddingTop: 130,
+                      }}
+                    >
+                      Loading map...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -4833,7 +4605,6 @@ const Deepcleaning = () => {
             <div className="col-md-6">
               <div>
                 {isNewUser ? (
-                  // NEW USER: show current location (from GPS)
                   mapAddress ? (
                     <div style={{ fontSize: 14, marginBottom: 16 }}>
                       {mapAddress}
@@ -4844,22 +4615,24 @@ const Deepcleaning = () => {
                     </div>
                   )
                 ) : (
-                  // EXISTING USER: show saved address with change button
                   <div style={{ marginBottom: 16 }}>
                     <Button
-                      onClick={() => setShowOptions(!showOptions)}
+                      onClick={() => {
+                        setShowLocationPopup(false);
+                        setShowOptionOpoup(true);
+                      }}
                       style={{
                         backgroundColor: "red",
                         color: "white",
                         border: "none",
                         borderRadius: 8,
-                        alignSelf: "flex-start", // left align
+                        alignSelf: "flex-start",
                         padding: "6px 12px",
                         fontSize: 14,
                         fontWeight: 500,
                       }}
                     >
-                      {showOptions ? "Cancel" : "Change"}
+                      Change
                     </Button>
                     <div className="mt-4" style={{ fontSize: 14 }}>
                       {mapAddress}
@@ -4877,7 +4650,6 @@ const Deepcleaning = () => {
                       console.log("Typing:", e.target.value);
                       setHouseNumber(e.target.value);
                     }}
-                    // onChange={(e) => setHouseNumber(e.target.value)}
                     placeholder="Enter House/Flat Number"
                     style={{ borderRadius: 8, fontSize: 14 }}
                   />
@@ -4904,7 +4676,7 @@ const Deepcleaning = () => {
                     border: "none",
                     borderRadius: 8,
                     fontSize: 15,
-                    // fontWeight: 600,
+
                     cursor: !houseNumber.trim() ? "not-allowed" : "pointer",
                   }}
                 >
@@ -4914,7 +4686,57 @@ const Deepcleaning = () => {
             </div>
           </div>
         </Modal.Body>
-        {/* <Modal.Footer>vcbnvcnbvc</Modal.Footer> */}
+      </Modal>
+      <Modal
+        show={showOptionOpoup}
+        size="small"
+        centered
+        backdrop="static"
+        keyboard={false}
+        onHide={() => {
+          setShowOptionOpoup(false);
+          setShowLocationPopup(true);
+        }}
+      >
+        <Modal.Header closeButton></Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-6">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={getCurrentLocation}
+              >
+                <img src={map} style={{ width: "50%" }} />
+              </div>
+              <p style={{ textAlign: "center" }}>Current Location</p>
+            </div>
+            <div className="col-md-6">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  setHouseNumber("");
+                  setLandmark("");
+                  setShowOptionOpoup(false);
+                  setShowLocationPopup(true);
+                  setShowSearchBarOptions(true);
+                }}
+              >
+                <img src={searchLocation} style={{ width: "50%" }} />
+              </div>
+              <p style={{ textAlign: "center" }}>Search By Location</p>
+            </div>
+          </div>
+        </Modal.Body>
       </Modal>
       <SlotSelectionModal
         show={showSlotModal}

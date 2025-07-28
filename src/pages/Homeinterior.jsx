@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button, Carousel, Form, Modal } from "react-bootstrap";
 import serviceBg from "../assets/service-bg.svg";
 import exterior from "../assets/exterior.png";
+import map from "../assets/map.png";
+import searchLocation from "../assets/search-location.png";
 import woodpolish from "../assets/woodpolish.png";
 import texture from "../assets/texture.png";
 import waterproofing from "../assets/waterproofing.png";
@@ -46,6 +48,7 @@ import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { useAddressContext } from "../utils/AddressContext";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import moment from "moment";
+import PageLoader from "../utils/PageLoader";
 
 const Homeinterior = () => {
   const navigate = useNavigate();
@@ -54,10 +57,10 @@ const Homeinterior = () => {
   const [showModal, setShowModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [searchInput, setSearchInput] = useState("");
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
-
+  const [responseLoader, setResponseLoader] = useState(false);
   const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
   const [joinedOtp, setJoinedOTP] = useState(null);
   const [otpValue, setOtpValue] = useState(null);
@@ -75,10 +78,15 @@ const Homeinterior = () => {
   const [houseNumber, setHouseNumber] = useState("");
   const [landmark, setLandmark] = useState("");
 
-  const [showAnotherPopup, setAnotherPopup] = useState(false);
-
   const userData = JSON.parse(sessionStorage.getItem("user"));
   const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+  const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
+  const [showOptionOpoup, setShowOptionOpoup] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
   const inputRefs = useRef([]);
@@ -144,25 +152,28 @@ const Homeinterior = () => {
   };
 
   const handleProceedClick = async (e) => {
+    setResponseLoader(true);
     e.preventDefault();
     if (!phoneNumber || !userName) {
-      alert("Please enter your Name and Phone number");
+      return alert("Please enter your Name and Phone number");
+    }
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return alert("Invalid Mobile Number. Please enter a 10-digit number.");
     }
     try {
       const result = await postRequest(
         API_ENDPOINTS.LOGIN_WITH_MOBILE,
         formData
       );
+      setResponseLoader(false);
       console.log("Login Success", result);
       alert(result.message || "Login successful");
       setOtpValue(result.otp);
-      // setUserName("");
-      // setPhoneNumber("");
-      // NotificationManager.success(result.message || "Login successful");
       setShowModal(true);
     } catch (error) {
       console.error("Login failed:", error);
-      // NotificationManager.error(error.message || "Login failed");
+    } finally {
+      setResponseLoader(false);
     }
   };
 
@@ -175,14 +186,14 @@ const Homeinterior = () => {
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
       console.log("OTP Verified", result);
       alert(result.message || "OTP verified successfully");
-      // console.log("otp verified");
       if (result.data) {
         sessionStorage.setItem("user", JSON.stringify(result.data));
       }
+      sessionStorage.setItem("isNewUser", result.isNewUser);
+      setOtp(["", "", "", ""]);
       console.log("otp verified");
       setShowModal(false);
-      // setOtpValue(null);
-      setIsLocationModalVisible(true);
+      setShowLocationPopup(true);
     } catch (error) {
       alert(error.message || "Invalid OTP");
       console.error("Login failed:", error);
@@ -190,6 +201,7 @@ const Homeinterior = () => {
   };
 
   const ResendOTP = async () => {
+    setOtp(["", "", "", ""]);
     try {
       const result = await postRequest(API_ENDPOINTS.RESEND_OTP, formData);
       console.log("OTP Re-sent", result);
@@ -201,21 +213,83 @@ const Homeinterior = () => {
     }
   };
 
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setLatitude(latitude);
+        setLongitude(longitude);
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
+        try {
+          const response = await fetch(geocodingUrl);
+          const data = await response.json();
+          if (data.status === "OK" && data.results.length > 0) {
+            const address = data.results[0].formatted_address;
+            setMapAddress(address);
+            setMapUrl(
+              `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
+            );
+            setHouseNumber("");
+            setLandmark("");
+            setShowOptionOpoup(false);
+            setShowLocationPopup(true);
+          }
+        } catch (error) {
+          alert("Error getting location.");
+        }
+      },
+      (error) => alert("Location error: " + error.message),
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
+    );
+  };
+  useEffect(() => {
+    if (isNewUser && showLocationPopup) {
+      getCurrentLocation();
+    }
+  }, [isNewUser, showLocationPopup]);
+
   const fetchUserAddress = async () => {
     try {
       const response = await getRequest(
         `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`
       );
-      console.log("API Res", `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`);
-      setUserAddress(response.address);
+      if (response.address) {
+        setIsNewUser(false);
+        setUserAddress(response.address);
+        const urlMap = `https://www.google.com/maps?q=${response.address.latitude},${response.address.longitude}&z=15&output=embed`;
+        setMapUrl(urlMap);
+        setMapAddress(response.address.address);
+        setLatitude(response.address.latitude);
+        setLongitude(response.address.longitude);
+        setHouseNumber((prev) =>
+          prev.trim() ? prev : response.address?.houseNumber || ""
+        );
+        setLandmark((prev) =>
+          prev.trim() ? prev : response.address?.landmark || ""
+        );
+      } else {
+        setIsNewUser(true);
+        setMapAddress("");
+        setMapUrl("");
+        getCurrentLocation();
+      }
     } catch (error) {
       console.error("GET error:", error.response || error);
-      throw error.response ? error.response.data : error;
     }
   };
 
   useEffect(() => {
-    fetchUserAddress();
+    if (userData?._id) {
+      fetchUserAddress();
+    }
   }, [userData?._id]);
 
   const handleCloseModal = () => {
@@ -240,7 +314,7 @@ const Homeinterior = () => {
     // setOtp(joinString);
     setJoinedOTP(joinString);
     setOtp(newOtp);
-    if (value && index < 7) {
+    if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
   };
@@ -257,76 +331,6 @@ const Homeinterior = () => {
     setSelectedAddressId(addr.uniqueCode);
     sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
     // navigate("/deep-cleaning-packages");
-  };
-
-  const handleCurrentLocation = () => {
-    const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
-
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      return;
-    }
-
-    // Clear any previous watch ID if you were using one (optional safeguard)
-    // navigator.geolocation.clearWatch(previousWatchId);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        console.log("Lat:", latitude, "Lng:", longitude);
-
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
-
-        try {
-          const response = await fetch(geocodingUrl);
-          const data = await response.json();
-
-          if (data.status === "OK" && data.results.length > 0) {
-            const address = data.results[0].formatted_address;
-            const addressComponents = data.results[0].address_components;
-
-            const city = addressComponents.find((component) =>
-              component.types.includes("locality")
-            )?.long_name;
-
-            const town = addressComponents.find((component) =>
-              component.types.includes("sublocality_level_1")
-            )?.long_name;
-
-            // ✅ Update map URL and address
-            setMapUrl(
-              `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
-            );
-            setMapAddress(address || `${city || ""} ${town || ""}`);
-            setIsLocationModalVisible(false);
-            setShowLocationPopup(true);
-          } else {
-            alert("Could not fetch a valid address from your location.");
-          }
-        } catch (error) {
-          console.error("Geocoding Error:", error);
-          alert("Something went wrong while fetching the address.");
-        }
-      },
-      (error) => {
-        console.error("Geolocation Error:", error);
-        if (error.code === 1) {
-          alert("Permission to access location was denied.");
-        } else if (error.code === 2) {
-          alert("Location unavailable.");
-        } else if (error.code === 3) {
-          alert("Location request timed out. Please try again.");
-        } else {
-          alert("An unknown error occurred.");
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000, // ✅ increase timeout to reduce "Timeout expired" error
-        maximumAge: 0, // Always fetch fresh location
-      }
-    );
   };
 
   const data = {
@@ -349,11 +353,16 @@ const Homeinterior = () => {
       paidAmount: 0,
     },
     address: {
-      houseFlatNumber: selectedAddress?.houseNumber,
-      streetArea: selectedAddress?.address,
-      landMark: selectedAddress?.landmark,
-      lat: 25.1145815,
-      long: 55.1396246,
+      houseFlatNumber: selectedAddress?.houseNumber || "",
+      streetArea: selectedAddress?.address || "",
+      landMark: selectedAddress?.landmark || "",
+      location: {
+        type: "Point",
+        coordinates: [
+          selectedAddress?.longitude || 0,
+          selectedAddress?.latitude || 0,
+        ],
+      },
     },
     isEnquiry: true,
     selectedSlot: {
@@ -366,9 +375,9 @@ const Homeinterior = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
       console.log("Booking Success", result);
-      alert("Enquiry Verified! Thank you! We'll get back to you shortly.");
-      window.location.assign("/");
-      // console.log("structed data", data);
+      setShowSuccessModal(true);
+      // alert("Enquiry Verified! Thank you! We'll get back to you shortly.");
+      // window.location.assign("/");
     } catch (error) {
       console.error("Booking failed:", error);
     }
@@ -383,6 +392,8 @@ const Homeinterior = () => {
         address: mapAddress,
         houseNumber: houseNumber,
         landmark: landmark,
+        latitude: latitude,
+        longitude: longitude,
       },
     };
 
@@ -399,7 +410,7 @@ const Homeinterior = () => {
         JSON.stringify(data.savedAddress)
       );
       console.log("Address Saved", result);
-      // await handleProceedToCheckout();
+      await handleProceedToCheckout();
       fetchUserAddress();
       setShowLocationPopup(false);
       setIsLocationModalVisible(true);
@@ -424,6 +435,7 @@ const Homeinterior = () => {
 
   return (
     <>
+      {responseLoader && <PageLoader />}
       {/* Hero Section */}
       <div className="d-none d-lg-block">
         <div
@@ -681,6 +693,7 @@ const Homeinterior = () => {
                 outline: "none",
                 color: "black",
               }}
+              value={userName}
               onChange={(e) => setUserName(e.target.value)}
             />
             <input
@@ -703,7 +716,7 @@ const Homeinterior = () => {
           </div>
 
           <button
-            onClick={handleProceedClick}
+            onClick={responseLoader ? null : handleProceedClick}
             style={{
               marginTop: "30px",
               padding: "12px 40px",
@@ -804,7 +817,7 @@ const Homeinterior = () => {
                       maxLength="1"
                       value={digit}
                       onChange={(e) => handleOtpChange(e, index)}
-                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      // onKeyDown={(e) => handleKeyDown(e, index)}
                       ref={(el) => (inputRefs.current[index] = el)}
                       style={{
                         width: "40px",
@@ -852,225 +865,6 @@ const Homeinterior = () => {
               </div>
             </>
           )}
-          <Modal
-            centered
-            backdrop="static"
-            keyboard={false}
-            show={isLocationModalVisible}
-            onHide={() => setIsLocationModalVisible(false)}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>Saved Address</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <div>
-                <Autocomplete
-                  apiKey={GOOGLE_MAPS_API_KEY}
-                  onPlaceSelected={(place) => {
-                    if (place.geometry) {
-                      const lat = place.geometry.location.lat();
-                      const lng = place.geometry.location.lng();
-                      const formattedAddress = place.formatted_address;
-
-                      setMapLat(lat);
-                      setMapLng(lng);
-                      setMapAddress(formattedAddress);
-
-                      // Update map URL
-                      const url = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-                      setMapUrl(url);
-
-                      // Close Autocomplete Modal and open Map Modal
-                      setIsLocationModalVisible(false);
-                      setShowLocationPopup(true);
-                    }
-                  }}
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#f1f1f1",
-                    border: "1px solid #dfdfdf",
-                    borderRadius: "6px",
-                    padding: "7px 8px",
-                    color: "black",
-                    fontSize: "14px",
-                    outlineWidth: 0,
-                  }}
-                />
-              </div>
-              <div
-                className="mt-2"
-                style={{
-                  color: "#e60000",
-                  fontSize: 14,
-                  textAlign: "left",
-                  cursor: "pointer",
-                }}
-                onClick={handleCurrentLocation}
-                // onClick={() => {
-                // setShowLocationPopup(true);
-                // setIsLocationModalVisible(false);
-                // }}
-              >
-                + Add new address
-              </div>
-              {userAddress && userAddress?.length > 0 && (
-                <div className="mt-2">
-                  {userAddress?.map((ele, idx) => (
-                    <div key={idx}>
-                      <div
-                        className="row"
-                        style={{
-                          marginBottom: 10,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                        onClick={() => handleSelectAddress(ele)}
-                      >
-                        <div className="col-md-1">
-                          <Form.Check
-                            type="radio"
-                            id={ele.uniqueCode}
-                            name="selectedAddress"
-                            checked={ele.uniqueCode === selectedAddressId}
-                            onChange={() => handleSelectAddress(ele)}
-                          />
-                        </div>
-
-                        <div
-                          className="col-md-11"
-                          style={{
-                            fontSize: "12px",
-                            textAlign: "left",
-                          }}
-                        >
-                          {ele.houseNumber}, {ele.address}
-                        </div>
-                      </div>
-                      <hr />
-                    </div>
-                  ))}
-                </div>
-              )}
-              {selectedAddressId !== null && (
-                <div
-                  onClick={handleProceedToCheckout}
-                  // onClick={() => navigate("/deep-cleaning-packages")}
-                  style={{
-                    backgroundColor: "#FF0000",
-                    color: "white",
-                    cursor: "pointer",
-                    padding: "10px",
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    borderRadius: 8,
-                    textAlign: "center",
-                  }}
-                >
-                  Procced
-                </div>
-              )}
-
-              <div
-                style={{
-                  textAlign: "center",
-                  color: "#888",
-                  fontSize: 12,
-                  marginTop: 20,
-                }}
-              >
-                powered by{" "}
-                <span style={{ color: "#4285F4", fontWeight: 600 }}>G</span>
-                <span style={{ color: "#EA4335", fontWeight: 600 }}>o</span>
-                <span style={{ color: "#FBBC05", fontWeight: 600 }}>o</span>
-                <span style={{ color: "#4285F4", fontWeight: 600 }}>g</span>
-                <span style={{ color: "#34A853", fontWeight: 600 }}>l</span>
-                <span style={{ color: "#EA4335", fontWeight: 600 }}>e</span>
-              </div>
-            </Modal.Body>
-          </Modal>
-          <Modal
-            show={showLocationPopup}
-            size="lg"
-            centered
-            backdrop="static"
-            keyboard={false}
-            onHide={() => {
-              setShowLocationPopup(false);
-              setIsLocationModalVisible(true);
-            }}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>
-                <h5>Current Location</h5>
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <div className="row">
-                <div className="col-md-6">
-                  <iframe
-                    title="map"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    src={mapUrl}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <div>
-                    <div
-                      style={{
-                        marginBottom: 16,
-                      }}
-                    >
-                      <div style={{ fontSize: 14 }}>{mapAddress}</div>
-                    </div>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label>
-                        House/Flat Number{" "}
-                        <span style={{ color: "red" }}>*</span>
-                      </Form.Label>
-                      <Form.Control
-                        value={houseNumber}
-                        onChange={(e) => setHouseNumber(e.target.value)}
-                        placeholder="Enter House/Flat Number"
-                        style={{ borderRadius: 8, fontSize: 14 }}
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Landmark (Optional)</Form.Label>
-                      <Form.Control
-                        value={landmark}
-                        onChange={(e) => setLandmark(e.target.value)}
-                        placeholder="Enter Landmark"
-                        style={{ borderRadius: 8, fontSize: 14 }}
-                      />
-                    </Form.Group>
-
-                    <Button
-                      onClick={handleAddress}
-                      disabled={!houseNumber.trim()}
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        background: !houseNumber.trim() ? "#eee" : "#FF0000",
-                        color: !houseNumber.trim() ? "#aaa" : "#fff",
-                        border: "none",
-                        borderRadius: 8,
-                        fontSize: 15,
-                        cursor: !houseNumber.trim() ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      Save and proceed
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Modal.Body>
-            {/* <Modal.Footer>vcbnvcnbvc</Modal.Footer> */}
-          </Modal>
         </div>
       </div>
       <div className="d-block d-lg-none">
@@ -4535,6 +4329,246 @@ const Homeinterior = () => {
           </div>
         </div>
       </div>
+      {/* showing current location */}
+      <Modal
+        show={showLocationPopup}
+        size="lg"
+        centered
+        backdrop="static"
+        keyboard={false}
+        onHide={() => {
+          setShowLocationPopup(false);
+        }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <h5>Address</h5>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-6">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                {showSearchBarOptions ? (
+                  <Autocomplete
+                    apiKey={GOOGLE_MAPS_API_KEY}
+                    onPlaceSelected={(place) => {
+                      if (place.geometry) {
+                        const lat = place.geometry.location.lat();
+                        const lng = place.geometry.location.lng();
+                        const formattedAddress = place.formatted_address;
+
+                        setLatitude(lat);
+                        setLongitude(lng);
+                        setMapAddress(formattedAddress);
+                        setMapUrl(
+                          `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+                        );
+
+                        setIsLocationModalVisible(false);
+                        setShowLocationPopup(true);
+                      }
+                    }}
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#f1f1f1",
+                      border: "1px solid #dfdfdf",
+                      borderRadius: "6px",
+                      padding: "7px 10px",
+                      color: "black",
+                      fontSize: "14px",
+                      outline: "none",
+                    }}
+                  />
+                ) : null}
+
+                <div style={{ height: "300px", width: "100%" }}>
+                  {mapUrl ? (
+                    <iframe
+                      title="map"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      src={mapUrl}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        color: "#999",
+                        textAlign: "center",
+                        paddingTop: 130,
+                      }}
+                    >
+                      Loading map...
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div>
+                {isNewUser ? (
+                  mapAddress ? (
+                    <div style={{ fontSize: 14, marginBottom: 16 }}>
+                      {mapAddress}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 14, color: "#999" }}>
+                      Detecting current location...
+                    </div>
+                  )
+                ) : (
+                  <div style={{ marginBottom: 16 }}>
+                    <Button
+                      onClick={() => {
+                        setShowLocationPopup(false);
+                        setShowOptionOpoup(true);
+                      }}
+                      style={{
+                        backgroundColor: "red",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 8,
+                        alignSelf: "flex-start",
+                        padding: "6px 12px",
+                        fontSize: 14,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Change
+                    </Button>
+                    <div className="mt-4" style={{ fontSize: 14 }}>
+                      {mapAddress}
+                    </div>
+                  </div>
+                )}
+
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    House/Flat Number <span style={{ color: "red" }}>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    defaultValue={houseNumber}
+                    onChange={(e) => {
+                      console.log("Typing:", e.target.value);
+                      setHouseNumber(e.target.value);
+                    }}
+                    placeholder="Enter House/Flat Number"
+                    style={{ borderRadius: 8, fontSize: 14 }}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Landmark (Optional)</Form.Label>
+                  <Form.Control
+                    value={landmark}
+                    onChange={(e) => setLandmark(e.target.value)}
+                    placeholder="Enter Landmark"
+                    style={{ borderRadius: 8, fontSize: 14 }}
+                  />
+                </Form.Group>
+
+                <Button
+                  onClick={handleAddress}
+                  disabled={!houseNumber.trim()}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    background: !houseNumber.trim() ? "#eee" : "#FF0000",
+                    color: !houseNumber.trim() ? "#aaa" : "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 15,
+
+                    cursor: !houseNumber.trim() ? "not-allowed" : "pointer",
+                  }}
+                >
+                  Save and proceed
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={showOptionOpoup}
+        size="small"
+        centered
+        backdrop="static"
+        keyboard={false}
+        onHide={() => {
+          setShowOptionOpoup(false);
+          setShowLocationPopup(true);
+        }}
+      >
+        <Modal.Header closeButton></Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-6">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={getCurrentLocation}
+              >
+                <img src={map} style={{ width: "50%" }} />
+              </div>
+              <p style={{ textAlign: "center" }}>Current Location</p>
+            </div>
+            <div className="col-md-6">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  setHouseNumber("");
+                  setLandmark("");
+                  setShowOptionOpoup(false);
+                  setShowLocationPopup(true);
+                  setShowSearchBarOptions(true);
+                }}
+              >
+                <img src={searchLocation} style={{ width: "50%" }} />
+              </div>
+              <p style={{ textAlign: "center" }}>Search By Location</p>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={showSuccessModal}
+        size="small"
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Body>
+          <div style={{ textAlign: "center" }}>
+            Enquiry Verified! Thank you! We'll get back to you shortly.
+            <br />
+            <Button
+              onClick={() => window.location.assign("/")}
+              style={{ marginTop: "20px" }}
+            >
+              Ok
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };

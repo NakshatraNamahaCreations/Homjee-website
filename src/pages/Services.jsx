@@ -49,7 +49,7 @@ import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
 import SlotSelectionModal from "./SlotSelectionModal";
 import { useSelectedSlotContext } from "../utils/SlotContext";
-import PageLoader from "../utils/PageLoader";
+import GlobalLoader from "../utils/GlobalLoader";
 
 const Services = () => {
   const navigate = useNavigate();
@@ -426,7 +426,7 @@ const Services = () => {
 
   return (
     <>
-      {responseLoader && <PageLoader />}
+      {responseLoader && <GlobalLoader />}
       {/* Hero Section */}
       <div className="d-none d-lg-block">
         <div

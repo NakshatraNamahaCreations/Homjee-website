@@ -50,7 +50,7 @@ import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
 import { useSelectedSlotContext } from "../utils/SlotContext";
 import SlotSelectionModal from "./SlotSelectionModal";
-import PageLoader from "../utils/PageLoader";
+import GlobalLoader from "../utils/GlobalLoader";
 
 const Deepcleaning = () => {
   const navigate = useNavigate();
@@ -421,7 +421,7 @@ const Deepcleaning = () => {
 
   return (
     <>
-      {responseLoader && <PageLoader />}
+      {responseLoader && <GlobalLoader />}
       {/* Hero Section */}
       <div className="d-none d-lg-block">
         <div

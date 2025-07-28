@@ -48,6 +48,7 @@ import { useAddressContext } from "../utils/AddressContext";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import moment from "moment";
+import GlobalLoader from "../utils/GlobalLoader";
 
 const Packersmovers = () => {
   const navigate = useNavigate();
@@ -419,7 +420,7 @@ const Packersmovers = () => {
 
   return (
     <>
-      {/* Hero Section */}
+      {responseLoader && <GlobalLoader />}
       <div className="d-none d-lg-block">
         <div
           style={{

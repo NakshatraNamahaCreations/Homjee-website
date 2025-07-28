@@ -48,7 +48,7 @@ import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { useAddressContext } from "../utils/AddressContext";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import moment from "moment";
-import PageLoader from "../utils/PageLoader";
+import GlobalLoader from "../utils/GlobalLoader";
 
 const Homeinterior = () => {
   const navigate = useNavigate();
@@ -435,7 +435,7 @@ const Homeinterior = () => {
 
   return (
     <>
-      {responseLoader && <PageLoader />}
+      {responseLoader && <GlobalLoader />}
       {/* Hero Section */}
       <div className="d-none d-lg-block">
         <div

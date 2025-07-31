@@ -354,7 +354,7 @@ const Checkout = () => {
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
       console.log("Booking Success", result);
       alert(result.message || "Booking successful");
-      // window.location.assign("/");
+      window.location.assign("/");
       // console.log("structed data", data);
     } catch (error) {
       console.error("Booking failed:", error);

@@ -74,7 +74,7 @@ const Checkout = () => {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
-  console.log("selectedAddress from session", selectedAddress);
+  console.log("selectedSlot", selectedSlot);
 
   console.log("addressDataContext context api", addressDataContext);
   const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
@@ -354,7 +354,7 @@ const Checkout = () => {
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
       console.log("Booking Success", result);
       alert(result.message || "Booking successful");
-      window.location.assign("/");
+      // window.location.assign("/");
       // console.log("structed data", data);
     } catch (error) {
       console.error("Booking failed:", error);
@@ -603,7 +603,8 @@ const Checkout = () => {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {showSelectedSlot?.date}, {showSelectedSlot?.time}
+                        {moment(showSelectedSlot?.date).format("ll")},{" "}
+                        {showSelectedSlot?.time}
                       </p>
                     </div>
 

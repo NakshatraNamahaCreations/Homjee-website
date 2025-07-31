@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import moment from "moment";
 
 const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
-
+  console.log("selectedDate", selectedDate);
+  console.log("selectedTimeSlot", selectedTimeSlot);
   if (!show) return null;
 
   // Generate dates for the next 5 days starting from today (July 02, 2025)
@@ -20,6 +22,8 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
     }); // e.g., 'Sat, Jul 02, 2025'
     return { day, fullDate };
   });
+  const isoDate = moment(selectedDate, "ddd, MMM DD, YYYY").toISOString();
+  console.log("isoDate", isoDate);
 
   const timeSlots = [
     "08:00 AM",
@@ -29,7 +33,14 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
     "12:00 PM",
     "01:00 PM",
     "02:00 PM",
-    "03:00 PM",
+    "03:00 PM", //stop  here
+    "04:00 PM",
+    "05:00 PM",
+    "06:00 PM",
+    "07:00 PM",
+    "08:00 PM",
+    "09:00 PM",
+    "10:00 PM",
   ];
 
   // Button enabled only if both date and time are selected
@@ -224,7 +235,7 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
           onClick={() => {
             if (canProceed) {
               const selectedSlot = {
-                date: selectedDate,
+                date: isoDate,
                 time: selectedTimeSlot,
               };
               handleSelectSlot(selectedSlot);

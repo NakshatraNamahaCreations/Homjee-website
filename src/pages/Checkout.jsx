@@ -74,7 +74,7 @@ const Checkout = () => {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
-  console.log("selectedSlot", selectedSlot);
+  console.log("cartItems", cartItems);
 
   console.log("addressDataContext context api", addressDataContext);
   const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
@@ -316,6 +316,7 @@ const Checkout = () => {
           ]
         : cartItems.map((ele) => ({
             category: "Deep Cleaning",
+            subCategory: ele.service,
             serviceName: ele.name,
             price: ele.price,
             quantity: ele.quantity,
@@ -353,8 +354,11 @@ const Checkout = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
       console.log("Booking Success", result);
+      setCartItems([]);
+      sessionStorage.clear();
       alert(result.message || "Booking successful");
       window.location.assign("/");
+
       // console.log("structed data", data);
     } catch (error) {
       console.error("Booking failed:", error);
@@ -383,16 +387,18 @@ const Checkout = () => {
   return (
     <div className="d-none d-lg-block">
       <div
+        className="row"
         style={{
-          width: "1200px",
-          margin: "40px auto",
-          display: "flex",
-          gap: "20px",
+          // width: "1200px",
+          margin: "30px auto",
+          // display: "flex",
+          // gap: "20px",
           fontFamily: "'Roboto', sans-serif",
         }}
       >
         {/* Left Section */}
         <div
+          className="col-md-7"
           style={{
             flex: "1",
           }}
@@ -513,8 +519,8 @@ const Checkout = () => {
                     }${
                       selectedAddress?.address
                         ? `, ${
-                            selectedAddress.address.length > 50
-                              ? selectedAddress.address.substring(0, 50) + "..."
+                            selectedAddress.address.length > 30
+                              ? selectedAddress.address.substring(0, 30) + "..."
                               : selectedAddress.address
                           }`
                         : ""
@@ -651,7 +657,7 @@ const Checkout = () => {
               Read full policy
             </div>
             {showPolicy && (
-              <div className="mt-4">
+              <div className="mt-4 px-3">
                 <div
                   className="row mb-2"
                   style={{
@@ -703,6 +709,7 @@ const Checkout = () => {
         </div>
         {/* Right Section - Payment Section */}
         <div
+          className="col-md-5"
           style={{
             flex: "1",
             display: "flex",
@@ -716,7 +723,7 @@ const Checkout = () => {
               flex: 1,
               overflowY: "auto",
               paddingRight: "10px", // To avoid layout shift when hiding scrollbar
-              marginBottom: "100px", // space for fixed bottom section
+              marginBottom: "70px", // space for fixed bottom section
             }}
           >
             {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
@@ -988,7 +995,7 @@ const Checkout = () => {
                 // left: 0,
                 // right: "75%",
                 zIndex: 10,
-                width: "40%",
+                width: "43%",
                 borderTopLeftRadius: "10px",
                 borderTopRightRadius: "10px",
               }}

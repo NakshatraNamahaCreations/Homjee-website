@@ -10,9 +10,9 @@ import furnishedIncludes from "/media/bunglowincludes.webp";
 import furnishedExcludes from "/media/Excludes.jpeg";
 import furnishedWhatWeDo from "/media/whatwedo.jpeg";
 
-const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
+const BookByRoomModal = ({ pkgGroup, closeModal }) => {
   const { updateCartItem, getQuantity } = useContext(CartContext);
-  const serviceName = "Unfurnished Bungalow";
+  const serviceName = "Book By Room";
 
   if (!pkgGroup || !Array.isArray(pkgGroup)) {
     console.warn("pkgGroup is missing or not an array");
@@ -112,7 +112,8 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
               color: "#333",
             }}
           >
-            {serviceName} - Bungalow Cleaning
+            {serviceName}
+            {/* - Bungalow Cleaning */}
           </h2>
           {Object.entries(groupedPackages).map(([prefix, packages]) => (
             <div key={prefix} style={{ marginBottom: "20px" }}>
@@ -322,4 +323,4 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
   );
 };
 
-export default UnfurnishedBungalowModal;
+export default BookByRoomModal;

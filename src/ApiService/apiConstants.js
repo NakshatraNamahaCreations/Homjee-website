@@ -19,3 +19,15 @@ export const API_ENDPOINTS = {
   // SERVICE CONFIG
   GET_SERVICE_PRICE_CONFIG: "/service/latest",
 };
+
+// Akash 68884d7c02bf3a539293ec61
+// 9595951104
+
+// Nyra  688858e447bf83a1c76ced08
+// 9108703981
+
+// jimmy  68885cff47bf83a1c76ced27
+// 6383119384
+
+// Nirmal   6889e40434c540bfd1be1ef1
+// 9182722198

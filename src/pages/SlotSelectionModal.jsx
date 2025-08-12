@@ -8,21 +8,21 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
   console.log("selectedTimeSlot", selectedTimeSlot);
   if (!show) return null;
 
-  // Generate dates for the next 5 days starting from today (July 02, 2025)
   const today = new Date();
   const dates = Array.from({ length: 5 }, (_, i) => {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
-    const day = date.toLocaleDateString("en-US", { weekday: "short" }); // e.g., 'Sat'
+    const day = date.toLocaleDateString("en-US", { weekday: "short" });
     const fullDate = date.toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
       day: "2-digit",
       year: "numeric",
-    }); // e.g., 'Sat, Jul 02, 2025'
+    });
     return { day, fullDate };
   });
-  const isoDate = moment(selectedDate, "ddd, MMM DD, YYYY").toISOString();
+  // const isoDate = moment(selectedDate, "ddd, MMM DD, YYYY").toISOString(); //old/storing as ISO
+  const isoDate = moment(selectedDate).format("YYYY-MM-DD");
   console.log("isoDate", isoDate);
 
   const timeSlots = [
@@ -33,7 +33,7 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
     "12:00 PM",
     "01:00 PM",
     "02:00 PM",
-    "03:00 PM", //stop  here
+    "03:00 PM",
     "04:00 PM",
     "05:00 PM",
     "06:00 PM",
@@ -43,12 +43,10 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
     "10:00 PM",
   ];
 
-  // Button enabled only if both date and time are selected
   const canProceed = selectedDate && selectedTimeSlot;
 
   return (
     <>
-      {/* Backdrop */}
       <div
         style={{
           position: "fixed",
@@ -62,7 +60,6 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div
         style={{
           position: "fixed",
@@ -80,7 +77,6 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
           overflowY: "auto",
         }}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -110,12 +106,10 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
           </button>
         </div>
 
-        {/* Subtext */}
         <p style={{ fontSize: 14, marginBottom: 20, color: "#666" }}>
           Service will take approx. 5 hrs
         </p>
 
-        {/* Date Selector */}
         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
           {dates.map((dateObj, index) => (
             <button
@@ -135,45 +129,22 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
                 cursor: "pointer",
                 fontWeight: 500,
                 color: selectedDate === dateObj.fullDate ? "#fff" : "#333",
-                fontSize: 12, // Reduced font size to fit both day and date
+                fontSize: 12,
                 transition: "all 0.2s ease",
-                whiteSpace: "normal", // Allow text to wrap
-                lineHeight: "1.2", // Adjust line height for better fit
-                padding: "2px 4px", // Add padding to accommodate text
+                whiteSpace: "normal",
+                lineHeight: "1.2",
+                padding: "2px 4px",
               }}
               aria-pressed={selectedDate === dateObj.fullDate}
-              title={dateObj.fullDate} // Tooltip for full date
+              title={dateObj.fullDate}
             >
               {dateObj.day}
               <br />
-              {dateObj.fullDate.split(", ")[1]} {/* Show day and date part */}
+              {dateObj.fullDate.split(", ")[1]}
             </button>
           ))}
         </div>
 
-        {/* Payment Info Box */}
-        {/* <div
-          style={{
-            border: '1px solid #e0e0e0',
-            borderRadius: 8,
-            padding: 15,
-            marginBottom: 20,
-            backgroundColor: '#fafafa',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: '#333' }}>
-              Pay ₹709.6 (refundable)
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 14, fontWeight: 400, color: '#555' }}>
-              Balance to be paid – ₹2838.4
-            </span>
-          </div>
-        </div> */}
-
-        {/* Time Slot Selector */}
         <h4
           style={{
             fontSize: 16,

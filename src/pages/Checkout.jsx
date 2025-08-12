@@ -308,7 +308,8 @@ const Checkout = () => {
       serviceType === "house-painters"
         ? [
             {
-              category: "House Painters & Waterproofing",
+              // category: "House Painters & Waterproofing",
+              category: "House Painting",
               serviceName: "House Painters & Waterproofing",
               price: priceConfig?.siteVisitCharge || 0,
               quantity: 1,

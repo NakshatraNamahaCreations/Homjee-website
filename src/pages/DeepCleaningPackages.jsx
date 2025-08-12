@@ -987,7 +987,8 @@ const DeepCleaningPackages = () => {
                           marginBottom: "8px",
                         }}
                       >
-                        {pkgGroup[0].name.split(" - ")[0]} cleaning
+                        {pkgGroup[0].name.split(" - ")[0]}
+                        {/* cleaning */}
                       </h3>
                       <p style={{ margin: "0", color: "#333" }}>
                         Starts at ₹{pkgGroup[0].price}
@@ -1578,7 +1579,7 @@ const DeepCleaningPackages = () => {
       <SlotSelectionModal
         show={showSlotModal}
         onClose={handleCloseSlotModal}
-        availableSlots={availableSlots}
+        // availableSlots={availableSlots}
         handleSelectSlot={handleSelectSlot}
       />
 

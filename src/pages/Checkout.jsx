@@ -345,6 +345,7 @@ const Checkout = () => {
       slotTime: showSelectedSlot?.time,
     },
     isEnquiry: checkEnquiry(),
+    formName: "Website Service Page",
   };
 
   const handleProceedToCheckout = async () => {

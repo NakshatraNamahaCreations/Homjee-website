@@ -347,6 +347,7 @@ const Checkout = () => {
     },
     formName: "Website Service Page",
     isEnquiry: checkEnquiry(),
+    formName: "Website Service Page",
   };
 
   const handleProceedToCheckout = async () => {

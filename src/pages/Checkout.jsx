@@ -284,10 +284,24 @@ const Checkout = () => {
   ];
   // console.log("userData", userData);
 
-  const calculateTotalAmount =
-    cartItems && cartItems.length > 0
-      ? cartItems.reduce((acc, val) => acc + val.price * (val.quantity || 1), 0)
-      : 0;
+  // const calculateTotalAmount =
+  //   cartItems && cartItems.length > 0
+  //     ? cartItems.reduce((acc, val) => acc + val.price * (val.quantity || 1), 0)
+  //     : 0;
+
+  let calculateTotalAmount = 0;
+  const addPrice = () => {
+    if (serviceType === "house-painters" && priceConfig?.siteVisitCharge > 0) {
+      return (calculateTotalAmount = priceConfig?.siteVisitCharge || 0);
+    } else {
+      return cartItems && cartItems.length > 0
+        ? cartItems.reduce(
+            (acc, val) => acc + val.price * (val.quantity || 1),
+            0
+          )
+        : 0;
+    }
+  };
 
   const checkEnquiry = () => {
     if (serviceType === "house-painters" && priceConfig?.siteVisitCharge > 0) {
@@ -297,6 +311,7 @@ const Checkout = () => {
     }
     return true;
   };
+  console.log("priceConfig?.siteVisitCharge", priceConfig?.siteVisitCharge);
 
   const data = {
     customer: {
@@ -326,7 +341,8 @@ const Checkout = () => {
     bookingDetails: {
       bookingDate: moment().toISOString(),
       bookingTime: moment().format("LT"),
-      bookingAmount: calculateTotalAmount || 0,
+      bookingAmount: addPrice(),
+      siteVisitCharges: serviceType === "house-painters" ? addPrice() : 0,
       // paidAmount: calculateTotalAmount || 0,
     },
     address: {
@@ -358,10 +374,10 @@ const Checkout = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
       console.log("Booking Success", result);
-      setCartItems([]);
-      sessionStorage.clear();
+      // setCartItems([]);
+      // sessionStorage.clear();
       alert(result.message || "Booking successful");
-      window.location.assign("/");
+      // window.location.assign("/");
 
       // console.log("structed data", data);
     } catch (error) {
@@ -903,9 +919,12 @@ const Checkout = () => {
                   </span>
                   <span style={{ fontSize: "13px", color: "#333" }}>
                     ₹
-                    {serviceType === "house-painters"
-                      ? priceConfig?.siteVisitCharge
-                      : calculateTotalAmount}
+                    {
+                      serviceType === "house-painters"
+                        ? priceConfig?.siteVisitCharge
+                        : addPrice()
+                      // calculateTotalAmount
+                    }
                   </span>
                 </div>
                 {serviceType === "deep-cleaning" && (
@@ -955,9 +974,12 @@ const Checkout = () => {
                     style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
                   >
                     ₹
-                    {serviceType === "house-painters"
-                      ? priceConfig?.siteVisitCharge
-                      : calculateTotalAmount}
+                    {
+                      serviceType === "house-painters"
+                        ? priceConfig?.siteVisitCharge
+                        : addPrice()
+                      // calculateTotalAmount
+                    }
                   </span>
                 </div>
               </div>
@@ -1020,9 +1042,12 @@ const Checkout = () => {
                   style={{ fontSize: "16px", color: "black", fontWeight: 600 }}
                 >
                   ₹
-                  {serviceType === "house-painters"
-                    ? priceConfig?.siteVisitCharge
-                    : calculateTotalAmount}
+                  {
+                    serviceType === "house-painters"
+                      ? priceConfig?.siteVisitCharge
+                      : addPrice()
+                    // calculateTotalAmount
+                  }
                 </span>
               </div>
               <div style={{ marginBottom: "15px" }}>

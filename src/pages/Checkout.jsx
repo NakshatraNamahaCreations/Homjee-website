@@ -326,7 +326,8 @@ const Checkout = () => {
     bookingDetails: {
       bookingDate: moment().toISOString(),
       bookingTime: moment().format("LT"),
-      paidAmount: calculateTotalAmount || 0,
+      bookingAmount: calculateTotalAmount || 0,
+      // paidAmount: calculateTotalAmount || 0,
     },
     address: {
       houseFlatNumber: selectedAddress?.houseNumber || "",
@@ -344,6 +345,7 @@ const Checkout = () => {
       slotDate: showSelectedSlot?.date,
       slotTime: showSelectedSlot?.time,
     },
+    formName: "Website Service Page",
     isEnquiry: checkEnquiry(),
   };
 

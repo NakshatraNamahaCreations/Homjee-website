@@ -50,6 +50,7 @@ import thirtyfour from "/media/thirtyfour.webp";
 import thirtyfive from "/media/thirtyfive.webp";
 import SlotSelectionModal from "./SlotSelectionModal";
 import { useSelectedSlotContext } from "../utils/SlotContext";
+import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
 
 // Map services to their corresponding images
 const serviceImages = {
@@ -81,6 +82,7 @@ const cleaningServices = {
       details: "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: one,
+      teamMembers: 3,
     },
     {
       _id: "PRE1BHK002",
@@ -90,6 +92,7 @@ const cleaningServices = {
       details:
         "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       _id: "PLA1BHK003",
@@ -99,6 +102,7 @@ const cleaningServices = {
       details:
         "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 3,
     },
     {
       name: "2 BHK Cleaning - Classic",
@@ -108,6 +112,7 @@ const cleaningServices = {
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies",
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: twwo,
+      teamMembers: 4,
     },
     {
       name: "2 BHK Cleaning - Premium",
@@ -116,6 +121,7 @@ const cleaningServices = {
       details:
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "2 BHK Cleaning - Platinum",
@@ -124,6 +130,7 @@ const cleaningServices = {
       details:
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
     {
       name: "3 BHK Cleaning - Classic",
@@ -133,6 +140,7 @@ const cleaningServices = {
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: three,
+      teamMembers: 4,
     },
     {
       name: "3 BHK Cleaning - Premium",
@@ -141,6 +149,7 @@ const cleaningServices = {
       details:
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "3 BHK Cleaning - Platinum",
@@ -149,6 +158,7 @@ const cleaningServices = {
       details:
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
     {
       name: "4 BHK Cleaning - Classic",
@@ -158,6 +168,7 @@ const cleaningServices = {
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: four,
+      teamMembers: 4,
     },
     {
       name: "4 BHK Cleaning - Premium",
@@ -166,6 +177,7 @@ const cleaningServices = {
       details:
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "4 BHK Cleaning - Platinum",
@@ -174,6 +186,7 @@ const cleaningServices = {
       details:
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
     {
       name: "5+ BHK Cleaning - Classic",
@@ -183,6 +196,7 @@ const cleaningServices = {
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: five,
+      teamMembers: 4,
     },
     {
       name: "5+ BHK Cleaning - Premium",
@@ -191,6 +205,7 @@ const cleaningServices = {
       details:
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "5+ BHK Cleaning - Platinum",
@@ -199,6 +214,7 @@ const cleaningServices = {
       details:
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
   ],
   "Unfurnished apartment": [
@@ -209,6 +225,7 @@ const cleaningServices = {
       details: "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes paint marks removal",
       image: six,
+      teamMembers: 2,
     },
     {
       name: "1 BHK Cleaning - Premium",
@@ -217,6 +234,7 @@ const cleaningServices = {
       details:
         "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 2,
     },
     {
       name: "2 BHK Cleaning - Classic",
@@ -226,6 +244,7 @@ const cleaningServices = {
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies",
       extras: "Basic cleaning, excludes paint marks removal",
       image: seven,
+      teamMembers: 3,
     },
     {
       name: "2 BHK Cleaning - Premium",
@@ -234,6 +253,7 @@ const cleaningServices = {
       details:
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "3 BHK Cleaning - Classic",
@@ -243,6 +263,7 @@ const cleaningServices = {
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes paint marks removal",
       image: eight,
+      teamMembers: 3,
     },
     {
       name: "3 BHK Cleaning - Premium",
@@ -251,6 +272,7 @@ const cleaningServices = {
       details:
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "4 BHK Cleaning - Classic",
@@ -260,6 +282,7 @@ const cleaningServices = {
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes paint marks removal",
       image: nine,
+      teamMembers: 4,
     },
     {
       name: "4 BHK Cleaning - Premium",
@@ -268,6 +291,7 @@ const cleaningServices = {
       details:
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "5+ BHK Cleaning - Classic",
@@ -277,6 +301,7 @@ const cleaningServices = {
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes paint marks removal",
       image: ten,
+      teamMembers: 4,
     },
     {
       name: "5+ BHK Cleaning - Premium",
@@ -285,6 +310,7 @@ const cleaningServices = {
       details:
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 4,
     },
   ],
   "Book by room": [
@@ -295,6 +321,7 @@ const cleaningServices = {
       details: "Cleaning of one empty bedroom",
       extras: "Excludes furniture cleaning",
       image: eleven,
+      teamMembers: 1,
     },
     {
       name: "Bedroom Cleaning - Furnished",
@@ -302,6 +329,7 @@ const cleaningServices = {
       price: 1299,
       details: "Cleaning of one furnished bedroom",
       extras: "Includes furniture wiping, excludes upholstery cleaning",
+      teamMembers: 1,
     },
     {
       name: "Living Room Cleaning - Unfurnished",
@@ -310,6 +338,7 @@ const cleaningServices = {
       details: "Cleaning of one empty living room",
       extras: "Excludes furniture cleaning",
       image: tweleve,
+      teamMembers: 1,
     },
     {
       name: "Living Room Cleaning - Furnished",
@@ -317,6 +346,7 @@ const cleaningServices = {
       price: 1199,
       details: "Cleaning of one furnished living room",
       extras: "Includes furniture wiping, excludes upholstery cleaning",
+      teamMembers: 1,
     },
     {
       name: "Kitchen Cleaning - Occupied Kitchen",
@@ -325,6 +355,7 @@ const cleaningServices = {
       details: "Cleaning of occupied kitchen without appliances",
       extras: "Excludes appliance cleaning",
       image: thirteen,
+      teamMembers: 1,
     },
     {
       name: "Kitchen Cleaning - Occupied Kitchen With Appliances",
@@ -332,6 +363,7 @@ const cleaningServices = {
       price: 1999,
       details: "Cleaning of occupied kitchen with appliances",
       extras: "Includes basic appliance cleaning",
+      teamMembers: 1,
     },
     {
       name: "Kitchen Cleaning - Empty Kitchen",
@@ -339,6 +371,7 @@ const cleaningServices = {
       price: 999,
       details: "Cleaning of empty kitchen",
       extras: "Excludes appliance cleaning",
+      teamMembers: 1,
     },
     {
       name: "Kitchen Cleaning - Empty Kitchen With Appliances",
@@ -346,6 +379,7 @@ const cleaningServices = {
       price: 1499,
       details: "Cleaning of empty kitchen with appliances",
       extras: "Includes basic appliance cleaning",
+      teamMembers: 1,
     },
     {
       name: "Bathroom Cleaning",
@@ -354,6 +388,7 @@ const cleaningServices = {
       details: "Cleaning of one bathroom",
       extras: "Includes sanitization",
       image: fourteen,
+      teamMembers: 1,
     },
     {
       name: "Balcony Cleaning - Small (Upto 3 ft width)",
@@ -362,6 +397,7 @@ const cleaningServices = {
       details: "Cleaning of small balcony",
       extras: "Excludes plant cleaning",
       image: fifteen,
+      teamMembers: 4,
     },
     {
       name: "Balcony Cleaning - Big (larger than 3 ft)",
@@ -369,6 +405,7 @@ const cleaningServices = {
       price: 799,
       details: "Cleaning of large balcony",
       extras: "Excludes plant cleaning",
+      teamMembers: 1,
     },
   ],
   "Furnished bungalow/duplex": [
@@ -379,6 +416,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning under 1200 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: sixteen,
+      teamMembers: 2,
     },
     {
       name: "<1200 sqft Bungalow Cleaning - Premium",
@@ -386,6 +424,7 @@ const cleaningServices = {
       price: 6999,
       details: "Includes deep cleaning for bungalow under 1200 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 2,
     },
     {
       name: "<1200 sqft Bungalow Cleaning - Platinum",
@@ -393,6 +432,7 @@ const cleaningServices = {
       price: 7999,
       details: "Includes premium deep cleaning for bungalow under 1200 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 2,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Classic",
@@ -401,6 +441,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 1200-2000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: seventeen,
+      teamMembers: 3,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Premium",
@@ -408,6 +449,7 @@ const cleaningServices = {
       price: 7999,
       details: "Includes deep cleaning for bungalow 1200-2000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 2,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Platinum",
@@ -415,6 +457,7 @@ const cleaningServices = {
       price: 8999,
       details: "Includes premium deep cleaning for bungalow 1200-2000 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 3,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Classic",
@@ -423,6 +466,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 2000-3000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: eighteen,
+      teamMembers: 4,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Premium",
@@ -430,6 +474,7 @@ const cleaningServices = {
       price: 8999,
       details: "Includes deep cleaning for bungalow 2000-3000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Platinum",
@@ -437,6 +482,7 @@ const cleaningServices = {
       price: 9999,
       details: "Includes premium deep cleaning for bungalow 2000-3000 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Classic",
@@ -445,6 +491,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 3000-4000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: ninteen,
+      teamMembers: 4,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Premium",
@@ -452,6 +499,7 @@ const cleaningServices = {
       price: 10999,
       details: "Includes deep cleaning for bungalow 3000-4000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Platinum",
@@ -459,6 +507,7 @@ const cleaningServices = {
       price: 11999,
       details: "Includes premium deep cleaning for bungalow 3000-4000 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Classic",
@@ -467,6 +516,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 4000-5000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twenty,
+      teamMembers: 3,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Premium",
@@ -474,6 +524,7 @@ const cleaningServices = {
       price: 12999,
       details: "Includes deep cleaning for bungalow 4000-5000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Platinum",
@@ -481,6 +532,7 @@ const cleaningServices = {
       price: 13999,
       details: "Includes premium deep cleaning for bungalow 4000-5000 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 2,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Classic",
@@ -489,6 +541,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 5000-6000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyone,
+      teamMembers: 4,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Premium",
@@ -496,6 +549,7 @@ const cleaningServices = {
       price: 14999,
       details: "Includes deep cleaning for bungalow 5000-6000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Platinum",
@@ -503,6 +557,7 @@ const cleaningServices = {
       price: 15999,
       details: "Includes premium deep cleaning for bungalow 5000-6000 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 3,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Classic",
@@ -511,6 +566,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 6000-7000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentytwo,
+      teamMembers: 4,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Premium",
@@ -518,6 +574,7 @@ const cleaningServices = {
       price: 17999,
       details: "Includes deep cleaning for bungalow 6000-7000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Platinum",
@@ -525,6 +582,7 @@ const cleaningServices = {
       price: 19999,
       details: "Includes premium deep cleaning for bungalow 6000-7000 sqft",
       extras: "Includes upholstery and appliance cleaning",
+      teamMembers: 4,
     },
   ],
   "Unfurnished bungalow/duplex": [
@@ -535,6 +593,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning under 1200 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentythree,
+      teamMembers: 4,
     },
     {
       name: "<1200 sqft Bungalow Cleaning - Premium",
@@ -542,6 +601,7 @@ const cleaningServices = {
       price: 6499,
       details: "Includes deep cleaning for bungalow under 1200 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Classic",
@@ -550,6 +610,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 1200-2000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyfour,
+      teamMembers: 4,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Premium",
@@ -557,6 +618,7 @@ const cleaningServices = {
       price: 7499,
       details: "Includes deep cleaning for bungalow 1200-2000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Classic",
@@ -565,6 +627,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 2000-3000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyfive,
+      teamMembers: 4,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Premium",
@@ -572,6 +635,7 @@ const cleaningServices = {
       price: 8499,
       details: "Includes deep cleaning for bungalow 2000-3000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Classic",
@@ -580,6 +644,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 3000-4000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentysix,
+      teamMembers: 4,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Premium",
@@ -587,6 +652,7 @@ const cleaningServices = {
       price: 10499,
       details: "Includes deep cleaning for bungalow 3000-4000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 4,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Classic",
@@ -595,6 +661,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 4000-5000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyseven,
+      teamMembers: 4,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Premium",
@@ -602,6 +669,7 @@ const cleaningServices = {
       price: 12499,
       details: "Includes deep cleaning for bungalow 4000-5000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Classic",
@@ -610,6 +678,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 5000-6000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyeight,
+      teamMembers: 3,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Premium",
@@ -617,6 +686,7 @@ const cleaningServices = {
       price: 14499,
       details: "Includes deep cleaning for bungalow 5000-6000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 3,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Classic",
@@ -625,6 +695,7 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 6000-7000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyeight,
+      teamMembers: 4,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Premium",
@@ -632,6 +703,7 @@ const cleaningServices = {
       price: 16999,
       details: "Includes deep cleaning for bungalow 6000-7000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
+      teamMembers: 2,
     },
   ],
   "Mini services": [
@@ -642,6 +714,7 @@ const cleaningServices = {
       details: "Deep cleaning of kitchen chimney",
       extras: "Excludes external pipe cleaning",
       image: twentynine,
+      teamMembers: 1,
     },
     {
       name: "Kitchen Appliances Cleaning - Microwave",
@@ -649,6 +722,7 @@ const cleaningServices = {
       price: 499,
       details: "Cleaning of microwave interior and exterior",
       extras: "Includes sanitization",
+      teamMembers: 1,
     },
     {
       name: "Kitchen Appliances Cleaning - Stove",
@@ -656,6 +730,7 @@ const cleaningServices = {
       price: 599,
       details: "Cleaning of gas stove",
       extras: "Includes burner cleaning",
+      teamMembers: 1,
     },
     {
       name: "Kitchen Appliances Cleaning - Single Door Fridge",
@@ -663,6 +738,7 @@ const cleaningServices = {
       price: 699,
       details: "Cleaning of single door fridge",
       extras: "Includes interior and exterior cleaning",
+      teamMembers: 1,
     },
     {
       name: "Kitchen Appliances Cleaning - Double Door Fridge",
@@ -670,6 +746,7 @@ const cleaningServices = {
       price: 999,
       details: "Cleaning of double door fridge",
       extras: "Includes interior and exterior cleaning",
+      teamMembers: 1,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Sofa (5 seats)",
@@ -678,6 +755,7 @@ const cleaningServices = {
       details: "Wet shampooing of 5-seat sofa",
       extras: "Includes stain removal",
       image: thirty,
+      teamMembers: 1,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Carpet (upto 25 sqft)",
@@ -685,6 +763,7 @@ const cleaningServices = {
       price: 999,
       details: "Wet shampooing of carpet up to 25 sqft",
       extras: "Includes stain removal",
+      teamMembers: 1,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Cushion Chair",
@@ -692,6 +771,7 @@ const cleaningServices = {
       price: 499,
       details: "Wet shampooing of one cushion chair",
       extras: "Includes stain removal",
+      teamMembers: 1,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Mattress",
@@ -699,6 +779,7 @@ const cleaningServices = {
       price: 1299,
       details: "Wet shampooing of one mattress",
       extras: "Includes stain removal",
+      teamMembers: 1,
     },
     {
       name: "Utensil Removal & Placement",
@@ -707,6 +788,7 @@ const cleaningServices = {
       details: "Removal and placement of utensils",
       extras: "Excludes cleaning of utensils",
       image: thirtytwo,
+      teamMembers: 1,
     },
     {
       name: "Cabinet Cleaning (Upto 2)",
@@ -715,6 +797,7 @@ const cleaningServices = {
       details: "Cleaning of up to 2 cabinets",
       extras: "Includes interior and exterior cleaning",
       image: thirtythree,
+      teamMembers: 1,
     },
     {
       name: "Furniture Wet Wiping",
@@ -723,6 +806,7 @@ const cleaningServices = {
       details: "Wet wiping of furniture surfaces",
       extras: "Excludes upholstery cleaning",
       image: thirtyfour,
+      teamMembers: 1,
     },
     {
       name: "Ceiling Dusting & Cobweb Removal",
@@ -731,6 +815,7 @@ const cleaningServices = {
       details: "Dusting and cobweb removal from ceilings",
       extras: "Excludes high ceiling areas above 12 ft",
       image: thirtyfive,
+      teamMembers: 1,
     },
   ],
 };
@@ -739,6 +824,7 @@ const DeepCleaningPackages = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showSlotModal, setShowSlotModal] = useState(false);
+  const [minimumAmount, setMinimumAmount] = useState(0);
 
   // Predefined slots for demonstration
   const availableSlots = [
@@ -767,7 +853,7 @@ const DeepCleaningPackages = () => {
 
   const { cartItems, updateCartItem, getQuantity } = useContext(CartContext);
 
-  console.log("cartItems---suman", cartItems);
+  console.log("cartItems checking team members>>>", cartItems);
 
   const serviceRefs = useRef({});
   const [selectedPackageGroup, setSelectedPackageGroup] = useState(null);
@@ -818,10 +904,10 @@ const DeepCleaningPackages = () => {
   const modalType = query.get("modal");
   const ModalComponent = modalType
     ? modalComponents[
-        Object.keys(modalComponents).find(
-          (key) => key.toLowerCase().replace(/ /g, "-") === modalType
-        )
-      ]
+    Object.keys(modalComponents).find(
+      (key) => key.toLowerCase().replace(/ /g, "-") === modalType
+    )
+    ]
     : null;
 
   // Set selected package group based on modal type
@@ -842,11 +928,28 @@ const DeepCleaningPackages = () => {
     0
   );
 
-  console.log("TotalPrice", TotalPrice);
+  // console.log("TotalPrice", TotalPrice);
 
-  const Advanceamount = 10000;
+  // const advancedAmount = 10000;
 
-  const balanceamount = Advanceamount - TotalPrice;
+  const fetchMinimumAmount = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.GET_MINIMUM_ORDERS_VALUE}`);
+      const json = await res.json();
+      if (!json.success)
+        throw new Error(json.message || "Failed to fetch Minimum Amount");
+      setMinimumAmount(json.data.amount || 0)
+    } catch (err) {
+      console.error("GET Minimum Amount:", err.message);
+    }
+  };
+  useEffect(() => {
+    fetchMinimumAmount();
+  }, []);
+
+  const balanceamount = minimumAmount - TotalPrice;
+
+  // console.log("minimumAmount", minimumAmount);
 
   return (
     <div
@@ -966,255 +1069,277 @@ const DeepCleaningPackages = () => {
                 {getDisplayTitle(service)}
               </h2>
               {groupPackages(cleaningServices[service]).map(
-                (pkgGroup, index) => (
-                  <div
-                    key={`${serviceIndex}-${index}`}
-                    style={{
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "10px",
-                      padding: "15px",
-                      marginBottom: "20px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: "20px",
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <h3
-                        style={{
-                          fontSize: "16px",
-                          fontWeight: "600",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        {pkgGroup[0].name.split(" - ")[0]}
-                        {/* cleaning */}
-                      </h3>
-                      <p style={{ margin: "0", color: "#333" }}>
-                        Starts at ₹{pkgGroup[0].price}
-                      </p>
-                      <ul
-                        style={{
-                          paddingLeft: "20px",
-                          fontSize: "13px",
-                          margin: "10px 0",
-                        }}
-                      >
-                        <li>{pkgGroup[0].details}</li>
-                        <li>{pkgGroup[0].extras}</li>
-                      </ul>
-                      <p
-                        style={{
-                          color: "red",
-                          fontSize: "14px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => openModal(pkgGroup, service)}
-                      >
-                        View details
-                      </p>
-                    </div>
-                    <div style={{ width: "150px", textAlign: "center" }}>
-                      <img
-                        src={pkgGroup[0].image}
-                        alt={pkgGroup[0].name}
-                        style={{
-                          width: "80%",
-                          height: "100px",
-                          objectFit: "cover",
-                          borderRadius: "8px",
-                          marginBottom: "-15px",
-                        }}
-                      />
-                      {getQuantity(pkgGroup[0].name, service) > 0 ? (
-                        <div
+                (pkgGroup, index) => {
+                  const currentPkg =
+                    pkgGroup.find((pkg) => pkg.teamMembers !== undefined) ||
+                    pkgGroup[0];
+                  // console.log("currentPkg", currentPkg);
+                  return (
+                    <div
+                      key={`${serviceIndex}-${index}`}
+                      style={{
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "10px",
+                        padding: "15px",
+                        marginBottom: "20px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "20px",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <h3
                           style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            border: "1px solid red",
-                            borderRadius: "20px",
-                            overflow: "hidden",
-                            backgroundColor: "white",
+                            fontSize: "16px",
+                            fontWeight: "600",
+                            marginBottom: "8px",
                           }}
                         >
-                          <button
-                            onClick={() =>
-                              updateCartItem(
-                                pkgGroup[0].name,
-                                pkgGroup[0].price,
-                                -1,
-                                service
-                              )
-                            }
+                          {currentPkg.name.split(" - ")[0]}
+                          {/* {pkgGroup[0].name.split(" - ")[0]} */}
+                          {/* cleaning */}
+                        </h3>
+                        <p style={{ margin: "0", color: "#333" }}>
+                          {/* Starts at ₹{pkgGroup[0].price} */}
+                          Starts at ₹{currentPkg.price}
+                        </p>
+                        <ul
+                          style={{
+                            paddingLeft: "20px",
+                            fontSize: "13px",
+                            margin: "10px 0",
+                          }}
+                        >
+                          <li>{currentPkg.details}</li>
+                          <li>{currentPkg.extras}</li>
+                          {/* <li>{pkgGroup[0].details}</li>
+                          <li>{pkgGroup[0].extras}</li> */}
+                        </ul>
+                        <p
+                          style={{
+                            color: "red",
+                            fontSize: "14px",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => openModal(pkgGroup, service)}
+                        >
+                          View details
+                        </p>
+                      </div>
+                      <div style={{ width: "150px", textAlign: "center" }}>
+                        <img
+                          // src={pkgGroup[0].image}
+                          // alt={pkgGroup[0].name}
+                          src={currentPkg.image}
+                          alt={currentPkg.name}
+                          style={{
+                            width: "80%",
+                            height: "100px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                            marginBottom: "-15px",
+                          }}
+                        />
+                        {/* {getQuantity(pkgGroup[0].name, service) > 0 ? ( */}
+                        {getQuantity(currentPkg.name, service) > 0 ? (
+                          <div
                             style={{
-                              padding: "5px 10px",
-                              backgroundColor: "#fff",
-                              border: "none",
-                              fontSize: "16px",
-                              color: "red",
-                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              border: "1px solid red",
+                              borderRadius: "20px",
+                              overflow: "hidden",
+                              backgroundColor: "white",
                             }}
                           >
-                            −
-                          </button>
-                          <span
-                            style={{ padding: "5px 15px", fontSize: "14px" }}
-                          >
-                            {getQuantity(pkgGroup[0].name, service)}{" "}
-                          </span>
-                          <button
-                            onClick={() =>
-                              updateCartItem(
-                                pkgGroup[0].name,
-                                pkgGroup[0].price,
-                                1,
-                                service
-                              )
-                            }
-                            style={{
-                              padding: "5px 10px",
-                              backgroundColor: "red",
-                              color: "#fff",
-                              border: "none",
-                              fontSize: "16px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            +
-                          </button>
-                        </div>
-                      ) : (
-                        (() => {
-                          const isAnyInCart = pkgGroup.some((pkg) =>
-                            cartItems.some(
-                              (item) =>
-                                item.name === pkg.name &&
-                                item.service.toLowerCase() ===
-                                  service.toLowerCase()
-                            )
-                          );
-
-                          if (isAnyInCart) {
-                            const specificCartItem = cartItems.find(
-                              (cartItem) =>
-                                pkgGroup.some(
-                                  (pkg) =>
-                                    pkg.name === cartItem.name &&
-                                    cartItem.service.toLowerCase() ===
-                                      service.toLowerCase()
+                            <button
+                              onClick={() =>
+                                updateCartItem(
+                                  currentPkg.name,
+                                  currentPkg.price,
+                                  -1,
+                                  service,
+                                  currentPkg.teamMembers
                                 )
+                              }
+                              style={{
+                                padding: "5px 10px",
+                                backgroundColor: "#fff",
+                                border: "none",
+                                fontSize: "16px",
+                                color: "red",
+                                cursor: "pointer",
+                              }}
+                            >
+                              −
+                            </button>
+                            <span
+                              style={{ padding: "5px 15px", fontSize: "14px" }}
+                            >
+                              {getQuantity(pkgGroup[0].name, service)}{" "}
+                            </span>
+                            <button
+                              onClick={() =>
+                                updateCartItem(
+                                  currentPkg.name,
+                                  currentPkg.price,
+                                  1,
+                                  service,
+                                  currentPkg.teamMembers
+                                )
+                              }
+                              style={{
+                                padding: "5px 10px",
+                                backgroundColor: "red",
+                                color: "#fff",
+                                border: "none",
+                                fontSize: "16px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        ) : (
+                          (() => {
+                            const isAnyInCart = pkgGroup.some((pkg) =>
+                              cartItems.some(
+                                (item) =>
+                                  item.name === pkg.name &&
+                                  item.service.toLowerCase() ===
+                                  service.toLowerCase()
+                              )
                             );
 
-                            if (specificCartItem) {
+                            if (isAnyInCart) {
+                              const specificCartItem = cartItems.find(
+                                (cartItem) =>
+                                  pkgGroup.some(
+                                    (pkg) =>
+                                      pkg.name === cartItem.name &&
+                                      cartItem.service.toLowerCase() ===
+                                      service.toLowerCase()
+                                  )
+                              );
+
+                              if (specificCartItem) {
+                                return (
+                                  <div
+                                    onClick={() => {
+                                      if (service === "Mini services") {
+                                        updateCartItem(
+                                          // pkgGroup[0].name,
+                                          // pkgGroup[0].price,
+                                          // 1,
+                                          // service,
+                                          // pkgGroup[0].teamMembers
+                                          currentPkg.name,
+                                          currentPkg.price,
+                                          1,
+                                          service,
+                                          currentPkg.teamMembers
+                                        );
+                                      } else {
+                                        openModal(pkgGroup, service);
+                                      }
+                                    }}
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      border: "1px solid red",
+                                      borderRadius: "20px",
+                                      overflow: "hidden",
+                                      backgroundColor: "white",
+                                    }}
+                                  >
+                                    <button
+                                      style={{
+                                        padding: "5px 10px",
+                                        backgroundColor: "#fff",
+                                        border: "none",
+                                        fontSize: "16px",
+                                        color: "red",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      −
+                                    </button>
+                                    <span
+                                      style={{
+                                        padding: "5px 15px",
+                                        fontSize: "14px",
+                                      }}
+                                    >
+                                      {specificCartItem.quantity}
+                                    </span>
+                                    <button
+                                      style={{
+                                        padding: "5px 10px",
+                                        backgroundColor: "red",
+                                        color: "#fff",
+                                        border: "none",
+                                        fontSize: "16px",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                );
+                              }
                               return (
-                                <div
+                                <button
+                                  disabled
+                                  style={{
+                                    backgroundColor: "red",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "15px",
+                                    padding: "8px 15px",
+                                    fontSize: "14px",
+                                    cursor: "not-allowed",
+                                  }}
+                                >
+                                  Error
+                                </button>
+                              );
+                            } else {
+                              // If no variant from this group is in the cart, show the "Add" button
+                              return (
+                                <button
                                   onClick={() => {
                                     if (service === "Mini services") {
                                       updateCartItem(
                                         pkgGroup[0].name,
                                         pkgGroup[0].price,
                                         1,
-                                        service
+                                        service,
+                                        pkgGroup[0].teamMembers
                                       );
                                     } else {
                                       openModal(pkgGroup, service);
                                     }
                                   }}
                                   style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    border: "1px solid red",
-                                    borderRadius: "20px",
-                                    overflow: "hidden",
-                                    backgroundColor: "white",
+                                    backgroundColor: "red",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "15px",
+                                    padding: "8px 15px",
+                                    fontSize: "14px",
+                                    cursor: "pointer",
                                   }}
                                 >
-                                  <button
-                                    style={{
-                                      padding: "5px 10px",
-                                      backgroundColor: "#fff",
-                                      border: "none",
-                                      fontSize: "16px",
-                                      color: "red",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    −
-                                  </button>
-                                  <span
-                                    style={{
-                                      padding: "5px 15px",
-                                      fontSize: "14px",
-                                    }}
-                                  >
-                                    {specificCartItem.quantity}
-                                  </span>
-                                  <button
-                                    style={{
-                                      padding: "5px 10px",
-                                      backgroundColor: "red",
-                                      color: "#fff",
-                                      border: "none",
-                                      fontSize: "16px",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    +
-                                  </button>
-                                </div>
+                                  Add
+                                </button>
                               );
                             }
-                            return (
-                              <button
-                                disabled
-                                style={{
-                                  backgroundColor: "red",
-                                  color: "#fff",
-                                  border: "none",
-                                  borderRadius: "15px",
-                                  padding: "8px 15px",
-                                  fontSize: "14px",
-                                  cursor: "not-allowed",
-                                }}
-                              >
-                                Error
-                              </button>
-                            );
-                          } else {
-                            // If no variant from this group is in the cart, show the "Add" button
-                            return (
-                              <button
-                                onClick={() => {
-                                  if (service === "Mini services") {
-                                    updateCartItem(
-                                      pkgGroup[0].name,
-                                      pkgGroup[0].price,
-                                      1,
-                                      service
-                                    );
-                                  } else {
-                                    openModal(pkgGroup, service);
-                                  }
-                                }}
-                                style={{
-                                  backgroundColor: "red",
-                                  color: "#fff",
-                                  border: "none",
-                                  borderRadius: "15px",
-                                  padding: "8px 15px",
-                                  fontSize: "14px",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Add
-                              </button>
-                            );
-                          }
-                        })()
-                      )}
+                          })()
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
+                  );
+                }
               )}
             </div>
           ))}
@@ -1231,121 +1356,6 @@ const DeepCleaningPackages = () => {
           </style>
         </div>
       </div>
-      {/* right section */}
-      {/* <div
-        style={{
-          width: "450px",
-          backgroundColor: "#fff",
-          padding: "15px",
-          borderRadius: "10px", 
-          display: "flex",
-          flexDirection: "column",
-          maxHeight: "600px", 
-        }}
-      >
-        {cartItems.length > 0 && (
-          <h2
-            style={{
-              fontSize: "20px",
-              fontWeight: "600",
-              marginBottom: "20px",
-            }}
-          >
-            Cart
-          </h2>
-        )} */}
-      {/* Scrollable Cart Items Section */}
-      {/* <div
-          style={{
-            overflowY: "auto",
-            overflowX: "hidden",
-            flex: 1,
-            marginBottom: "10px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-          className="hide-scroll"
-        >
-          {cartItems.length > 0 ? (
-            cartItems.map((item, index) => (
-              <div
-                className="row"
-                key={index}
-                style={{ marginBottom: "15px", alignItems: "center" }}
-              >
-                <p
-                  className="col-md-5"
-                  style={{
-                    fontSize: "14px",
-                    color: "#333",
-                    marginBottom: "5px",
-                  }}
-                >
-                  {item.service} - {item.name}
-                </p>
-                <div
-                  className="col-md-4"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    marginBottom: "5px",
-                  }}
-                >
-                  <button
-                    onClick={() =>
-                      updateCartItem(item.name, item.price, -1, item.service)
-                    }
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      color: "red",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button
-                    onClick={() =>
-                      updateCartItem(item.name, item.price, 1, item.service)
-                    }
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      color: "red",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-                <p
-                  className="col-md-3"
-                  style={{ fontSize: "14px", color: "#333", fontWeight: "600" }}
-                >
-                  ₹{item.price * item.quantity}
-                </p>
-              </div>
-            ))
-          ) : (
-            <div style={{ textAlign: "center", marginTop: "50%" }}>
-              <img
-                src="https://img.icons8.com/ios/50/000000/shopping-cart.png"
-                alt="Empty Cart"
-                style={{ width: "50px", height: "50px", marginBottom: "10px" }}
-              />
-              <p style={{ fontSize: "14px", color: "#666" }}>
-                No items in your cart
-              </p>
-            </div>
-          )}
-        </div> */}
-
       <div
         style={{
           width: "450px",
@@ -1395,6 +1405,16 @@ const DeepCleaningPackages = () => {
                 >
                   {item.service} - {item.name}
                 </p>
+                <p
+                  className="col-md-5"
+                  style={{
+                    fontSize: "14px",
+                    color: "#333",
+                    marginBottom: "5px",
+                  }}
+                >
+                  TEAM MEMEBRS {item.teamMembers}
+                </p>
                 <div
                   className="col-md-4"
                   style={{
@@ -1406,7 +1426,13 @@ const DeepCleaningPackages = () => {
                 >
                   <button
                     onClick={() =>
-                      updateCartItem(item.name, item.price, -1, item.service)
+                      updateCartItem(
+                        item.name,
+                        item.price,
+                        -1,
+                        item.service,
+                        item.teamMembers
+                      )
                     }
                     style={{
                       backgroundColor: "#f0f0f0",
@@ -1422,7 +1448,13 @@ const DeepCleaningPackages = () => {
                   <span>{item.quantity}</span>
                   <button
                     onClick={() =>
-                      updateCartItem(item.name, item.price, 1, item.service)
+                      updateCartItem(
+                        item.name,
+                        item.price,
+                        1,
+                        item.service,
+                        item.teamMembers
+                      )
                     }
                     style={{
                       backgroundColor: "#f0f0f0",
@@ -1449,7 +1481,7 @@ const DeepCleaningPackages = () => {
               </div>
             ))}
 
-            {Advanceamount > TotalPrice ? (
+            {minimumAmount > TotalPrice ? (
               <div
                 className="row"
                 style={{
@@ -1478,22 +1510,22 @@ const DeepCleaningPackages = () => {
 
             <button
               onClick={() => {
-                Advanceamount > TotalPrice ? null : setShowSlotModal(true);
+                minimumAmount > TotalPrice ? null : setShowSlotModal(true);
               }}
               style={{
                 width: "100%",
                 backgroundColor:
-                  Advanceamount > TotalPrice ? "rgb(0 0 0 / 9%)" : "#fff",
+                  minimumAmount > TotalPrice ? "rgb(0 0 0 / 9%)" : "#fff",
                 color:
-                  Advanceamount > TotalPrice ? "rgba(0, 0, 0, 0.125)" : "red",
-                border: Advanceamount > TotalPrice ? 0 : "1px solid red",
+                  minimumAmount > TotalPrice ? "rgba(0, 0, 0, 0.125)" : "red",
+                border: minimumAmount > TotalPrice ? 0 : "1px solid red",
                 padding: "10px",
                 borderRadius: "20px",
                 fontSize: "14px",
                 fontWeight: "600",
                 // cursor: "pointer",
                 marginBottom: "10px",
-                cursor: Advanceamount > TotalPrice ? "not-allowed" : "pointer",
+                cursor: minimumAmount > TotalPrice ? "not-allowed" : "pointer",
                 marginTop: "10px",
               }}
             >

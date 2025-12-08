@@ -74,7 +74,6 @@ const Services = () => {
   const [mapLng, setMapLng] = useState(null);
   const [mapUrl, setMapUrl] = useState("");
   const [mapAddress, setMapAddress] = useState("");
-  const [showAnotherPopup, setAnotherPopup] = useState(false);
   const [userAddress, setUserAddress] = useState(null);
   const { setAddressDataContext } = useAddressContext();
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -88,12 +87,27 @@ const Services = () => {
 
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
+  const [cityName, setCityName] = useState(null);
 
   const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
 
   console.log("isNewUser", isNewUser);
   const inputRefs = useRef([]);
+
+  // const formattedAddress = "Channasandra, Srinivaspura, Bengaluru, Karnataka 560060, India";
+
+  useEffect(() => {
+    if (mapAddress) {
+      const addressParts = mapAddress.split(",");
+      const city = addressParts.length >= 3 ? addressParts[addressParts.length - 3].trim() : "";
+      console.log("extracted city name:", city);
+      setCityName(city);
+    }
+  }, [mapAddress]); // <-- Reacts to changes in mapAddress
+
+  // console.log("cityName", cityName);
+
 
   // useEffect(() => {
   //   if (inputRefs.current[0]) {
@@ -227,6 +241,7 @@ const Services = () => {
       }
     );
   };
+
   useEffect(() => {
     if (isNewUser && showLocationPopup) {
       getCurrentLocation();
@@ -246,6 +261,7 @@ const Services = () => {
         setMapAddress(response.address.address);
         setLatitude(response.address.latitude);
         setLongitude(response.address.longitude);
+        setCityName(response.address.city)
         setHouseNumber((prev) =>
           prev.trim() ? prev : response.address?.houseNumber || ""
         );
@@ -269,7 +285,7 @@ const Services = () => {
       fetchUserAddress();
     }
   }, [userData?._id]);
-  console.log("latitude", latitude);
+  console.log("mapAddress", mapAddress);
 
   const handleAddress = async () => {
     console.log("function called");
@@ -282,6 +298,7 @@ const Services = () => {
         landmark: landmark,
         latitude: latitude,
         longitude: longitude,
+        city: cityName
       },
     };
 
@@ -306,6 +323,159 @@ const Services = () => {
       console.error("Address failed:", error);
     }
   };
+
+  // useEffect(() => {
+  //   const cleanupFns = [];
+  //   let map, autocomplete, marker, geocoder;
+
+  //   const reverseGeocode = (pos, formattedAddrFromPlace = null) => {
+  //     if (!geocoderRef.current) return;
+
+  //     if (markerRef.current) markerRef.current.setPosition(pos);
+  //     if (mapRef.current) {
+  //       mapRef.current.setCenter(pos);
+  //       mapRef.current.setZoom(17);
+  //     }
+
+  //     if (formattedAddrFromPlace) {
+  //       setAddr(formattedAddrFromPlace);
+  //     }
+
+  //     // ✅ Always update latLng state
+  //     setLatLng({ lat: pos.lat, lng: pos.lng });
+
+  //     geocoderRef.current.geocode({ location: pos }, (results, status) => {
+  //       if (status === "OK" && results?.length) {
+  //         const formattedAddress = results[0].formatted_address;
+  //         const addressComponents = results[0].address_components;
+
+  //         let detectedCity = "";
+  //         let state = "";
+  //         let country = "";
+
+  //         for (const comp of addressComponents) {
+  //           const types = comp.types;
+  //           if (types.includes("locality")) detectedCity = comp.long_name;
+  //           else if (
+  //             types.includes("administrative_area_level_2") &&
+  //             !detectedCity
+  //           )
+  //             detectedCity = comp.long_name;
+  //           else if (types.includes("administrative_area_level_1"))
+  //             state = comp.long_name;
+  //           else if (types.includes("country")) country = comp.long_name;
+  //         }
+
+  //         if (detectedCity)
+  //           detectedCity =
+  //             detectedCity.charAt(0).toUpperCase() + detectedCity.slice(1);
+
+  //         if (!formattedAddrFromPlace) setAddr(formattedAddress);
+
+  //         // Set the city from reverse geocoding
+  //         setCity(detectedCity);
+  //       }
+  //     });
+  //   };
+
+  //   const init = async (posToUse) => {
+  //     await loadGoogleMaps();
+  //     geocoder = new window.google.maps.Geocoder();
+  //     geocoderRef.current = geocoder;
+
+  //     map = new window.google.maps.Map(mapRef.current, {
+  //       center: posToUse,
+  //       zoom: 16,
+  //       streetViewControl: false,
+  //       mapTypeControl: false,
+  //     });
+  //     mapRef.current = map;
+
+  //     marker = new window.google.maps.Marker({
+  //       map,
+  //       position: posToUse,
+  //       draggable: true,
+  //     });
+  //     markerRef.current = marker;
+
+  //     const autocomplete = new window.google.maps.places.Autocomplete(
+  //       inputRef.current,
+  //       { fields: ["formatted_address", "geometry"] }
+  //     );
+
+  //     const ensureAutocompleteZIndex = () => {
+  //       const containers = document.querySelectorAll(".pac-container");
+  //       containers.forEach((el) => {
+  //         el.style.zIndex = "100000";
+  //       });
+  //     };
+  //     ensureAutocompleteZIndex();
+
+  //     autocomplete.addListener("place_changed", () => {
+  //       const place = autocomplete.getPlace();
+  //       if (!place.geometry) return;
+  //       const pos = {
+  //         lat: place.geometry.location.lat(),
+  //         lng: place.geometry.location.lng(),
+  //       };
+
+  //       // ✅ Update state first
+  //       setLatLng(pos);
+
+  //       reverseGeocode(pos, place.formatted_address);
+  //     });
+
+  //     const observer = new MutationObserver(ensureAutocompleteZIndex);
+  //     observer.observe(document.body, {
+  //       childList: true,
+  //       subtree: true,
+  //     });
+
+  //     map.addListener("click", (e) => {
+  //       const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+  //       setLatLng(pos);
+  //       markerRef.current.setPosition(pos);
+  //       reverseGeocode(pos);
+  //     });
+
+  //     marker.addListener("dragend", () => {
+  //       const pos = {
+  //         lat: markerRef.current.getPosition().lat(),
+  //         lng: markerRef.current.getPosition().lng(),
+  //       };
+  //       setLatLng(pos);
+  //       reverseGeocode(pos);
+  //     });
+
+  //     if (!initialAddress) reverseGeocode(posToUse);
+  //     cleanupFns.push(() => observer.disconnect());
+  //   };
+
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const currentPos = {
+  //           lat: position.coords.latitude,
+  //           lng: position.coords.longitude,
+  //         };
+  //         setLatLng(currentPos);
+  //         init(currentPos);
+  //       },
+  //       () => init(initialLatLng || { lat: 12.9716, lng: 77.5946 })
+  //     );
+  //   } else {
+  //     init(initialLatLng || { lat: 12.9716, lng: 77.5946 });
+  //   }
+  //   return () => {
+  //     cleanupFns.forEach((fn) => {
+  //       try {
+  //         fn();
+  //       } catch (err) {
+  //         console.warn("AddressPicker cleanup error:", err);
+  //       }
+  //     });
+  //   };
+  // }, [initialLatLng, initialAddress]);
 
   const handleSubmitOTP = () => {
     setShowModal(false); // Hide OTP modal
@@ -419,7 +589,7 @@ const Services = () => {
     setShowSlotModal(false);
     navigate("/checkout", {
       state: {
-        serviceType: "house-painters",
+        serviceType: "house_painting",
       },
     });
   };
@@ -4358,13 +4528,20 @@ const Services = () => {
                         const lng = place.geometry.location.lng();
                         const formattedAddress = place.formatted_address;
 
+                        console.log("city while fetching locatons>>>", place)
+                        // const cityComponent = place.address_components?.find(comp =>
+                        //   comp.types.includes("locality")
+                        //   || comp.types.includes("administrative_area_level_2")
+                        // );
+                        // const city = cityComponent ? cityComponent.long_name : "";
+
+                        // setCityName(city)
                         setLatitude(lat);
                         setLongitude(lng);
                         setMapAddress(formattedAddress);
                         setMapUrl(
                           `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
                         );
-
                         setIsLocationModalVisible(false);
                         setShowLocationPopup(true);
                       }

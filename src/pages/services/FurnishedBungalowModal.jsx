@@ -195,7 +195,8 @@ const FurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                               pkg.name,
                               pkg.price,
                               -1,
-                              serviceName
+                              serviceName,
+                              pkg.teamMembers
                             );
                           }}
                           style={{
@@ -211,12 +212,18 @@ const FurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                           −
                         </button>
                         <span style={{ padding: "5px 15px", fontSize: "14px" }}>
-                          {getQuantity(pkg.name, serviceName)}
+                          {getQuantity(pkg.name, serviceName, pkg.teamMembers)}
                         </span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateCartItem(pkg.name, pkg.price, 1, serviceName);
+                            updateCartItem(
+                              pkg.name,
+                              pkg.price,
+                              1,
+                              serviceName,
+                              pkg.teamMembers
+                            );
                           }}
                           style={{
                             padding: "5px 10px",
@@ -244,7 +251,13 @@ const FurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                           cursor: "pointer",
                         }}
                         onClick={() =>
-                          updateCartItem(pkg.name, pkg.price, 1, serviceName)
+                          updateCartItem(
+                            pkg.name,
+                            pkg.price,
+                            1,
+                            serviceName,
+                            pkg.teamMembers
+                          )
                         }
                         aria-label={`Add ${pkg.name} to cart`}
                       >

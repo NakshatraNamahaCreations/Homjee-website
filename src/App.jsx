@@ -70,6 +70,8 @@ import Checkoutdeepcleaning from "./pages/Checkoutdeepcleaning";
 import Interiorcheckout from "./pages/Interiorcheckout";
 
 import { useEffect } from "react";
+import PaymentCheckout from "./pages/PaymentCheckout";
+import VendorRatings from "./pages/VendorRatings";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -93,6 +95,11 @@ const AppRoutes = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/aboutus" element={<About />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route
+            path="/checkout/payment/:bookingId/:date/:pay_type"
+            element={<PaymentCheckout />}
+          />
+          <Route path="/vendor-ratings" element={<VendorRatings />} />
           <Route
             path="/deep-cleaning-packages"
             element={<DeepCleaningPackages />}

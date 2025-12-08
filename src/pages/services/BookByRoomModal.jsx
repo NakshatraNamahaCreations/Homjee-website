@@ -196,7 +196,8 @@ const BookByRoomModal = ({ pkgGroup, closeModal }) => {
                               pkg.name,
                               pkg.price,
                               -1,
-                              serviceName
+                              serviceName,
+                              pkg.teamMembers
                             );
                           }}
                           style={{
@@ -217,7 +218,13 @@ const BookByRoomModal = ({ pkgGroup, closeModal }) => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateCartItem(pkg.name, pkg.price, 1, serviceName);
+                            updateCartItem(
+                              pkg.name,
+                              pkg.price,
+                              1,
+                              serviceName,
+                              pkg.teamMembers
+                            );
                           }}
                           style={{
                             padding: "5px 10px",
@@ -245,7 +252,13 @@ const BookByRoomModal = ({ pkgGroup, closeModal }) => {
                           cursor: "pointer",
                         }}
                         onClick={() =>
-                          updateCartItem(pkg.name, pkg.price, 1, serviceName)
+                          updateCartItem(
+                            pkg.name,
+                            pkg.price,
+                            1,
+                            serviceName,
+                            pkg.teamMembers
+                          )
                         }
                         aria-label={`Add ${pkg.name} to cart`}
                       >

@@ -96,7 +96,7 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
               }}
               onClick={() => {
                 if (getQuantity(pkg.name) === 0) {
-                  updateCartItem(pkg.name, pkg.price, 1);
+                  updateCartItem(pkg.name, pkg.price, 1, pkg.teamMembers);
                 }
               }}
             >
@@ -146,7 +146,12 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateCartItem(pkg.name, pkg.price, -1);
+                        updateCartItem(
+                          pkg.name,
+                          pkg.price,
+                          -1,
+                          pkg.teamMembers
+                        );
                       }}
                       style={{
                         padding: "5px 10px",
@@ -165,7 +170,7 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateCartItem(pkg.name, pkg.price, 1);
+                        updateCartItem(pkg.name, pkg.price, 1, pkg.teamMembers);
                       }}
                       style={{
                         padding: "5px 10px",

@@ -4,8 +4,8 @@ import moment from "moment";
 const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
-  console.log("selectedDate", selectedDate);
-  console.log("selectedTimeSlot", selectedTimeSlot);
+  // console.log("selectedDate", selectedDate);
+  // console.log("selectedTimeSlot", selectedTimeSlot);
   if (!show) return null;
 
   const today = new Date();
@@ -23,7 +23,7 @@ const SlotSelectionModal = ({ show, onClose, handleSelectSlot }) => {
   });
   // const isoDate = moment(selectedDate, "ddd, MMM DD, YYYY").toISOString(); //old/storing as ISO
   const isoDate = moment(selectedDate).format("YYYY-MM-DD");
-  console.log("isoDate", isoDate);
+  // console.log("isoDate", isoDate);
 
   const timeSlots = [
     "08:00 AM",

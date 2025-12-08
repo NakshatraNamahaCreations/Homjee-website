@@ -79,6 +79,7 @@ const Deepcleaning = () => {
   const [mapUrl, setMapUrl] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [landmark, setLandmark] = useState("");
+  const [cityName, setCityName] = useState(null);
 
   const [locationRequested, setLocationRequested] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
@@ -88,9 +89,12 @@ const Deepcleaning = () => {
   // const isNewUser = sessionStorage.getItem("isNewUser") === "true";
   const [showSlotModal, setShowSlotModal] = useState(false);
   const { setSelectedSlot } = useSelectedSlotContext();
-  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
+  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
   const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+
+  // const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
+  // const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   // const handleProceedClick = async () => {
   //   try {
@@ -218,6 +222,7 @@ const Deepcleaning = () => {
         setMapAddress(response.address.address);
         setLatitude(response.address.latitude);
         setLongitude(response.address.longitude);
+        setCityName(response.address.city)
         setHouseNumber((prev) =>
           prev.trim() ? prev : response.address?.houseNumber || ""
         );
@@ -280,6 +285,15 @@ const Deepcleaning = () => {
     // navigate("/deep-cleaning-packages");
   };
 
+  useEffect(() => {
+    if (mapAddress) {
+      const addressParts = mapAddress.split(",");
+      const city = addressParts.length >= 3 ? addressParts[addressParts.length - 3].trim() : "";
+      console.log("extracted city name:", city);
+      setCityName(city);
+    }
+  }, [mapAddress]);
+
   const handleAddress = async () => {
     console.log("function called");
     const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -291,6 +305,7 @@ const Deepcleaning = () => {
         landmark: landmark,
         latitude: latitude,
         longitude: longitude,
+        city: cityName
       },
     };
 

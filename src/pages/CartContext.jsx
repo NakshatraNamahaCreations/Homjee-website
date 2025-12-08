@@ -12,7 +12,8 @@ export const CartProvider = ({ children }) => {
     sessionStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const updateCartItem = (name, price, delta, service) => {
+  const updateCartItem = (name, price, delta, service, teamMembers) => {
+    // const safeTeamMembers = teamMembers ?? 1;
     // Validate inputs
     if (!name || typeof price !== "number" || !service) {
       console.warn("Invalid input for updateCartItem:", {
@@ -20,6 +21,7 @@ export const CartProvider = ({ children }) => {
         price,
         delta,
         service,
+        teamMembers,
       });
       return;
     }
@@ -68,12 +70,15 @@ export const CartProvider = ({ children }) => {
                 item.name.split(" - ")[0] === prefix && item.service === service
               )
           ),
-          { name, price, quantity: 1, service },
+          { name, price, quantity: 1, service, teamMembers },
         ];
       } else if (delta > 0) {
         // Add new item if no item with this prefix exists
         console.log(`Adding new item: ${name} for service: ${service}`);
-        return [...prevCart, { name, price, quantity: 1, service }];
+        return [
+          ...prevCart,
+          { name, price, quantity: 1, service, teamMembers },
+        ];
       }
       // Return unchanged cart if no updates needed
       console.log("No cart update needed");

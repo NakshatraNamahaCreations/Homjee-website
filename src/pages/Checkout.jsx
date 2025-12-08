@@ -11,7 +11,7 @@ import { CiCircleInfo } from "react-icons/ci";
 import { useAddressContext } from "../utils/AddressContext";
 import { useSelectedSlotContext } from "../utils/SlotContext";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
-import { API_ENDPOINTS } from "../ApiService/apiConstants";
+import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
 import { CartContext } from "./CartContext";
 import moment from "moment";
 import { Button, Form, Modal } from "react-bootstrap";
@@ -20,11 +20,12 @@ import "./checkout.css";
 import map from "../assets/map.png";
 import searchLocation from "../assets/search-location.png";
 import Autocomplete from "react-google-autocomplete";
+import axios from "axios";
 
 const Checkout = () => {
   const location = useLocation();
   const { serviceType } = location.state || {};
-  console.log("serviceType", serviceType);
+  // console.log("serviceType", serviceType);
   const navigate = useNavigate();
   const userData = JSON.parse(sessionStorage.getItem("user"));
   const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
@@ -34,18 +35,11 @@ const Checkout = () => {
 
   const { phoneNumber: initialPhoneNumber, openAddressModal } =
     location.state || { phoneNumber: "", openAddressModal: false };
-  const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
+  const [isLoading, setIsLoading] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [addressSelection, setAddressSelection] = useState(null);
   // const { cartItems, updateCartItem, getQuantity, totalPrice } =
   //   useContext(CartContext);
-  const [newAddress, setNewAddress] = useState({
-    houseNumber: "",
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-  });
   const [showSlotModal, setShowSlotModal] = useState(false);
   const [priceConfig, setPriceConfig] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -60,8 +54,6 @@ const Checkout = () => {
   const [showAnotherPopup, setAnotherPopup] = useState(false);
   const [showLocationPopup, setShowLocationPopup] = useState(false);
 
-  const [mapLat, setMapLat] = useState(null);
-  const [mapLng, setMapLng] = useState(null);
   const [mapUrl, setMapUrl] = useState("");
   const [userAddress, setUserAddress] = useState(null);
 
@@ -76,7 +68,10 @@ const Checkout = () => {
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
   console.log("cartItems", cartItems);
 
-  console.log("addressDataContext context api", addressDataContext);
+  const [deepCleaningPackageValues, setDeepCleaningPackageValues] =
+    useState(null);
+
+  // console.log("addressDataContext context api", addressDataContext);
   const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
   const handleCurrentLocation = () => {
@@ -215,7 +210,7 @@ const Checkout = () => {
     console.log(addr);
     setAddressDataContext(addr);
     setSelectedAddressId(addr.uniqueCode);
-    sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
+    // sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
     // navigate("/deep-cleaning-packages");
   };
   // Function to handle opening the slot modal
@@ -247,26 +242,9 @@ const Checkout = () => {
   };
 
   const handleSelectPaymentOption = (e) => {
-    console.log("target option", e);
+    // console.log("target option", e);
     // setShowPaymentModal(false);
   };
-
-  const savedAddresses = [
-    {
-      houseNumber: "123",
-      street: "Main Street",
-      city: "Mumbai",
-      state: "Maharashtra",
-      zipCode: "400001",
-    },
-    {
-      houseNumber: "456",
-      street: "Park Avenue",
-      city: "Delhi",
-      state: "Delhi",
-      zipCode: "110001",
-    },
-  ];
 
   // Predefined slots for demonstration
   const availableSlots = [
@@ -282,73 +260,163 @@ const Checkout = () => {
     { name: "Net Banking" },
     { name: "Cash on Delivery" },
   ];
-  // console.log("userData", userData);
+  console.log("priceConfig", priceConfig);
 
   // const calculateTotalAmount =
   //   cartItems && cartItems.length > 0
   //     ? cartItems.reduce((acc, val) => acc + val.price * (val.quantity || 1), 0)
   //     : 0;
 
-  let calculateTotalAmount = 0;
-  const addPrice = () => {
-    if (serviceType === "house-painters" && priceConfig?.siteVisitCharge > 0) {
-      return (calculateTotalAmount = priceConfig?.siteVisitCharge || 0);
-    } else {
-      return cartItems && cartItems.length > 0
-        ? cartItems.reduce(
-            (acc, val) => acc + val.price * (val.quantity || 1),
-            0
-          )
-        : 0;
-    }
-  };
-
   const checkEnquiry = () => {
-    if (serviceType === "house-painters" && priceConfig?.siteVisitCharge > 0) {
+    if (serviceType === "house_painting" && priceConfig?.siteVisitCharge > 0) {
       return false;
     } else if (serviceType === "deep-cleaning") {
       return false;
     }
     return true;
   };
-  console.log("priceConfig?.siteVisitCharge", priceConfig?.siteVisitCharge);
+
+  const result = cartItems.map((cartItem) => {
+    const matchedPackage = deepCleaningPackageValues?.find(
+      (pkg) => pkg.name === cartItem.name
+    );
+    return {
+      ...cartItem,
+      bookingAmount: matchedPackage ? matchedPackage.bookingAmount : null,
+    };
+  });
+
+  // Sum up the bookingAmount values, treating null as 0
+  const advancedAmount = result.reduce((sum, item) => {
+    return sum + (item.bookingAmount ? item.bookingAmount : 0);
+  }, 0);
+
+  // console.log("booking total", addPrice())
+
+  // console.log("advancedAmount", advancedAmount);
+
+  //   {
+  //     "name": "3 BHK Cleaning - Premium",
+  //     "price": 4599,
+  //     "quantity": 1,
+  //     "service": "Unfurnished Apartment",
+  //     "teamMembers": 3
+  // }
+
+  // {
+  //     "_id": "6915c8deb1420691b0506e9e",
+  //     "category": "Unfurnished apartment",
+  //     "subcategory": "3 BHK Cleaning",
+  //     "service": "Premium",
+  //     "totalAmount": 4599,
+  //     "bookingAmount": 599,
+  //     "coinsForVendor": 50,
+  //     "teamMembers": 4,
+  //     "name": "3 BHK Cleaning - Premium",
+  //     "createdAt": "2025-11-13T12:02:38.271Z",
+  //     "updatedAt": "2025-11-13T12:02:38.271Z",
+  //     "__v": 0
+  // }
+
+  // console.log("deepCleaningPackageValues", deepCleaningPackageValues);
+
+  const siteVisitAmountHousePainting = () => {
+    if (serviceType === "house_painting" && priceConfig?.siteVisitCharge > 0) {
+      return (calculateTotalAmount = priceConfig?.siteVisitCharge || 0);
+    } else {
+      return 0;
+    }
+  };
+
+  let calculateTotalAmount = 0;
+
+  const totalCartValueAmountDeepCleaning =
+    cartItems && cartItems.length > 0
+      ? cartItems.reduce((acc, val) => acc + val.price * (val.quantity || 1), 0)
+      : 0;
+
+  const needToPay = Math.round(totalCartValueAmountDeepCleaning * 0.2);
+
+  const RemaingAmountYetToPay =
+    parseInt(totalCartValueAmountDeepCleaning) - parseInt(needToPay);
+
+  console.log("total Cart Value", totalCartValueAmountDeepCleaning);
+  console.log("Advance AMT to be paid", needToPay);
+  // console.log("Get booking Amount based on selected pkg", result);
+  console.log(
+    "priceConfig?.siteVisitCharge house painting",
+    priceConfig?.siteVisitCharge
+  );
+  console.log("RemaingAmountYetToPay", RemaingAmountYetToPay);
+  console.log("serviceType", serviceType);
+
+  const getMaxTeamMembersRequired = () => {
+    if (cartItems.length === 0) return 0;
+    return Math.max(
+      ...cartItems.map((item) => item.teamMembers * item.quantity)
+    );
+  };
+
+  const addPrice = () => {
+    if (serviceType === "house_painting" && priceConfig?.siteVisitCharge > 0) {
+      return (calculateTotalAmount = priceConfig?.siteVisitCharge || 0);
+    } else {
+      return (calculateTotalAmount = needToPay);
+    }
+  };
+
+  // console.log("Required Team Members:", getMaxTeamMembersRequired());
 
   const data = {
+    // Customer Info
     customer: {
       customerId: userData?._id,
       phone: userData?.mobileNumber,
       name: userData?.userName,
     },
     service:
-      serviceType === "house-painters"
+      serviceType === "house_painting"
         ? [
             {
               // category: "House Painters & Waterproofing",
               category: "House Painting",
               serviceName: "House Painters & Waterproofing",
-              price: priceConfig?.siteVisitCharge || 0,
-              quantity: 1,
+              price: Number(priceConfig?.siteVisitCharge || 0),
+              quantity: Number(1),
             },
           ]
         : cartItems.map((ele) => ({
             category: "Deep Cleaning",
             subCategory: ele.service,
             serviceName: ele.name,
-            price: ele.price,
-            quantity: ele.quantity,
+            price: Number(ele.price),
+            quantity: Number(ele.quantity),
+            teamMembersRequired: Number(ele.teamMembers || 1),
           })),
-
     bookingDetails: {
-      bookingDate: moment().toISOString(),
-      bookingTime: moment().format("LT"),
-      bookingAmount: addPrice(),
-      siteVisitCharges: serviceType === "house-painters" ? addPrice() : 0,
-      // paidAmount: calculateTotalAmount || 0,
+      bookingDate: moment().toISOString(), // from form
+      bookingTime: moment().format("LT"), // from form
+      siteVisitCharges:
+        serviceType === "house_painting"
+          ? priceConfig?.siteVisitCharge || 0
+          : 0,
+      paymentMethod: "UPI", // Only if available
     },
+    // bookingDetails: {
+    //   bookingDate: moment().toISOString(),
+    //   bookingTime: moment().format("LT"),
+    //   bookingAmount: addPrice(),
+    //   siteVisitCharges: calculateTotalAmount, //consider deep cleaning [advancedAmount] and house painting [siteVisitCharges]
+    //   paidAmount: serviceType === "house_painting" ? 0 : advancedAmount,
+
+    //   amountYetToPay: serviceType === "house_painting" ? 0 :
+    //     RemaingAmountYetToPay,
+    // },
     address: {
       houseFlatNumber: selectedAddress?.houseNumber || "",
       streetArea: selectedAddress?.address || "",
       landMark: selectedAddress?.landmark || "",
+      city: selectedAddress?.city || "",
       location: {
         type: "Point",
         coordinates: [
@@ -363,7 +431,7 @@ const Checkout = () => {
     },
     formName: "Website Service Page",
     isEnquiry: checkEnquiry(),
-    formName: "Website Service Page",
+    // formName: "Website Service Page",
   };
 
   const handleProceedToCheckout = async () => {
@@ -386,6 +454,7 @@ const Checkout = () => {
   };
 
   const fetchServiceConfig = async () => {
+    setIsLoading(true);
     try {
       const response = await getRequest(API_ENDPOINTS.GET_SERVICE_PRICE_CONFIG);
       // console.log("response", response);
@@ -394,15 +463,37 @@ const Checkout = () => {
     } catch (error) {
       console.error("GET error:", error.response || error);
       throw error.response ? error.response.data : error;
+    } finally {
+      setIsLoading(false);
     }
   };
   useEffect(() => {
     fetchServiceConfig();
   }, []);
-  const handleEnquiry = () => {
-    alert("Enquiry Submitted!");
-    // window.location.assign("/");
+
+  const fetchDeepCleaningPackages = async () => {
+    setIsLoading(true);
+    try {
+      // const res = await fetch("http://localhost:9000/api/deeppackage/deep-cleaning-packages");
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.GET_DEEPCLEANING_PACKAGES}`
+      );
+      const json = await res.json();
+      console.log("json", json);
+
+      if (!json.success)
+        throw new Error(json.message || "Failed to load packages");
+      setDeepCleaningPackageValues(json.data);
+    } catch (err) {
+      console.error("GET packages error:", err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
+  useEffect(() => {
+    fetchDeepCleaningPackages();
+  }, []);
+
   // console.log("priceConfig", priceConfig);
   return (
     <div className="d-none d-lg-block">
@@ -747,7 +838,7 @@ const Checkout = () => {
             }}
           >
             {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
-            (serviceType === "house-painters" &&
+            (serviceType === "house_painting" &&
               priceConfig?.siteVisitCharge > 0) ? (
               <div
                 style={{
@@ -863,7 +954,7 @@ const Checkout = () => {
                   </div>
                 ) : null}
 
-                {serviceType === "house-painters" &&
+                {serviceType === "house_painting" &&
                   priceConfig?.siteVisitCharge > 0 && (
                     <div
                       style={{
@@ -882,7 +973,7 @@ const Checkout = () => {
               </div>
             ) : null}
             {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
-            (serviceType === "house-painters" &&
+            (serviceType === "house_painting" &&
               priceConfig?.siteVisitCharge > 0) ? (
               <div
                 style={{
@@ -914,17 +1005,17 @@ const Checkout = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "#333" }}>
-                    Item total
+                  <span style={{ fontSize: "17px", color: "#333" }}>
+                    <b> Item total</b>
                   </span>
-                  <span style={{ fontSize: "13px", color: "#333" }}>
-                    ₹
-                    {
-                      serviceType === "house-painters"
+                  <span style={{ fontSize: "17px", color: "#333" }}>
+                    <b>
+                      ₹{" "}
+                      {serviceType === "house_painting"
                         ? priceConfig?.siteVisitCharge
-                        : addPrice()
-                      // calculateTotalAmount
-                    }
+                        : // : addPrice()
+                          totalCartValueAmountDeepCleaning}
+                    </b>
                   </span>
                 </div>
                 {serviceType === "deep-cleaning" && (
@@ -945,15 +1036,14 @@ const Checkout = () => {
                           fontWeight: 300,
                         }}
                       >
-                        ₹0
-                        {/* ₹2839 payable after service */}
+                        ₹{RemaingAmountYetToPay} payable after service
                       </div>
                     </span>
                     <span style={{ fontSize: "14px", color: "#333" }}>
-                      ₹ 0
-                      {/* {serviceType === "house-painters"
+                      ₹
+                      {serviceType === "house_painting"
                         ? priceConfig?.siteVisitCharge
-                        : calculateTotalAmount}{" "} */}
+                        : needToPay}{" "}
                     </span>
                   </div>
                 )}
@@ -966,16 +1056,16 @@ const Checkout = () => {
                   }}
                 >
                   <span
-                    style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
+                    style={{ fontSize: "17px", color: "#333", fontWeight: 600 }}
                   >
                     Amount to pay
                   </span>
                   <span
-                    style={{ fontSize: "15px", color: "#333", fontWeight: 600 }}
+                    style={{ fontSize: "17px", color: "#333", fontWeight: 600 }}
                   >
                     ₹
                     {
-                      serviceType === "house-painters"
+                      serviceType === "house_painting"
                         ? priceConfig?.siteVisitCharge
                         : addPrice()
                       // calculateTotalAmount
@@ -985,7 +1075,7 @@ const Checkout = () => {
               </div>
             ) : null}
 
-            {serviceType === "house-painters" &&
+            {serviceType === "house_painting" &&
             (!priceConfig || priceConfig?.siteVisitCharge <= 0) ? (
               <button
                 onClick={showSelectedSlot ? handleProceedToCheckout : null}
@@ -1009,7 +1099,7 @@ const Checkout = () => {
             ) : null}
           </div>
           {(serviceType === "deep-cleaning" && cartItems.length > 0) ||
-          (serviceType === "house-painters" &&
+          (serviceType === "house_painting" &&
             priceConfig?.siteVisitCharge > 0) ? (
             <div
               style={{
@@ -1034,16 +1124,16 @@ const Checkout = () => {
                 }}
               >
                 <span
-                  style={{ fontSize: "16px", color: "black", fontWeight: 600 }}
+                  style={{ fontSize: "17px", color: "black", fontWeight: 600 }}
                 >
                   Amount to pay
                 </span>
                 <span
-                  style={{ fontSize: "16px", color: "black", fontWeight: 600 }}
+                  style={{ fontSize: "17px", color: "black", fontWeight: 600 }}
                 >
                   ₹
                   {
-                    serviceType === "house-painters"
+                    serviceType === "house_painting"
                       ? priceConfig?.siteVisitCharge
                       : addPrice()
                     // calculateTotalAmount

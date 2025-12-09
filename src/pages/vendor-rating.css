@@ -1,0 +1,7 @@
+
+.vendor-rating-root {
+  display: block !important;           /* override body: flex */
+  min-width: auto !important;          /* or 100% */
+  min-height: auto;         /* or 100% */
+  place-items: unset !important;       /* remove centering if applied */
+}

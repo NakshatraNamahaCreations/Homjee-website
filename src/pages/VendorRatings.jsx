@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FaStar } from "react-icons/fa";
+import { IoStarSharp } from "react-icons/io5";
 import axios from "axios";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
 import { Modal } from "react-bootstrap";
+import GlobalLoader from "../utils/GlobalLoader";
 
 export default function VendorRatings() {
   const location = useLocation();
@@ -26,11 +27,13 @@ export default function VendorRatings() {
   const [feedback, setFeedback] = useState("");
   const [isRatingLocked, setIsRatingLocked] = useState(false);
   const [existingRating, setExistingRating] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   console.log("customerId", customerId);
 
   useEffect(() => {
     async function fetchRating() {
+      setLoading(true);
       try {
         const res = await axios.get(
           `${API_BASE_URL}${API_ENDPOINTS.GET_VENDOR_RATING_BY_ID}?vendorId=${vendorId}&bookingId=${bookingId}&customerId=${customerId}`
@@ -42,6 +45,8 @@ export default function VendorRatings() {
         }
       } catch (err) {
         console.log("No previous rating", err);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -61,16 +66,16 @@ export default function VendorRatings() {
     }
 
     // if 1-3 stars require feedback
-    if (effectiveRating <= 3 && (!feedback || feedback.trim().length === 0)) {
-      setMessageType("warning");
-      setShowMessage("Please add feedback for ratings below 4 stars.");
-      setShowCustomPopup(true);
-      return { success: false };
-    }
+    // if (effectiveRating <= 3 && (!feedback || feedback.trim().length === 0)) {
+    //   setMessageType("warning");
+    //   setShowMessage("Please add feedback for ratings below 4 stars.");
+    //   setShowCustomPopup(true);
+    //   return { success: false };
+    // }
 
     try {
       setIsResLoading(true);
-
+      setLoading(true);
       const payload = {
         vendorId,
         bookingId,
@@ -95,24 +100,25 @@ export default function VendorRatings() {
         // If server instructs redirect (for 4-5 stars), handle it
         if (res.data.redirect) {
           // optional: small delay to show message
-          setMessageType("success");
+          // setMessageType("success");
           // setShowMessage("Thanks!");
-          setShowCustomPopup(true);
+          // setShowCustomPopup(true);
 
           // Use the official Google review link (or from server)
           const googleUrl =
-            res.data.googleUrl || "https://business.google.com/reviews";
+            res.data.googleUrl || "https://g.page/r/CbCGCiPVza_2EBE/review";
           // slight delay so user sees toast (optional)
           setTimeout(() => {
             window.location.href = googleUrl;
-          }, 600);
+          }, 500);
           return { success: true, redirected: true };
         }
 
         // normal 1-3 flow
         setMessageType("success");
-        setShowMessage("Your feedback is submitted.");
-        setShowCustomPopup(true);
+        navigate("/");
+        // setShowMessage("Your feedback is submitted.");
+        // setShowCustomPopup(true);
 
         return { success: true };
       } else {
@@ -136,6 +142,7 @@ export default function VendorRatings() {
       return { success: false };
     } finally {
       setIsResLoading(false);
+      setLoading(false);
     }
   };
 
@@ -154,7 +161,7 @@ export default function VendorRatings() {
       // (server ideally returns redirect:true)
       if (result.success && !result.redirected) {
         // fallback redirect
-        window.location.href = "https://business.google.com/reviews";
+        window.location.href = "https://g.page/r/CbCGCiPVza_2EBE/review";
       }
       return;
     }
@@ -174,20 +181,43 @@ export default function VendorRatings() {
 
   return (
     <>
-      <div style={{ padding: 20 }}>
+      {loading && <GlobalLoader />}
+      <div
+        style={{
+          color: "white",
+          minHeight: "100vh",
+          padding: "20px",
+        }}
+      >
         {/* Back Arrow */}
-        <div
-          style={{ marginBottom: 20, cursor: "pointer", fontWeight: 600 }}
-          // onClick={() => navigate(-1)}
+        <h2
+          style={{
+            // fontFamily: "Google Sans, Roboto, Arial, sans-serif",
+            fontSize: "16px",
+            fontWeight: 500,
+            letterSpacing: 0,
+            lineHeight: "24px",
+            color: "#0c0c0cff",
+            overflow: "hidden",
+            textAlign: "center",
+            textOverflow: "ellipsis",
+            margin: "auto 0",
+            height: "68px",
+          }}
           onClick={() => navigate("/")}
         >
-          <IoIosArrowRoundBack style={{ fontSize: "35px" }} /> Homjee - Deep
-          Cleaning & Paintings
-        </div>
+          Homjee
+        </h2>
 
         {/* Vendor Info */}
         <div
-          style={{ display: "flex", alignItems: "center", marginBottom: 20 }}
+          className="d-flex"
+          style={{
+            // paddingTop: "16px",
+            paddingLeft: "32px",
+            paddingRight: "32px",
+            // position: "relative",
+          }}
         >
           <img
             src={
@@ -196,19 +226,45 @@ export default function VendorRatings() {
             }
             alt="vendor"
             style={{
-              width: 55,
-              height: 55,
+              width: 40,
+              height: 40,
               borderRadius: "50%",
               marginRight: 10,
+              display: "inline-block",
             }}
           />
           <div>
-            <div style={{ fontWeight: 600, fontSize: 18 }}>{vendorName}</div>
-            <div style={{ color: "#666", marginTop: 3 }}>
-              Posting publicly for this service
+            <div
+              style={{
+                // fontFamily: "Roboto, Arial, sans-serif",
+                fontSize: "20px",
+                fontWeight: 400,
+                letterSpacing: 0,
+                lineHeight: "26px",
+                color: "#1a1a1aff",
+                overflow: "hidden",
+                textAlign: "left",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {vendorName}
+            </div>
+            <div
+              style={{
+                color: "#e9e9e9ff",
+                marginTop: 3,
+                color: "#1f1f1f",
+                fontSize: 14,
+                lineHeight: "18px",
+                fontWeight: 400,
+                color: "#1a1a1aff",
+              }}
+            >
+              Posting publicly across Homjee
             </div>
           </div>
         </div>
+        {/* select star */}
         {!isRatingLocked && (
           <div
             style={{
@@ -216,12 +272,13 @@ export default function VendorRatings() {
               justifyContent: "center",
               marginBottom: 25,
               pointerEvents: "auto",
+              marginTop: "20px",
             }}
           >
             {[1, 2, 3, 4, 5].map((star) => (
-              <FaStar
+              <IoStarSharp
                 key={star}
-                size={35}
+                size={48}
                 color={rating >= star ? "#f4b400" : "#e4e5e9"}
                 onClick={() => handleRatingSelect(star)}
                 style={{ cursor: "pointer", marginRight: 8 }}
@@ -229,56 +286,71 @@ export default function VendorRatings() {
             ))}
           </div>
         )}
+        {/* feed back text area */}
         {rating > 0 && rating <= 3 && !isRatingLocked && (
-          <>
-            <textarea
-              placeholder="Share details of your experience"
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              style={{
-                width: "100%",
-                minHeight: 130,
-                padding: 12,
-                borderRadius: 8,
-                border: "1px solid #ccc",
-              }}
-            />
-
-            <button
-              onClick={handleSubmit}
-              disabled={isResLoading}
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                marginTop: 20,
-                background: isResLoading ? "#666" : "#000",
-                color: "#fff",
-                borderRadius: 8,
-                border: "none",
-                cursor: isResLoading ? "not-allowed" : "pointer",
-                fontSize: 16,
-              }}
-            >
-              {isResLoading ? "Posting..." : "Post"}
-            </button>
-          </>
+          <textarea
+            placeholder="Share details of your experience"
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            style={{
+              width: "100%",
+              minHeight: 130,
+              padding: 12,
+              borderRadius: 8,
+              border: "1px solid #ccc",
+            }}
+          />
+        )}
+        {/* button to post */}
+        {rating > 0 && rating <= 3 && !isRatingLocked && (
+          <button
+            onClick={handleSubmit}
+            disabled={
+              isRatingLocked || isResLoading || rating === 0 || rating > 3
+              //  || (rating <= 3 && feedback.trim() === "")
+            }
+            style={{
+              width: "100%",
+              padding: "12px 0",
+              marginTop: 20,
+              background:
+                !isRatingLocked && !isResLoading && rating > 0 && rating <= 3
+                  ? // && feedback.trim() !== ""
+                    "#8ab4f8"
+                  : "#666",
+              color: "#fff",
+              borderRadius: 8,
+              border: "none",
+              cursor:
+                isRatingLocked || isResLoading || rating === 0 || rating > 3
+                  ? // || (rating <= 3 && feedback.trim() === "")
+                    "not-allowed"
+                  : "pointer",
+              fontSize: 16,
+              opacity: isRatingLocked ? 0.5 : 1,
+            }}
+          >
+            {isResLoading ? "Posting..." : "Post"}
+          </button>
         )}
         {isRatingLocked && existingRating && (
-          <div style={{ textAlign: "center", marginTop: 20 }}>
-            <h4>Your Rating</h4>
+          <div style={{ textAlign: "center", marginTop: 30 }}>
+            <h4 style={{ color: "#1f1f1f" }}>Your Rating</h4>
 
             {[1, 2, 3, 4, 5].map((star) => (
-              <FaStar
+              <IoStarSharp
                 key={star}
-                size={32}
+                size={48}
                 color={existingRating.rating >= star ? "#f4b400" : "#ccc"}
               />
             ))}
 
             {existingRating.rating <= 3 && existingRating.feedback && (
               <>
-                <h5 style={{ marginTop: 15 }}>Your Feedback</h5>
-                <p>{existingRating.feedback}</p>
+                <h5 style={{ marginTop: 15, color: "#1f1f1f" }}>
+                  Your Feedback
+                </h5>
+                <p style={{ color: "#1f1f1f" }}>{existingRating.feedback}</p>
               </>
             )}
           </div>

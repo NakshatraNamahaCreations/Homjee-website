@@ -826,7 +826,14 @@ function PaymentCheckout() {
               <h6 className="fw-bold mb-3">Professional Assigned</h6>
 
               <div className="d-flex align-items-center gap-3">
-                <FaUser style={{ width: 30, height: 30, objectFit: "cover" }} />
+                <img
+                  src={
+                    bookingData?.assignedProfessional?.profile ||
+                    "https://www.vlp.org.uk/wp-content/uploads/2024/12/c830d1dee245de3c851f0f88b6c57c83c69f3ace-300x300.png"
+                  }
+                  style={{ width: 50, height: 50, objectFit: "cover" }}
+                />
+                {/* <FaUser style={{ width: 30, height: 30, objectFit: "cover" }} /> */}
                 <div className="flex-grow-1">
                   <div className="d-flex justify-content-between align-items-center">
                     <div>

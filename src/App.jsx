@@ -78,12 +78,14 @@ const AppRoutes = () => {
 
   // List of paths where Footer should be hidden
   const hideFooterRoutes = ["/checkout"];
+  const hideRating = ["/vendor-ratings"];
 
   const shouldHideFooter = hideFooterRoutes.includes(location.pathname);
+  const shouldHideHeaderOnRatings = hideRating.includes(location.pathname);
 
   return (
     <>
-      <Header />
+      {!shouldHideHeaderOnRatings && <Header />}
       <div style={{ marginTop: "20px" }}>
         <Routes>
           <Route path="/" element={<Home />} />

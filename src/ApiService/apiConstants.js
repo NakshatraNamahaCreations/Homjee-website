@@ -24,6 +24,11 @@ export const API_ENDPOINTS = {
   GET_SERVICE_PRICE_CONFIG: "/service/latest",
   GET_DEEPCLEANING_PACKAGES: "/deeppackage/deep-cleaning-packages",
   GET_MINIMUM_ORDERS_VALUE: "/minimumorder/minimum-orders",
+
+  // VENDOR-RATING
+  WRITE_VENDOR_RATING: "/ratings/vendor-ratings/add",
+  GET_VENDOR_RATING_BY_ID: "/ratings/vendor-ratings/get",
+
 };
 
 // Akash 68884d7c02bf3a539293ec61
@@ -37,3 +42,4 @@ export const API_ENDPOINTS = {
 
 // Nirmal   6889e40434c540bfd1be1ef1
 // 9182722198
+

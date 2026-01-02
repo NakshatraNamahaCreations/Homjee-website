@@ -8,6 +8,7 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
     return null;
   }
   const serviceName = "Mini Services";
+  console.log("pkgGroup, Mini Services", pkgGroup);
 
   return (
     <div
@@ -96,7 +97,13 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
               }}
               onClick={() => {
                 if (getQuantity(pkg.name) === 0) {
-                  updateCartItem(pkg.name, pkg.price, 1, pkg.teamMembers);
+                  updateCartItem(
+                    pkg.name,
+                    pkg.price,
+                    1,
+                    pkg.teamMembers,
+                    pkg.duration
+                  );
                 }
               }}
             >
@@ -150,7 +157,8 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                           pkg.name,
                           pkg.price,
                           -1,
-                          pkg.teamMembers
+                          pkg.teamMembers,
+                          pkg.duration
                         );
                       }}
                       style={{
@@ -170,7 +178,13 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateCartItem(pkg.name, pkg.price, 1, pkg.teamMembers);
+                        updateCartItem(
+                          pkg.name,
+                          pkg.price,
+                          1,
+                          pkg.teamMembers,
+                          pkg.duration
+                        );
                       }}
                       style={{
                         padding: "5px 10px",

@@ -140,7 +140,8 @@ function PaymentCheckout() {
     if (popupType === "reject") return "Are you sure you want to reject?";
     if (popupType === "pay") return "Are you sure you want to pay?";
     if (popupType === "cancel_booking")
-      return "Are you sure you want to Cancel Booking?";
+      // return "Are you sure you want to Cancel Booking?";
+      return "Free cancellation up to 3 hours before your booking. If cancelled within 3 hours, no refund is provided. This amount goes directly to our service teams to cover their lost time, as we blocked this slot exclusively for you.";
     return "";
   };
 
@@ -159,7 +160,11 @@ function PaymentCheckout() {
       } else if (popupType === "reject") {
         await rejectPrice("customer");
       } else if (popupType === "pay") {
-        await handleProceedToPay();
+        if (bookingData?.isEnquiry) {
+          await payAndConvertEnquiryToLead();
+        } else {
+          await handleProceedToPay();
+        }
       } else if (popupType === "cancel_booking") {
         await CancelBooking();
 
@@ -196,8 +201,19 @@ function PaymentCheckout() {
   const finalPaid = bd?.finalPayment?.status === "paid";
 
   // which installment is vendor asking to pay now?
+  // PRIORITY 1: Enquiry Payment Flow (always override)
+  if (bookingData?.isEnquiry && bd.paymentStatus === "Unpaid") {
+    if (category === "House Painting") {
+      currentInstallmentLabel = "Site Visit Charges";
+      currentInstallmentAmount = bd?.siteVisitCharges || 0;
+    } else if (category === "Deep Cleaning") {
+      currentInstallmentLabel = "First Partial Payment";
+      currentInstallmentAmount = bd?.bookingAmount || 0;
+    }
+  }
+  // PRIORITY 2: Deep Cleaning installments
   // Deep Cleaning → only first + final
-  if (category === "Deep Cleaning") {
+  else if (category === "Deep Cleaning") {
     if (!firstPaid) {
       currentInstallmentLabel = "First Partial Payment";
       currentInstallmentAmount = bd?.firstPayment?.amount || 0;
@@ -205,9 +221,10 @@ function PaymentCheckout() {
       currentInstallmentLabel = "Final Payment";
       currentInstallmentAmount = bd?.finalPayment?.amount || 0;
     }
-
-    // House Painting → first + second + final
-  } else if (category === "House Painting") {
+  }
+  // PRIORITY 3: House Painting installments
+  // House Painting → first + second + final
+  else if (category === "House Painting") {
     if (!firstPaid) {
       currentInstallmentLabel = "First Partial Payment";
       currentInstallmentAmount = bd?.firstPayment?.amount || 0;
@@ -238,6 +255,7 @@ function PaymentCheckout() {
   const hasApprovedChange = approvedChanges.length > 0;
 
   // 3. Original committed total before any changes
+  // const originalTotal = bd?.finalTotal || bd?.bookingAmount || 0;
   const originalTotal = bd?.originalTotalAmount || bd?.bookingAmount || 0;
 
   // 4. Net approved delta (add = +, reduced = -)
@@ -257,8 +275,9 @@ function PaymentCheckout() {
   // 5. Current committed total (should equal bd.finalTotal)
   const approvedTotal = originalTotal + totalApprovedDelta;
 
+  // ₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹ DISPLAYING THE PAYMENT SUMMARY ₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹₹
   const displayPaymentSummary = () => {
-    // 1) Pending - price update that user must approve/reject
+    // 1) Pending - price updated(added) that user must approve/reject
     if (bd?.priceUpdateRequestedToUser && isPendingChange) {
       const pendingDelta =
         latestChange.scopeType === "Reduced"
@@ -276,7 +295,7 @@ function PaymentCheckout() {
             </span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid</span>
+            <span>Amount Paid1</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
@@ -335,7 +354,7 @@ function PaymentCheckout() {
             <span className="fw-semibold">{currency(newTotal)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid</span>
+            <span>Amount Paid2</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           {bd?.amountYetToPay !== 0 && bd.status !== "Project Completed" && (
@@ -351,7 +370,6 @@ function PaymentCheckout() {
     }
 
     // 3) Normal installment flow (no active price update)
-
     // Case A: first installment pending (Pending Hiring)
     if (!firstPaid) {
       return (
@@ -383,7 +401,7 @@ function PaymentCheckout() {
             <span className="fw-semibold">{currency(bd?.finalTotal || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid</span>
+            <span>Amount Paid4</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
@@ -410,7 +428,7 @@ function PaymentCheckout() {
             <span className="fw-semibold">{currency(bd?.finalTotal || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid</span>
+            <span>Amount Paid5</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
@@ -423,16 +441,11 @@ function PaymentCheckout() {
       );
     }
     // Case D: For the pending reduction you
-    if (
-      bd?.priceUpdateRequestedToAdmin &&
-      // latestChange?.status === "pending"
-      isPendingChange
-    ) {
+    if (bd?.priceUpdateRequestedToAdmin && isPendingChange) {
       const pendingDelta =
         latestChange.scopeType === "Reduced"
           ? -(latestChange.adjustmentAmount || 0)
           : latestChange.adjustmentAmount || 0;
-      // const committedTotal = approvedTotal;
 
       const oldTotal = originalTotal;
       const changeDelta = totalApprovedDelta;
@@ -519,6 +532,7 @@ function PaymentCheckout() {
       //   </>
       // );
     }
+
     // Case E: all installments paid – simple summary
     return (
       <>
@@ -530,6 +544,17 @@ function PaymentCheckout() {
           <span>Amount Paid</span>
           <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
         </div>
+        {category === "Deep Cleaning" &&
+          // bd.status === "Cancelled" &&
+          bd.refundAmount > 0 &&
+          bd.paymentStatus === "Refunded" && (
+            <div className="d-flex justify-content-between small mb-2">
+              <span>Amount Refunded</span>
+              <span className="fw-semibold">
+                {currency(bd?.refundAmount || 0)}
+              </span>
+            </div>
+          )}
       </>
     );
   };
@@ -550,6 +575,29 @@ function PaymentCheckout() {
     try {
       setIsResLoading(true);
       const result = await postRequest(API_ENDPOINTS.PROCEED_TO_PAY, data);
+      console.log("Booking Success", result);
+      setShowSuccessModal(true);
+      await fetchBookingDetails();
+      // alert("Booking successful");
+    } catch (error) {
+      console.error("Booking failed:", error);
+    } finally {
+      setIsResLoading(false);
+    }
+  };
+
+  const payAndConvertEnquiryToLead = async () => {
+    const data = {
+      bookingId,
+      paymentMethod: "UPI",
+      paidAmount: payAmount || 0,
+    };
+    try {
+      setIsResLoading(true);
+      const result = await postRequest(
+        API_ENDPOINTS.PAY_AND_CONVERT_ENQUIRY_TO_LEAD,
+        data
+      );
       console.log("Booking Success", result);
       setShowSuccessModal(true);
       await fetchBookingDetails();
@@ -682,7 +730,7 @@ function PaymentCheckout() {
                     >
                       Click here to Reschedule
                     </span>
-                    <span
+                    {/* <span
                       className="col-sm-6"
                       onClick={() => {
                         window.location.assign(
@@ -696,7 +744,7 @@ function PaymentCheckout() {
                       }}
                     >
                       Ratings
-                    </span>
+                    </span> */}
                   </div>
                 )}
               </div>
@@ -717,8 +765,8 @@ function PaymentCheckout() {
         <div className="card shadow-sm mb-3">
           <div className="card-body">
             <h6 className="fw-bold mb-3">Payment Summary</h6>
-            {(category === "House Painting" && bd.status === "Pending") ||
-            bd.status === "Confirmed" ? (
+            {category === "House Painting" &&
+            ["Pending", "Confirmed", "Cancelled"].includes(bd.status) ? (
               <>
                 <div className="d-flex justify-content-between small mb-2">
                   <span>Site Visit Charges</span>
@@ -726,16 +774,28 @@ function PaymentCheckout() {
                     {currency(bd?.siteVisitCharges || 0)}
                   </span>
                 </div>
-                <div className="d-flex justify-content-between small mb-2">
-                  <span>Amount Paid</span>
-                  <span className="fw-semibold">
-                    {currency(bd?.siteVisitCharges || 0)}
-                  </span>
-                </div>
+                {bd.paymentStatus !== "Unpaid" && (
+                  <div className="d-flex justify-content-between small mb-2">
+                    <span>Amount Paid</span>
+                    <span className="fw-semibold">
+                      {currency(bd?.siteVisitCharges || 0)}
+                    </span>
+                  </div>
+                )}
+                {bd.status === "Cancelled" &&
+                  bd.paymentStatus === "Refunded" && (
+                    <div className="d-flex justify-content-between small mb-2">
+                      <span>Amount Refunded</span>
+                      <span className="fw-semibold">
+                        {currency(bd?.refundAmount || 0)}
+                      </span>
+                    </div>
+                  )}
               </>
             ) : (
               <>{displayPaymentSummary()} </>
             )}
+            {/* ............... summary over................ */}
             {/* <hr /> */}
             {bd?.priceUpdateRequestedToUser && (
               <div className="mb-3">
@@ -796,7 +856,7 @@ function PaymentCheckout() {
                 </div>
               </div>
             )}
-            {canShowPayNow && (
+            {(canShowPayNow || bookingData?.isEnquiry) && (
               <div className="mt-3 p-3 bg-light rounded d-flex justify-content-between align-items-center">
                 <div>
                   <div className="small text-primary">
@@ -804,7 +864,12 @@ function PaymentCheckout() {
                   </div>
                   <div className="fw-semibold">
                     {" "}
-                    {currency(currentInstallmentAmount)}{" "}
+                    {/* {bookingData?.isEnquiry && bd.paymentStatus === "Unpaid"
+                      ? category === "House Painting"
+                        ? currency(bd?.siteVisitCharges)
+                        : currency(bd?.bookingAmount)
+                      : currency(currentInstallmentAmount)} */}
+                    {currency(currentInstallmentAmount)}
                   </div>
                 </div>
                 <button

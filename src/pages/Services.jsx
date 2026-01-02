@@ -100,14 +100,16 @@ const Services = () => {
   useEffect(() => {
     if (mapAddress) {
       const addressParts = mapAddress.split(",");
-      const city = addressParts.length >= 3 ? addressParts[addressParts.length - 3].trim() : "";
+      const city =
+        addressParts.length >= 3
+          ? addressParts[addressParts.length - 3].trim()
+          : "";
       console.log("extracted city name:", city);
       setCityName(city);
     }
   }, [mapAddress]); // <-- Reacts to changes in mapAddress
 
   // console.log("cityName", cityName);
-
 
   // useEffect(() => {
   //   if (inputRefs.current[0]) {
@@ -261,7 +263,7 @@ const Services = () => {
         setMapAddress(response.address.address);
         setLatitude(response.address.latitude);
         setLongitude(response.address.longitude);
-        setCityName(response.address.city)
+        setCityName(response.address.city);
         setHouseNumber((prev) =>
           prev.trim() ? prev : response.address?.houseNumber || ""
         );
@@ -298,7 +300,7 @@ const Services = () => {
         landmark: landmark,
         latitude: latitude,
         longitude: longitude,
-        city: cityName
+        city: cityName,
       },
     };
 
@@ -563,13 +565,6 @@ const Services = () => {
 
   const toggle = (index) => {
     setOpenIndex(openIndex === index ? null : index);
-  };
-
-  const handleLocationSelected = (location) => {
-    if (location === "Current Location") {
-      // Redirect to checkout page with location info
-      navigate("/checkout", { state: { phoneNumber, openAddressModal: true } });
-    }
   };
 
   const handleCloseSlotModal = () => {
@@ -4528,7 +4523,7 @@ const Services = () => {
                         const lng = place.geometry.location.lng();
                         const formattedAddress = place.formatted_address;
 
-                        console.log("city while fetching locatons>>>", place)
+                        console.log("city while fetching locatons>>>", place);
                         // const cityComponent = place.address_components?.find(comp =>
                         //   comp.types.includes("locality")
                         //   || comp.types.includes("administrative_area_level_2")

@@ -392,6 +392,7 @@ const Checkout = () => {
             price: Number(ele.price),
             quantity: Number(ele.quantity),
             teamMembersRequired: Number(ele.teamMembers || 1),
+            duration: Number(ele.duration || 0),
           })),
     bookingDetails: {
       bookingDate: moment().toISOString(), // from form

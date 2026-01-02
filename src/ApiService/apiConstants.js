@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   GET_BOOKINGS_BY_BOOKING_ID: "/bookings/get-bookings-by-bookingid/",
   GET_BOOKINGS_BY_CUSTOMER_ID: "/bookings/get-bookings-by-customerid",
   PROCEED_TO_PAY: "/bookings/make-payment",
+  PAY_AND_CONVERT_ENQUIRY_TO_LEAD: "/bookings/created-by-admin/make-payment/admin",
   APPROVE_PRICING: "/bookings/approve-pricing/",
   REJECT_PRICING: "/bookings/disapprove-pricing/",
   CANCEL_BOOKING: "/bookings/cancel-booking/customer/website",

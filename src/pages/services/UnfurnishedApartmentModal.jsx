@@ -166,7 +166,8 @@ const UnfurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                           pkg.price,
                           -1,
                           serviceName,
-                          pkg.teamMembers
+                          pkg.teamMembers,
+                          pkg.duration
                         );
                       }}
                       style={{
@@ -192,7 +193,8 @@ const UnfurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                           pkg.price,
                           1,
                           serviceName,
-                          pkg.teamMembers
+                          pkg.teamMembers,
+                          pkg.duration
                         );
                       }}
                       style={{
@@ -226,7 +228,8 @@ const UnfurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                         pkg.price,
                         1,
                         serviceName,
-                        pkg.teamMembers
+                        pkg.teamMembers,
+                        pkg.duration
                       )
                     }
                     aria-label={`Add ${pkg.name} to cart`}

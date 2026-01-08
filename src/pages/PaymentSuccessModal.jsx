@@ -16,7 +16,7 @@ function PaymentSuccessModal({ show, bookingData, paidAmount, onClose }) {
     };
   }, [show]);
 
-  console.log("paidAmount", paidAmount);
+  // console.log("paidAmount", paidAmount);
 
   return (
     <Modal

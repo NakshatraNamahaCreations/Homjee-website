@@ -1064,11 +1064,16 @@ function PaymentCheckout() {
   const { bookingId, date, type } = useParams();
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [bookingData, setBookingData] = useState(null);
+  const [finalizedQoute, setFinalizedQuote] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isResLoading, setIsResLoading] = useState(false);
   const [showCustomPopup, setShowCustomPopup] = useState(false);
   const [popupType, setPopupType] = useState(null);
   const [payAmount, setPayAmount] = useState(0);
+  const [averageRating, setAverageRating] = useState("0");
+
+  const assignedProfessionalId =
+    bookingData?.assignedProfessional?.professionalId;
   const [showSlotModal, setShowSlotModal] = useState(false);
 
   const handleCloseSlotModal = () => {
@@ -1103,31 +1108,56 @@ function PaymentCheckout() {
     }
   };
 
+  const fetchFinalizedQuote = async () => {
+    if (!bookingId) {
+      setIsPageLoading(false);
+      alert("Booking ID is missing in the URL.");
+      return;
+    }
+    setIsPageLoading(true);
+    try {
+      const response = await getRequest(
+        `${API_ENDPOINTS.GET_FINALIZED_QUOTE}${bookingId}`
+      );
+
+      if (response && response.message === "OK") {
+        setFinalizedQuote(response.data);
+      } else {
+        setFinalizedQuote(null);
+      }
+    } catch (error) {
+      console.error("GET error:", error || error);
+      setFinalizedQuote(null);
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (bookingId) {
       fetchBookingDetails();
+      fetchFinalizedQuote();
     }
   }, [bookingId]);
 
- const getLatLngFromBooking = () => {
-  try {
-    const coords = bookingData?.address?.location?.coordinates;
+  const getLatLngFromBooking = () => {
+    try {
+      const coords = bookingData?.address?.location?.coordinates;
 
-    // GeoJSON => [lng, lat]
-    if (!Array.isArray(coords) || coords.length !== 2) return null;
+      // GeoJSON => [lng, lat]
+      if (!Array.isArray(coords) || coords.length !== 2) return null;
 
-    const lng = Number(coords[0]);
-    const lat = Number(coords[1]);
+      const lng = Number(coords[0]);
+      const lat = Number(coords[1]);
 
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
 
-    return { lat, lng };
-  } catch (e) {
-    console.error("getLatLngFromBooking error:", e);
-    return null;
-  }
-};
-
+      return { lat, lng };
+    } catch (e) {
+      console.error("getLatLngFromBooking error:", e);
+      return null;
+    }
+  };
 
   const mapServicesForSlots = (services = []) => {
     try {
@@ -1190,48 +1220,53 @@ function PaymentCheckout() {
   // };
 
   const fetchAvailableSlots = async (date) => {
-  try {
-    const location = getLatLngFromBooking();
-    if (!location) {
-      console.warn("Lat/Lng missing from bookingData.address.location.coordinates");
+    try {
+      const location = getLatLngFromBooking();
+      if (!location) {
+        console.warn(
+          "Lat/Lng missing from bookingData.address.location.coordinates"
+        );
+        return [];
+      }
+
+      if (!bookingData?.serviceType) return [];
+
+      const basePayload = {
+        serviceType: bookingData.serviceType, // deep_cleaning | house_painting
+        date,
+        lat: location.lat,
+        lng: location.lng,
+      };
+
+      const payload =
+        bookingData.serviceType === "deep_cleaning"
+          ? {
+              ...basePayload,
+              services: mapServicesForSlots(bookingData?.service || []),
+            }
+          : basePayload;
+
+      console.log("Slots payload =>", payload);
+
+      const res = await fetch(
+        `${API_BASE_URL}/slots/website/get-available-slots`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+      console.log("Slots response =>", data);
+
+      if (!data?.success) return [];
+      return data.slots || [];
+    } catch (err) {
+      console.error("fetchAvailableSlots error:", err);
       return [];
     }
-
-    if (!bookingData?.serviceType) return [];
-
-    const basePayload = {
-      serviceType: bookingData.serviceType, // deep_cleaning | house_painting
-      date,
-      lat: location.lat,
-      lng: location.lng,
-    };
-
-    const payload =
-      bookingData.serviceType === "deep_cleaning"
-        ? {
-            ...basePayload,
-            services: mapServicesForSlots(bookingData?.service || []),
-          }
-        : basePayload;
-
-    console.log("Slots payload =>", payload);
-
-    const res = await fetch(`${API_BASE_URL}/slots/website/get-available-slots`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-    console.log("Slots response =>", data);
-
-    if (!data?.success) return [];
-    return data.slots || [];
-  } catch (err) {
-    console.error("fetchAvailableSlots error:", err);
-    return [];
-  }
-};
+  };
 
   const handleProceedToSlotSelection = async () => {
     // if (minimumAmount > TotalPrice) return;
@@ -1278,7 +1313,38 @@ function PaymentCheckout() {
     }
   };
 
-  console.log("Booking Data:", bookingData?.bookingDetails);
+  console.log("assignedProfessionalId", assignedProfessionalId);
+
+  const fetchVendorRatings = async () => {
+    setIsPageLoading(true);
+    try {
+      const response = await getRequest(
+        `${
+          API_ENDPOINTS.GET_VENDOR_OVERALL_RATING
+        }${`689472b895ba472e19ad7284`}`
+      );
+
+      if (response && response.status === "success") {
+        console.log("vendor ratings", response.data);
+        setAverageRating(response.data?.averageRating || "0");
+        // setFinalizedQuote(response.data);
+      } else {
+        // setFinalizedQuote(null);
+      }
+    } catch (error) {
+      console.error("GET error:", error || error);
+      // setFinalizedQuote(null);
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendorRatings();
+  }, [assignedProfessionalId]);
+
+  // console.log("finalized quote", finalizedQoute);
+  console.log("Booking Data:", bookingData);
 
   const approvePrice = async (approvedBy = "customer") => {
     // const confirmed = window.confirm(
@@ -1399,7 +1465,7 @@ function PaymentCheckout() {
     };
   const address = bookingData?.address || {};
 
-  console.log("Bookd data Full Context>>", bookingData);
+  // console.log("Bookd data Full Context>>", bookingData);
 
   // ..............--- 💰 Payment Calculation Logic ---..............................
   const bd = bookingData?.bookingDetails ?? {};
@@ -1434,7 +1500,8 @@ function PaymentCheckout() {
       currentInstallmentAmount = bd?.firstPayment?.amount || 0;
     } else if (!finalPaid) {
       currentInstallmentLabel = "Final Payment";
-      currentInstallmentAmount = bd?.finalPayment?.amount || 0;
+      // currentInstallmentAmount = bd?.finalPayment?.amount || 0;  // logic changed due to cash/online payment and over payment
+      currentInstallmentAmount = bd?.finalPayment?.remaining || 0;
     }
   }
   // PRIORITY 3: House Painting installments
@@ -1445,12 +1512,19 @@ function PaymentCheckout() {
       currentInstallmentAmount = bd?.firstPayment?.amount || 0;
     } else if (!secondPaid) {
       currentInstallmentLabel = "Second Partial Payment";
-      currentInstallmentAmount = bd?.secondPayment?.amount || 0;
+      if (bd?.secondPayment?.status === "partial") {
+        currentInstallmentAmount = bd?.secondPayment?.remaining || 0;
+      } else {
+        currentInstallmentAmount = bd?.secondPayment?.amount || 0;
+      }
     } else if (!finalPaid) {
       currentInstallmentLabel = "Final Payment";
-      currentInstallmentAmount = bd?.finalPayment?.amount || 0;
+      // currentInstallmentAmount = bd?.finalPayment?.amount || 0; //logic changed due to cash/online payment and over payment
+      currentInstallmentAmount = bd?.finalPayment?.remaining || 0;
     }
   }
+
+  // console.log("Current installment Amt:", currentInstallmentAmount);
 
   const canShowPayNow =
     bd &&
@@ -1974,6 +2048,7 @@ function PaymentCheckout() {
         </div>
 
         {/* Payment Summary */}
+        {/* {finalizedQoute?.status === "finalized" && bd.finalTotal > 0 && ( */}
         <div className="card shadow-sm mb-3">
           <div className="card-body">
             <h6 className="fw-bold mb-3">Payment Summary</h6>
@@ -2094,6 +2169,8 @@ function PaymentCheckout() {
             )}
           </div>
         </div>
+        {/* )} */}
+
         {/* vendor price update */}
 
         {/* Professional Assigned */}
@@ -2118,7 +2195,9 @@ function PaymentCheckout() {
                         {bookingData.assignedProfessional.name || "N/A"}
                       </div>
                       <div className="small text-warning">
-                        ★ {bookingData.assignedProfessional.rating || 0}
+                        ★ {Math.floor(averageRating)}
+                        {/* {"★".repeat(Math.floor(averageRating))}
+                        {"☆".repeat(5 - Math.floor(averageRating))} */}
                       </div>
                     </div>
 

@@ -1,5 +1,5 @@
-// export const API_BASE_URL = "http://localhost:9000/api"; // development
-export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
+export const API_BASE_URL = "http://localhost:9000/api"; // development
+// export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
 
 export const API_ENDPOINTS = {
   // USER AUTH
@@ -21,6 +21,10 @@ export const API_ENDPOINTS = {
   REJECT_PRICING: "/bookings/disapprove-pricing/",
   CANCEL_BOOKING: "/bookings/cancel-booking/customer/website",
 
+  // QUOTE
+  GET_FINALIZED_QUOTE: "/quotations/get-finalized-quote/leadId/",
+
+
   // SERVICE CONFIG
   GET_SERVICE_PRICE_CONFIG: "/service/latest",
   GET_DEEPCLEANING_PACKAGES: "/deeppackage/deep-cleaning-packages",
@@ -29,7 +33,7 @@ export const API_ENDPOINTS = {
   // VENDOR-RATING
   WRITE_VENDOR_RATING: "/ratings/vendor-ratings/add",
   GET_VENDOR_RATING_BY_ID: "/ratings/vendor-ratings/get",
-
+  GET_VENDOR_OVERALL_RATING: "/ratings/overall-ratings/vendor/",
 };
 
 // Akash 68884d7c02bf3a539293ec61

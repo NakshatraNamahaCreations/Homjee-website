@@ -82,8 +82,8 @@ const cleaningServices = {
       details: "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: one,
-      teamMembers: 3,
-      duration: 2.0, //hr
+      teamMembers: 4,
+      duration: 60, //mins
     },
     {
       _id: "PRE1BHK002",
@@ -93,8 +93,8 @@ const cleaningServices = {
       details:
         "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
-      teamMembers: 3,
-      duration: 2.5,
+      teamMembers: 4,
+      duration: 60,
     },
     {
       _id: "PLA1BHK003",
@@ -104,8 +104,8 @@ const cleaningServices = {
       details:
         "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
-      teamMembers: 3,
-      duration: 3.0,
+      teamMembers: 2,
+      duration: 60,
     },
     {
       name: "2 BHK Cleaning - Classic",
@@ -116,7 +116,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: twwo,
       teamMembers: 4,
-      duration: 2.5,
+      duration: 150,
     },
     {
       name: "2 BHK Cleaning - Premium",
@@ -126,7 +126,7 @@ const cleaningServices = {
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 3.0,
+      duration: 60,
     },
     {
       name: "2 BHK Cleaning - Platinum",
@@ -136,7 +136,7 @@ const cleaningServices = {
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 3.5,
+      duration: 120,
     },
     {
       name: "3 BHK Cleaning - Classic",
@@ -147,7 +147,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: three,
       teamMembers: 4,
-      duration: 3.0,
+      duration: 180,
     },
     {
       name: "3 BHK Cleaning - Premium",
@@ -157,7 +157,7 @@ const cleaningServices = {
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 3.5,
+      duration: 210,
     },
     {
       name: "3 BHK Cleaning - Platinum",
@@ -167,7 +167,7 @@ const cleaningServices = {
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 4.0,
+      duration: 240,
     },
     {
       name: "4 BHK Cleaning - Classic",
@@ -178,7 +178,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: four,
       teamMembers: 4,
-      duration: 3.5,
+      duration: 210,
     },
     {
       name: "4 BHK Cleaning - Premium",
@@ -188,7 +188,7 @@ const cleaningServices = {
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 4.0,
+      duration: 240,
     },
     {
       name: "4 BHK Cleaning - Platinum",
@@ -198,7 +198,7 @@ const cleaningServices = {
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 4.5,
+      duration: 270,
     },
     {
       name: "5+ BHK Cleaning - Classic",
@@ -209,7 +209,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes terrace & paint marks removal",
       image: five,
       teamMembers: 4,
-      duration: 4.0,
+      duration: 240,
     },
     {
       name: "5+ BHK Cleaning - Premium",
@@ -219,7 +219,7 @@ const cleaningServices = {
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 4.5,
+      duration: 270,
     },
     {
       name: "5+ BHK Cleaning - Platinum",
@@ -229,7 +229,7 @@ const cleaningServices = {
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony with premium deep cleaning",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 5.0,
+      duration: 300,
     },
   ],
   "Unfurnished apartment": [
@@ -240,8 +240,8 @@ const cleaningServices = {
       details: "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony",
       extras: "Basic cleaning, excludes paint marks removal",
       image: six,
-      teamMembers: 2,
-      duration: 1.5,
+      teamMembers: 4,
+      duration: 60,
     },
     {
       name: "1 BHK Cleaning - Premium",
@@ -251,7 +251,7 @@ const cleaningServices = {
         "Includes 1 bedroom, 1 bathroom, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 2,
-      duration: 2.0,
+      duration: 120,
     },
     {
       name: "2 BHK Cleaning - Classic",
@@ -262,7 +262,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: seven,
       teamMembers: 3,
-      duration: 2.0,
+      duration: 120,
     },
     {
       name: "2 BHK Cleaning - Premium",
@@ -271,8 +271,8 @@ const cleaningServices = {
       details:
         "Includes 2 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 2 balconies with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
-      teamMembers: 3,
-      duration: 2.5,
+      teamMembers: 4,
+      duration: 120,
     },
     {
       name: "3 BHK Cleaning - Classic",
@@ -283,7 +283,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: eight,
       teamMembers: 3,
-      duration: 2.5,
+      duration: 150,
     },
     {
       name: "3 BHK Cleaning - Premium",
@@ -292,8 +292,8 @@ const cleaningServices = {
       details:
         "Includes 3 bedrooms, 2 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
-      teamMembers: 3,
-      duration: 3.0,
+      teamMembers: 4,
+      duration: 160,
     },
     {
       name: "4 BHK Cleaning - Classic",
@@ -304,7 +304,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: nine,
       teamMembers: 4,
-      duration: 3.0,
+      duration: 180,
     },
     {
       name: "4 BHK Cleaning - Premium",
@@ -314,7 +314,7 @@ const cleaningServices = {
         "Includes 4 bedrooms, 3 bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 3,
-      duration: 3.5,
+      duration: 210,
     },
     {
       name: "5+ BHK Cleaning - Classic",
@@ -325,7 +325,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: ten,
       teamMembers: 4,
-      duration: 3.5,
+      duration: 210,
     },
     {
       name: "5+ BHK Cleaning - Premium",
@@ -335,7 +335,7 @@ const cleaningServices = {
         "Includes 5+ bedrooms, 3+ bathrooms, 1 hall, 1 kitchen & 1 balcony with deep cleaning",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 4,
-      duration: 4.0,
+      duration: 240,
     },
   ],
   "Book by room": [
@@ -347,7 +347,7 @@ const cleaningServices = {
       extras: "Excludes furniture cleaning",
       image: eleven,
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
     {
       name: "Bedroom Cleaning - Furnished",
@@ -356,7 +356,7 @@ const cleaningServices = {
       details: "Cleaning of one furnished bedroom",
       extras: "Includes furniture wiping, excludes upholstery cleaning",
       teamMembers: 1,
-      duration: 1.0,
+      duration: 30,
     },
     {
       name: "Living Room Cleaning - Unfurnished",
@@ -366,7 +366,7 @@ const cleaningServices = {
       extras: "Excludes furniture cleaning",
       image: tweleve,
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
     {
       name: "Living Room Cleaning - Furnished",
@@ -375,7 +375,7 @@ const cleaningServices = {
       details: "Cleaning of one furnished living room",
       extras: "Includes furniture wiping, excludes upholstery cleaning",
       teamMembers: 1,
-      duration: 1.0,
+      duration: 60,
     },
     {
       name: "Kitchen Cleaning - Occupied Kitchen",
@@ -385,7 +385,7 @@ const cleaningServices = {
       extras: "Excludes appliance cleaning",
       image: thirteen,
       teamMembers: 1,
-      duration: 1.5,
+      duration: 90,
     },
     {
       name: "Kitchen Cleaning - Occupied Kitchen With Appliances",
@@ -394,7 +394,7 @@ const cleaningServices = {
       details: "Cleaning of occupied kitchen with appliances",
       extras: "Includes basic appliance cleaning",
       teamMembers: 1,
-      duration: 2.0,
+      duration: 120,
     },
     {
       name: "Kitchen Cleaning - Empty Kitchen",
@@ -403,7 +403,7 @@ const cleaningServices = {
       details: "Cleaning of empty kitchen",
       extras: "Excludes appliance cleaning",
       teamMembers: 1,
-      duration: 1.0,
+      duration: 60,
     },
     {
       name: "Kitchen Cleaning - Empty Kitchen With Appliances",
@@ -412,7 +412,7 @@ const cleaningServices = {
       details: "Cleaning of empty kitchen with appliances",
       extras: "Includes basic appliance cleaning",
       teamMembers: 1,
-      duration: 2.0,
+      duration: 30,
     },
     {
       name: "Bathroom Cleaning",
@@ -422,7 +422,7 @@ const cleaningServices = {
       extras: "Includes sanitization",
       image: fourteen,
       teamMembers: 1,
-      duration: 0.75,
+      duration: 30,
     },
     {
       name: "Balcony Cleaning - Small (Upto 3 ft width)",
@@ -432,7 +432,7 @@ const cleaningServices = {
       extras: "Excludes plant cleaning",
       image: fifteen,
       teamMembers: 4,
-      duration: 0.5,
+      duration: 30,
     },
     {
       name: "Balcony Cleaning - Big (larger than 3 ft)",
@@ -441,7 +441,7 @@ const cleaningServices = {
       details: "Cleaning of large balcony",
       extras: "Excludes plant cleaning",
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
   ],
   "Unfurnished bungalow/duplex": [
@@ -453,7 +453,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentythree,
       teamMembers: 4,
-      duration: 3.5,
+      duration: 210,
     },
     {
       name: "<1200 sqft Bungalow Cleaning - Premium",
@@ -462,7 +462,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow under 1200 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 4,
-      duration: 4.5,
+      duration: 270,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Classic",
@@ -472,7 +472,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyfour,
       teamMembers: 4,
-      duration: 4.5,
+      duration: 270,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Premium",
@@ -481,7 +481,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 1200-2000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 4,
-      duration: 5.5,
+      duration: 330,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Classic",
@@ -491,7 +491,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyfive,
       teamMembers: 4,
-      duration: 5.5,
+      duration: 330,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Premium",
@@ -500,7 +500,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 2000-3000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 4,
-      duration: 6.5,
+      duration: 150,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Classic",
@@ -510,7 +510,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentysix,
       teamMembers: 4,
-      duration: 6.5,
+      duration: 390,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Premium",
@@ -519,7 +519,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 3000-4000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 4,
-      duration: 7.5,
+      duration: 450,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Classic",
@@ -529,7 +529,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyseven,
       teamMembers: 4,
-      duration: 7.5,
+      duration: 450,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Premium",
@@ -538,7 +538,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 4000-5000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 3,
-      duration: 8.5,
+      duration: 510,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Classic",
@@ -548,7 +548,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyeight,
       teamMembers: 3,
-      duration: 8.5,
+      duration: 510,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Premium",
@@ -557,7 +557,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 5000-6000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 3,
-      duration: 9.5,
+      duration: 570,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Classic",
@@ -567,7 +567,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyeight,
       teamMembers: 4,
-      duration: 9.5,
+      duration: 570,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Premium",
@@ -576,7 +576,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 6000-7000 sqft",
       extras: "Includes thorough scrubbing, excludes paint marks removal",
       teamMembers: 2,
-      duration: 10.5,
+      duration: 660,
     },
   ],
   "Furnished bungalow/duplex": [
@@ -588,7 +588,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: sixteen,
       teamMembers: 2,
-      duration: 4.0,
+      duration: 240,
     },
     {
       name: "<1200 sqft Bungalow Cleaning - Premium",
@@ -597,7 +597,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow under 1200 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 2,
-      duration: 5.0,
+      duration: 60,
     },
     {
       name: "<1200 sqft Bungalow Cleaning - Platinum",
@@ -606,7 +606,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow under 1200 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 2,
-      duration: 6.0,
+      duration: 360,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Classic",
@@ -615,8 +615,8 @@ const cleaningServices = {
       details: "Includes full bungalow cleaning for 1200-2000 sqft",
       extras: "Basic cleaning, excludes paint marks removal",
       image: seventeen,
-      teamMembers: 3,
-      duration: 5.0,
+      teamMembers: 4,
+      duration: 180,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Premium",
@@ -625,7 +625,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 1200-2000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 2,
-      duration: 6.0,
+      duration: 360,
     },
     {
       name: "1200-2000 sqft Bungalow Cleaning - Platinum",
@@ -634,7 +634,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow 1200-2000 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 3,
-      duration: 7.0,
+      duration: 420,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Classic",
@@ -644,7 +644,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: eighteen,
       teamMembers: 4,
-      duration: 6.0,
+      duration: 360,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Premium",
@@ -653,7 +653,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 2000-3000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 3,
-      duration: 7.0,
+      duration: 420,
     },
     {
       name: "2000-3000 sqft Bungalow Cleaning - Platinum",
@@ -662,7 +662,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow 2000-3000 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 8.0,
+      duration: 480,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Classic",
@@ -672,7 +672,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: ninteen,
       teamMembers: 4,
-      duration: 7.0,
+      duration: 420,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Premium",
@@ -681,7 +681,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 3000-4000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 8.0,
+      duration: 480,
     },
     {
       name: "3000-4000 sqft Bungalow Cleaning - Platinum",
@@ -690,7 +690,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow 3000-4000 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 9.0,
+      duration: 540,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Classic",
@@ -700,7 +700,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twenty,
       teamMembers: 3,
-      duration: 8.0,
+      duration: 480,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Premium",
@@ -709,7 +709,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 4000-5000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 9.0,
+      duration: 540,
     },
     {
       name: "4000-5000 sqft Bungalow Cleaning - Platinum",
@@ -718,7 +718,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow 4000-5000 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 2,
-      duration: 10.0,
+      duration: 600,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Classic",
@@ -728,7 +728,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentyone,
       teamMembers: 4,
-      duration: 9.0,
+      duration: 540,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Premium",
@@ -737,7 +737,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 5000-6000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 3,
-      duration: 10.0,
+      duration: 600,
     },
     {
       name: "5000-6000 sqft Bungalow Cleaning - Platinum",
@@ -746,7 +746,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow 5000-6000 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 3,
-      duration: 11.0,
+      duration: 600,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Classic",
@@ -756,7 +756,7 @@ const cleaningServices = {
       extras: "Basic cleaning, excludes paint marks removal",
       image: twentytwo,
       teamMembers: 4,
-      duration: 10.0,
+      duration: 600,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Premium",
@@ -765,7 +765,7 @@ const cleaningServices = {
       details: "Includes deep cleaning for bungalow 6000-7000 sqft",
       extras: "Includes upholstery cleaning, excludes paint marks removal",
       teamMembers: 4,
-      duration: 11.0,
+      duration: 660,
     },
     {
       name: "6000-7000 sqft Bungalow Cleaning - Platinum",
@@ -774,7 +774,7 @@ const cleaningServices = {
       details: "Includes premium deep cleaning for bungalow 6000-7000 sqft",
       extras: "Includes upholstery and appliance cleaning",
       teamMembers: 4,
-      duration: 12.0,
+      duration: 720,
     },
   ],
   "Mini services": [
@@ -786,7 +786,7 @@ const cleaningServices = {
       extras: "Excludes external pipe cleaning",
       image: twentynine,
       teamMembers: 1,
-      duration: 1.5,
+      duration: 30,
     },
     {
       name: "Kitchen Appliances Cleaning - Microwave",
@@ -795,7 +795,7 @@ const cleaningServices = {
       details: "Cleaning of microwave interior and exterior",
       extras: "Includes sanitization",
       teamMembers: 1,
-      duration: 0.5,
+      duration: 30,
     },
     {
       name: "Kitchen Appliances Cleaning - Stove",
@@ -804,7 +804,7 @@ const cleaningServices = {
       details: "Cleaning of gas stove",
       extras: "Includes burner cleaning",
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
     {
       name: "Kitchen Appliances Cleaning - Single Door Fridge",
@@ -813,7 +813,7 @@ const cleaningServices = {
       details: "Cleaning of single door fridge",
       extras: "Includes interior and exterior cleaning",
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
     {
       name: "Kitchen Appliances Cleaning - Double Door Fridge",
@@ -822,7 +822,7 @@ const cleaningServices = {
       details: "Cleaning of double door fridge",
       extras: "Includes interior and exterior cleaning",
       teamMembers: 1,
-      duration: 1.5,
+      duration: 90,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Sofa (5 seats)",
@@ -832,7 +832,7 @@ const cleaningServices = {
       extras: "Includes stain removal",
       image: thirty,
       teamMembers: 1,
-      duration: 1.5,
+      duration: 30,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Carpet (upto 25 sqft)",
@@ -841,7 +841,7 @@ const cleaningServices = {
       details: "Wet shampooing of carpet up to 25 sqft",
       extras: "Includes stain removal",
       teamMembers: 1,
-      duration: 1.0,
+      duration: 60,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Cushion Chair",
@@ -850,7 +850,7 @@ const cleaningServices = {
       details: "Wet shampooing of one cushion chair",
       extras: "Includes stain removal",
       teamMembers: 1,
-      duration: 0.5,
+      duration: 30,
     },
     {
       name: "Sofa & Upholstery Wet Shampooing - Mattress",
@@ -859,7 +859,7 @@ const cleaningServices = {
       details: "Wet shampooing of one mattress",
       extras: "Includes stain removal",
       teamMembers: 1,
-      duration: 1.0,
+      duration: 60,
     },
     {
       name: "Utensil Removal & Placement",
@@ -869,7 +869,7 @@ const cleaningServices = {
       extras: "Excludes cleaning of utensils",
       image: thirtytwo,
       teamMembers: 1,
-      duration: 1.0,
+      duration: 60,
     },
     {
       name: "Cabinet Cleaning (Upto 2)",
@@ -879,7 +879,7 @@ const cleaningServices = {
       extras: "Includes interior and exterior cleaning",
       image: thirtythree,
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
     {
       name: "Furniture Wet Wiping",
@@ -889,7 +889,7 @@ const cleaningServices = {
       extras: "Excludes upholstery cleaning",
       image: thirtyfour,
       teamMembers: 1,
-      duration: 1.0,
+      duration: 60,
     },
     {
       name: "Ceiling Dusting & Cobweb Removal",
@@ -899,7 +899,7 @@ const cleaningServices = {
       extras: "Excludes high ceiling areas above 12 ft",
       image: thirtyfive,
       teamMembers: 1,
-      duration: 0.75,
+      duration: 45,
     },
   ],
 };
@@ -915,6 +915,66 @@ const DeepCleaningPackages = () => {
     setShowSlotModal(false);
   };
   const { selectedSlot, setSelectedSlot } = useSelectedSlotContext();
+
+  const getLatLngFromSession = () => {
+    const addr = sessionStorage.getItem("selectedAddress");
+    if (!addr) return null;
+
+    const parsed = JSON.parse(addr);
+    return {
+      lat: Number(parsed.latitude),
+      lng: Number(parsed.longitude),
+    };
+  };
+
+  const mapCartItemsToServices = (items) => {
+    return items.map((item) => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      service: item.service,
+      teamMembers: Number(item.teamMembers || 1),
+      duration: Number(item.duration || 0), // already in minutes ✅
+    }));
+  };
+
+  const fetchAvailableSlots = async (date) => {
+    const location = getLatLngFromSession();
+    if (!location) return [];
+
+    const payload = {
+      serviceType: "deep_cleaning",
+      date,
+      lat: location.lat,
+      lng: location.lng,
+      services: mapCartItemsToServices(cartItems),
+    };
+
+    const res = await fetch(
+      `${API_BASE_URL}/slots/website/get-available-slots`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await res.json();
+    if (!data.success) return [];
+
+    return data.slots || [];
+  };
+
+  const handleProceedToSlotSelection = async () => {
+    if (minimumAmount > TotalPrice) return;
+
+    const today = new Date().toISOString().split("T")[0];
+    const slots = await fetchAvailableSlots(today);
+
+    sessionStorage.setItem("availableSlots", JSON.stringify(slots));
+    setShowSlotModal(true);
+  };
+
   // Function to handle selecting a slot
   const handleSelectSlot = (slot) => {
     // console.log("slot", slot);
@@ -923,7 +983,7 @@ const DeepCleaningPackages = () => {
     setShowSlotModal(false);
     navigate("/checkout", {
       state: {
-        serviceType: "deep-cleaning",
+        serviceType: "deep_cleaning",
       },
     });
   };
@@ -1594,9 +1654,11 @@ const DeepCleaningPackages = () => {
             </div>
 
             <button
-              onClick={() => {
-                minimumAmount > TotalPrice ? null : setShowSlotModal(true);
-              }}
+              // onClick={() => {
+              //   minimumAmount > TotalPrice ? null : setShowSlotModal(true);
+              // }}
+
+              onClick={handleProceedToSlotSelection}
               style={{
                 width: "100%",
                 backgroundColor:
@@ -1696,8 +1758,8 @@ const DeepCleaningPackages = () => {
       <SlotSelectionModal
         show={showSlotModal}
         onClose={handleCloseSlotModal}
-        // availableSlots={availableSlots}
         handleSelectSlot={handleSelectSlot}
+        fetchAvailableSlots={fetchAvailableSlots}
       />
 
       {/* Modal */}

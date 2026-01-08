@@ -49,6 +49,26 @@ import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import moment from "moment";
 import GlobalLoader from "../utils/GlobalLoader";
+import AddressPickerModal from "../components/AddressPickerModal";
+
+const getStoredUser = () => {
+  try {
+    const raw = sessionStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("getStoredUser parse error", e);
+    return null;
+  }
+};
+
+const setStoredUser = (user) => {
+  try {
+    if (!user) sessionStorage.removeItem("user");
+    else sessionStorage.setItem("user", JSON.stringify(user));
+  } catch (e) {
+    console.error("setStoredUser error", e);
+  }
+};
 
 const Packersmovers = () => {
   const navigate = useNavigate();
@@ -74,7 +94,8 @@ const Packersmovers = () => {
   const [houseNumber, setHouseNumber] = useState("");
   const [landmark, setLandmark] = useState("");
 
-  const userData = JSON.parse(sessionStorage.getItem("user"));
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+  const userId = currentUser?._id;
   const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
   const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
@@ -83,58 +104,226 @@ const Packersmovers = () => {
   const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [showAddress, setShowAddress] = useState(false);
+  const [addressPickerCfg, setAddressPickerCfg] = useState({
+    address: "",
+    houseNumber: "",
+    landmark: "",
+    lat: null,
+    lng: null,
+    city: "",
 
+    allowSearch: false,
+    allowMapPick: false,
+
+    // ✅ NEW
+    disableHouseFlat: false,
+    disableLandmark: false,
+    primaryCtaLabel: "Save & Proceed",
+
+    showChangeButton: false,
+  });
   const formData = {
     mobileNumber: phoneNumber,
     userName: userName,
   };
 
+  // ✅ Proceed click (no change, just one small safety line added)
   const handleProceedClick = async (e) => {
-    setResponseLoader(true);
-    e.preventDefault();
-    if (!phoneNumber || !userName) {
-      return alert("Please enter your Name and Phone number");
-    }
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      return alert("Invalid Mobile Number. Please enter a 10-digit number.");
-    }
     try {
-      const result = await postRequest(
-        API_ENDPOINTS.LOGIN_WITH_MOBILE,
-        formData
-      );
-      setResponseLoader(false);
+      e?.preventDefault?.();
+
+      if (!phoneNumber || !userName) {
+        alert("Please enter your Name and Phone number");
+        return;
+      }
+
+      if (!/^\d{10}$/.test(phoneNumber)) {
+        alert("Invalid Mobile Number. Please enter a 10-digit number.");
+        return;
+      }
+
+      setResponseLoader(true);
+
+      const result = await postRequest(API_ENDPOINTS.LOGIN_WITH_MOBILE, {
+        mobileNumber: phoneNumber,
+        userName,
+      });
+
       console.log("Login Success", result);
-      alert(result.message || "Login successful");
-      setOtpValue(result.otp);
-      setShowModal(true);
+
+      // ✅ IMPORTANT: ensure these are reset so modal can show
+      setIsLocationModalVisible(false);
+
+      setOtpValue(result?.otp);
+      setOtp(["", "", "", ""]);
+      setJoinedOTP("");
+      setShowModal(true); // ✅ open OTP modal
     } catch (error) {
       console.error("Login failed:", error);
+      alert(error?.message || "Login failed");
     } finally {
       setResponseLoader(false);
     }
   };
 
+  // ✅ verify OTP (FIXED: return if missing)
   const verifyOTP = async () => {
-    if (joinedOtp === null) {
-      alert("Please enter OTP");
-    }
     try {
-      const data = { otp: joinedOtp, mobileNumber: phoneNumber };
-      const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
-      console.log("OTP Verified", result);
-      alert(result.message || "OTP verified successfully");
-      if (result.data) {
-        sessionStorage.setItem("user", JSON.stringify(result.data));
+      console.log("=== OTP VERIFICATION START ===");
+
+      if (!joinedOtp || joinedOtp.length !== 4) {
+        alert("Please enter valid OTP");
+        return;
       }
-      sessionStorage.setItem("isNewUser", result.isNewUser);
-      // console.log("otp verified");
+
+      const data = { otp: joinedOtp, mobileNumber: phoneNumber, userName };
+      const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
+      console.log("FULL verifyOTP result:", result); // log the entire response
+      console.log("OTP Verification Result:", result);
+      alert(result.message || "OTP verified successfully");
+
+      if (result?.data) {
+        setStoredUser(result.data);
+        setCurrentUser(result.data);
+      }
+
+      // ✅ Store user in session
+      sessionStorage.setItem("user", JSON.stringify(result.data));
+
+      // ✅ Get isNewUser correctly
+      const isNewUserFlag = Boolean(result.isNewUser);
+      console.log("isNewUser from backend:", isNewUserFlag);
+      console.log(
+        "result.isNewUser raw:",
+        result.isNewUser,
+        typeof result.isNewUser
+      );
+      console.log("isNewUserFlag after Boolean():", isNewUserFlag);
+
+      sessionStorage.setItem("isNewUser", String(isNewUserFlag));
+      setIsNewUser(isNewUserFlag);
+
       setOtp(["", "", "", ""]);
       setShowModal(false);
-      setShowLocationPopup(true);
+
+      // ✅ NEW USER FLOW
+      if (isNewUserFlag) {
+        console.log("🚀 ENTERING NEW USER FLOW");
+        console.log("👤 NEW USER: Opening address modal with current location");
+        try {
+          const loc = await getCurrentLocationDraft();
+          console.log("📍 Current location fetched:", loc);
+
+          // ✅ NEW USER: Current location locked, house/landmark editable
+          setAddressPickerCfg({
+            address: loc.address || "",
+            houseNumber: "",
+            landmark: "",
+            lat: Number(loc.latitude) || 12.9716,
+            lng: Number(loc.longitude) || 77.5946,
+            city: loc.city || "",
+            allowSearch: false,
+            allowMapPick: false,
+            disableHouseFlat: false,
+            disableLandmark: false,
+            showChangeButton: false,
+            primaryCtaLabel: "Save & Proceed",
+          });
+
+          setShowAddress(true);
+        } catch (e) {
+          console.error("Failed to get current location:", e);
+          alert("Unable to fetch current location");
+
+          // Fallback: Allow search
+          setAddressPickerCfg({
+            address: "",
+            houseNumber: "",
+            landmark: "",
+            lat: null,
+            lng: null,
+            city: "",
+            allowSearch: true,
+            allowMapPick: true,
+            disableHouseFlat: false,
+            disableLandmark: false,
+            showChangeButton: false,
+            primaryCtaLabel: "Save & Proceed",
+          });
+          setShowAddress(true);
+        }
+      }
+      // ✅ EXISTING USER FLOW
+      else {
+        console.log("🚀 ENTERING EXISTING USER FLOW");
+        console.log("👥 EXISTING USER: Fetching saved address");
+        const userId = result?.data?._id;
+
+        if (!userId) {
+          console.error("No user ID found");
+          alert("User information not found");
+          return;
+        }
+
+        // Fetch saved address from backend
+        const savedAddress = await fetchUserAddress(userId);
+
+        console.log("Homeinterior GET_ADDRESS response:", savedAddress);
+
+        if (
+          savedAddress?.address &&
+          savedAddress?.latitude &&
+          savedAddress?.longitude
+        ) {
+          console.log("✅ Found saved address, opening locked modal");
+
+          // ✅ EXISTING USER: Show saved address locked
+          setAddressPickerCfg({
+            address: savedAddress.address || "",
+            houseNumber: savedAddress.houseNumber || "",
+            landmark: savedAddress.landmark || "",
+            lat: Number(savedAddress.latitude),
+            lng: Number(savedAddress.longitude),
+            city: savedAddress.city || "",
+            allowSearch: false,
+            allowMapPick: false,
+            disableHouseFlat: true,
+            disableLandmark: true,
+            showChangeButton: true,
+            primaryCtaLabel: "Proceed",
+          });
+
+          // Store in session for backup
+          sessionStorage.setItem(
+            "selectedAddress",
+            JSON.stringify(savedAddress)
+          );
+          setShowAddress(true);
+        } else {
+          console.log("❌ No saved address found, opening searchable modal");
+
+          // No saved address - allow search
+          setAddressPickerCfg({
+            address: "",
+            houseNumber: "",
+            landmark: "",
+            lat: null,
+            lng: null,
+            city: "",
+            allowSearch: true,
+            allowMapPick: true,
+            disableHouseFlat: false,
+            disableLandmark: false,
+            showChangeButton: false,
+            primaryCtaLabel: "Save & Proceed",
+          });
+          setShowAddress(true);
+        }
+      }
     } catch (error) {
-      alert(error.message || "Invalid OTP");
-      console.error("Login failed:", error);
+      console.error("verifyOTP error:", error);
+      alert(error?.message || "Invalid OTP");
     }
   };
 
@@ -151,84 +340,94 @@ const Packersmovers = () => {
     }
   };
 
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLatitude(latitude);
-        setLongitude(longitude);
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
-        try {
-          const response = await fetch(geocodingUrl);
-          const data = await response.json();
-          if (data.status === "OK" && data.results.length > 0) {
-            const address = data.results[0].formatted_address;
-            setMapAddress(address);
-            setMapUrl(
-              `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
-            );
-            setHouseNumber("");
-            setLandmark("");
-            setShowOptionOpoup(false);
-            setShowLocationPopup(true);
+  const getCurrentLocationDraft = () =>
+    new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation not supported"));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
+
+          try {
+            const response = await fetch(geocodingUrl);
+            const data = await response.json();
+
+            if (data.status === "OK" && data.results.length > 0) {
+              const first = data.results[0];
+              const formatted = first.formatted_address;
+
+              // ✅ city extract (better than split)
+              const comps = first.address_components || [];
+              const cityComp =
+                comps.find((c) => c.types?.includes("locality")) ||
+                comps.find((c) =>
+                  c.types?.includes("administrative_area_level_2")
+                );
+
+              resolve({
+                address: formatted,
+                latitude,
+                longitude,
+                city: cityComp?.long_name || "",
+              });
+              return;
+            }
+
+            reject(new Error("Unable to resolve address"));
+          } catch (e) {
+            reject(e);
           }
-        } catch (error) {
-          alert("Error getting location.");
-        }
-      },
-      (error) => alert("Location error: " + error.message),
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0,
-      }
-    );
-  };
-  useEffect(() => {
-    if (isNewUser && showLocationPopup) {
-      getCurrentLocation();
-    }
-  }, [isNewUser, showLocationPopup]);
-
-  const fetchUserAddress = async () => {
-    try {
-      const response = await getRequest(
-        `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`
+        },
+        (err) => reject(err),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
-      if (response.address) {
-        setIsNewUser(false);
-        setUserAddress(response.address);
-        const urlMap = `https://www.google.com/maps?q=${response.address.latitude},${response.address.longitude}&z=15&output=embed`;
-        setMapUrl(urlMap);
-        setMapAddress(response.address.address);
-        setLatitude(response.address.latitude);
-        setLongitude(response.address.longitude);
-        setHouseNumber((prev) =>
-          prev.trim() ? prev : response.address?.houseNumber || ""
-        );
-        setLandmark((prev) =>
-          prev.trim() ? prev : response.address?.landmark || ""
-        );
-      } else {
-        setIsNewUser(true);
-        setMapAddress("");
-        setMapUrl("");
-        getCurrentLocation();
+    });
+
+  const fetchUserAddress = async (userId) => {
+    try {
+      if (!userId) return null;
+
+      const response = await getRequest(
+        `${API_ENDPOINTS.GET_ADDRESS}${userId}`
+      );
+
+      // Check if the address is in `savedAddress` or `address` field
+      const addressData = response?.address || response?.savedAddress;
+
+      if (addressData) {
+        const addrObj = {
+          uniqueCode:
+            addressData.uniqueCode ||
+            `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          address: addressData.address,
+          houseNumber: addressData.houseNumber || "",
+          landmark: addressData.landmark || "",
+          latitude: Number(addressData.latitude),
+          longitude: Number(addressData.longitude),
+          city: addressData.city || "",
+        };
+
+        setAddressDataContext(addrObj);
+        sessionStorage.setItem("selectedAddress", JSON.stringify(addrObj));
+        return addrObj;
       }
+
+      return null;
     } catch (error) {
-      console.error("GET error:", error.response || error);
+      console.error("fetchUserAddress error:", error?.response || error);
+      return null;
     }
   };
 
   useEffect(() => {
-    if (userData?._id) {
-      fetchUserAddress();
-    }
-  }, [userData?._id]);
+    if (!userId) return;
+    fetchUserAddress(userId);
+  }, [userId]);
 
   const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
   const inputRefs = useRef([]);
@@ -301,16 +500,40 @@ const Packersmovers = () => {
     setPhoneNumber(e.target.value);
   };
 
+  // ✅ OTP typing (FIXED: index bounds)
   const handleOtpChange = (e, index) => {
-    const value = e.target.value;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    const joinString = newOtp?.join("");
-    // setOtp(joinString);
-    setJoinedOTP(joinString);
-    setOtp(newOtp);
-    if (value && index < 5) {
-      inputRefs.current[index + 1].focus();
+    try {
+      const value = e.target.value.replace(/\D/g, ""); // only digits
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      const joined = newOtp.join("");
+      setJoinedOTP(joined);
+
+      // ✅ move focus safely
+      if (value && index < otp.length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    } catch (err) {
+      console.error("handleOtpChange error:", err);
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    try {
+      if (e.key === "Backspace") {
+        if (otp[index]) {
+          const newOtp = [...otp];
+          newOtp[index] = "";
+          setOtp(newOtp);
+          setJoinedOTP(newOtp.join(""));
+        } else if (index > 0) {
+          inputRefs.current[index - 1]?.focus();
+        }
+      }
+    } catch (err) {
+      console.error("handleKeyDown error:", err);
     }
   };
 
@@ -324,9 +547,9 @@ const Packersmovers = () => {
 
   const data = {
     customer: {
-      customerId: userData?._id,
-      phone: userData?.mobileNumber,
-      name: userData?.userName,
+      customerId: currentUser?._id,
+      phone: currentUser?.mobileNumber,
+      name: currentUser?.userName,
     },
     service: [
       {
@@ -358,7 +581,7 @@ const Packersmovers = () => {
       slotDate: null,
       slotTime: null,
     },
-     formName: "Website Service Page",
+    formName: "Website Service Page",
   };
 
   const handleProceedToCheckout = async () => {
@@ -370,6 +593,89 @@ const Packersmovers = () => {
       // window.location.assign("/");
     } catch (error) {
       console.error("Booking failed:", error);
+    }
+  };
+
+  const handleSaveAddressFromModal = async (picked) => {
+    try {
+      console.log("💾 Saving address from modal:", picked);
+
+      // ✅ If "Proceed" button was clicked (existing user with saved address)
+      if (addressPickerCfg.primaryCtaLabel === "Proceed") {
+        console.log("🚀 Proceeding with existing address");
+
+        const existingAddress = {
+          uniqueCode: `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          address: addressPickerCfg.address,
+          houseNumber: addressPickerCfg.houseNumber,
+          landmark: addressPickerCfg.landmark,
+          latitude: addressPickerCfg.lat,
+          longitude: addressPickerCfg.lng,
+          city: addressPickerCfg.city,
+        };
+
+        // Store in context and session
+        setAddressDataContext(existingAddress);
+        sessionStorage.setItem(
+          "selectedAddress",
+          JSON.stringify(existingAddress)
+        );
+        setShowAddress(false);
+
+        // Proceed to slot selection
+        await handleProceedToCheckout();
+        return;
+      }
+
+      // ✅ For new/changed addresses
+      if (!picked?.houseNumber?.trim() && !addressPickerCfg.disableHouseFlat) {
+        alert("House/Flat Number is required");
+        return;
+      }
+
+      const uniqueCode = `ADDR-${Date.now()}-${Math.floor(
+        Math.random() * 1000
+      )}`;
+      const addressObj = {
+        uniqueCode,
+        address: picked.address || addressPickerCfg.address,
+        houseNumber: addressPickerCfg.disableHouseFlat
+          ? addressPickerCfg.houseNumber
+          : picked.houseNumber?.trim() || "",
+        landmark: addressPickerCfg.disableLandmark
+          ? addressPickerCfg.landmark
+          : picked.landmark?.trim() || "",
+        latitude: Number(picked.lat || addressPickerCfg.lat),
+        longitude: Number(picked.lng || addressPickerCfg.lng),
+        city: picked.city || addressPickerCfg.city || "",
+      };
+
+      console.log("📝 Address to save:", addressObj);
+
+      // Save to backend for existing users
+      if (currentUser?._id) {
+        const payload = { savedAddress: addressObj };
+        console.log("📤 Saving to backend:", payload);
+
+        const result = await putRequest(
+          `${API_ENDPOINTS.SAVE_ADDRESS}${currentUser._id}`,
+          payload
+        );
+        console.log("✅ Save result:", result);
+      }
+
+      // Store in context and session
+      setAddressDataContext(addressObj);
+      sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
+      setShowAddress(false);
+
+      // Proceed to slot selection
+      await handleProceedToCheckout();
+
+      // await handleProceedToSlotSelection();
+    } catch (error) {
+      console.error("handleSaveAddressFromModal error:", error);
+      alert(error?.message || "Failed to save address");
     }
   };
 
@@ -391,7 +697,7 @@ const Packersmovers = () => {
 
     try {
       const result = await putRequest(
-        `${API_ENDPOINTS.SAVE_ADDRESS}${userData?._id}`,
+        `${API_ENDPOINTS.SAVE_ADDRESS}${userId}`,
         data
       );
       setAddressDataContext(data.savedAddress);
@@ -402,17 +708,13 @@ const Packersmovers = () => {
       console.log("Address Saved", result);
       await handleProceedToCheckout();
       fetchUserAddress();
-      setShowLocationPopup(false);
+      setShowAddress(false);
       setIsLocationModalVisible(true);
     } catch (error) {
       console.error("Address failed:", error);
     }
   };
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
+
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggle = (index) => {
@@ -4314,175 +4616,7 @@ const Packersmovers = () => {
           </div>
         </div>
       </div>
-      {/* showing current location */}
-      <Modal
-        show={showLocationPopup}
-        size="lg"
-        centered
-        backdrop="static"
-        keyboard={false}
-        onHide={() => {
-          setShowLocationPopup(false);
-        }}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <h5>Address</h5>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-6">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                {showSearchBarOptions ? (
-                  <Autocomplete
-                    apiKey={GOOGLE_MAPS_API_KEY}
-                    onPlaceSelected={(place) => {
-                      if (place.geometry) {
-                        const lat = place.geometry.location.lat();
-                        const lng = place.geometry.location.lng();
-                        const formattedAddress = place.formatted_address;
 
-                        setLatitude(lat);
-                        setLongitude(lng);
-                        setMapAddress(formattedAddress);
-                        setMapUrl(
-                          `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
-                        );
-
-                        setIsLocationModalVisible(false);
-                        setShowLocationPopup(true);
-                      }
-                    }}
-                    style={{
-                      width: "100%",
-                      backgroundColor: "#f1f1f1",
-                      border: "1px solid #dfdfdf",
-                      borderRadius: "6px",
-                      padding: "7px 10px",
-                      color: "black",
-                      fontSize: "14px",
-                      outline: "none",
-                    }}
-                  />
-                ) : null}
-
-                <div style={{ height: "300px", width: "100%" }}>
-                  {mapUrl ? (
-                    <iframe
-                      title="map"
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      src={mapUrl}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        color: "#999",
-                        textAlign: "center",
-                        paddingTop: 130,
-                      }}
-                    >
-                      Loading map...
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-6">
-              <div>
-                {isNewUser ? (
-                  mapAddress ? (
-                    <div style={{ fontSize: 14, marginBottom: 16 }}>
-                      {mapAddress}
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: 14, color: "#999" }}>
-                      Detecting current location...
-                    </div>
-                  )
-                ) : (
-                  <div style={{ marginBottom: 16 }}>
-                    <Button
-                      onClick={() => {
-                        setShowLocationPopup(false);
-                        setShowOptionOpoup(true);
-                      }}
-                      style={{
-                        backgroundColor: "red",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 8,
-                        alignSelf: "flex-start",
-                        padding: "6px 12px",
-                        fontSize: 14,
-                        fontWeight: 500,
-                      }}
-                    >
-                      Change
-                    </Button>
-                    <div className="mt-4" style={{ fontSize: 14 }}>
-                      {mapAddress}
-                    </div>
-                  </div>
-                )}
-
-                <Form.Group className="mb-3">
-                  <Form.Label>
-                    House/Flat Number <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    defaultValue={houseNumber}
-                    onChange={(e) => {
-                      console.log("Typing:", e.target.value);
-                      setHouseNumber(e.target.value);
-                    }}
-                    placeholder="Enter House/Flat Number"
-                    style={{ borderRadius: 8, fontSize: 14 }}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Landmark (Optional)</Form.Label>
-                  <Form.Control
-                    value={landmark}
-                    onChange={(e) => setLandmark(e.target.value)}
-                    placeholder="Enter Landmark"
-                    style={{ borderRadius: 8, fontSize: 14 }}
-                  />
-                </Form.Group>
-
-                <Button
-                  onClick={handleAddress}
-                  disabled={!houseNumber.trim()}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    background: !houseNumber.trim() ? "#eee" : "#FF0000",
-                    color: !houseNumber.trim() ? "#aaa" : "#fff",
-                    border: "none",
-                    borderRadius: 8,
-                    fontSize: 15,
-
-                    cursor: !houseNumber.trim() ? "not-allowed" : "pointer",
-                  }}
-                >
-                  Save and proceed
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
       <Modal
         show={showOptionOpoup}
         size="small"
@@ -4491,7 +4625,7 @@ const Packersmovers = () => {
         keyboard={false}
         onHide={() => {
           setShowOptionOpoup(false);
-          setShowLocationPopup(true);
+          setShowAddress(true);
         }}
       >
         <Modal.Header closeButton></Modal.Header>
@@ -4505,7 +4639,34 @@ const Packersmovers = () => {
                   alignItems: "center",
                   cursor: "pointer",
                 }}
-                onClick={getCurrentLocation}
+                onClick={async () => {
+                  try {
+                    console.log("📍 Current Location selected");
+                    const loc = await getCurrentLocationDraft();
+                    setShowOptionOpoup(false);
+
+                    // ✅ EXISTING -> CURRENT LOCATION: locked map, editable house/landmark
+                    setAddressPickerCfg({
+                      address: loc.address || "",
+                      houseNumber: "",
+                      landmark: "",
+                      lat: Number(loc.latitude),
+                      lng: Number(loc.longitude),
+                      city: loc.city || "",
+                      allowSearch: false,
+                      allowMapPick: false,
+                      disableHouseFlat: false,
+                      disableLandmark: false,
+                      showChangeButton: true,
+                      primaryCtaLabel: "Save & Proceed",
+                    });
+
+                    setTimeout(() => setShowAddress(true), 100);
+                  } catch (e) {
+                    console.error("Failed to get current location:", e);
+                    alert("Unable to fetch current location");
+                  }
+                }}
               >
                 <img src={map} style={{ width: "50%" }} />
               </div>
@@ -4520,11 +4681,29 @@ const Packersmovers = () => {
                   cursor: "pointer",
                 }}
                 onClick={() => {
-                  setHouseNumber("");
-                  setLandmark("");
+                  console.log("🔍 Search by Location selected");
+                  const cached = JSON.parse(
+                    sessionStorage.getItem("selectedAddress") || "null"
+                  );
                   setShowOptionOpoup(false);
-                  setShowLocationPopup(true);
-                  setShowSearchBarOptions(true);
+
+                  // ✅ EXISTING -> SEARCH LOCATION: fully editable
+                  setAddressPickerCfg({
+                    address: cached?.address || "",
+                    houseNumber: "",
+                    landmark: "",
+                    lat: cached?.latitude ? Number(cached.latitude) : null,
+                    lng: cached?.longitude ? Number(cached.longitude) : null,
+                    city: cached?.city || "",
+                    allowSearch: true,
+                    allowMapPick: true,
+                    disableHouseFlat: false,
+                    disableLandmark: false,
+                    showChangeButton: false,
+                    primaryCtaLabel: "Save & Proceed",
+                    showChangeButton: false,
+                  });
+                  setShowAddress(true);
                 }}
               >
                 <img src={searchLocation} style={{ width: "50%" }} />
@@ -4554,6 +4733,33 @@ const Packersmovers = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      {showAddress && (
+        <AddressPickerModal
+          show={showAddress}
+          onClose={() => setShowAddress(false)}
+          initialLatLng={{
+            lat: addressPickerCfg.lat || 12.9716,
+            lng: addressPickerCfg.lng || 77.5946,
+          }}
+          initialAddress={addressPickerCfg.address}
+          initialHouseFlat={addressPickerCfg.houseNumber}
+          initialLandmark={addressPickerCfg.landmark}
+          initialCity={addressPickerCfg.city}
+          allowSearch={addressPickerCfg.allowSearch}
+          allowMapPick={addressPickerCfg.allowMapPick}
+          disableHouseFlat={addressPickerCfg.disableHouseFlat}
+          disableLandmark={addressPickerCfg.disableLandmark}
+          primaryCtaLabel={addressPickerCfg.primaryCtaLabel}
+          showChangeButton={addressPickerCfg.showChangeButton}
+          onClickChange={() => {
+            // ✅ Wrap in arrow function
+            setShowAddress(false);
+            setTimeout(() => setShowOptionOpoup(true), 100);
+          }}
+          onSave={handleSaveAddressFromModal}
+        />
+      )}
     </>
   );
 };

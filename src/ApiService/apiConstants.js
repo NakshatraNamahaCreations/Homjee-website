@@ -1,5 +1,5 @@
-export const API_BASE_URL = "http://localhost:9000/api"; // development
-// export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
+// export const API_BASE_URL = "http://localhost:9000/api"; // development
+export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
 
 export const API_ENDPOINTS = {
   // USER AUTH
@@ -16,14 +16,15 @@ export const API_ENDPOINTS = {
   GET_BOOKINGS_BY_BOOKING_ID: "/bookings/get-bookings-by-bookingid/",
   GET_BOOKINGS_BY_CUSTOMER_ID: "/bookings/get-bookings-by-customerid",
   PROCEED_TO_PAY: "/bookings/make-payment",
-  PAY_AND_CONVERT_ENQUIRY_TO_LEAD: "/bookings/created-by-admin/make-payment/admin",
+  PAY_AND_CONVERT_ENQUIRY_TO_LEAD:
+    "/bookings/created-by-admin/make-payment/admin",
   APPROVE_PRICING: "/bookings/approve-pricing/",
   REJECT_PRICING: "/bookings/disapprove-pricing/",
   CANCEL_BOOKING: "/bookings/cancel-booking/customer/website",
-
+  MANUAL_PAYMENT: "/manual-payment",
+  MARK_MANUAL_PAYMENT_PAID: "/manual-payment/mark-paid",
   // QUOTE
   GET_FINALIZED_QUOTE: "/quotations/get-finalized-quote/leadId/",
-
 
   // SERVICE CONFIG
   GET_SERVICE_PRICE_CONFIG: "/service/latest",
@@ -47,4 +48,3 @@ export const API_ENDPOINTS = {
 
 // Nirmal   6889e40434c540bfd1be1ef1
 // 9182722198
-

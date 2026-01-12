@@ -71,6 +71,7 @@ import Interiorcheckout from "./pages/Interiorcheckout";
 
 import { useEffect } from "react";
 import PaymentCheckout from "./pages/PaymentCheckout";
+import CheckoutPaymentRouter from "./pages/CheckoutPaymentRouter";
 import VendorRatings from "./pages/VendorRatings";
 
 const AppRoutes = () => {
@@ -97,10 +98,15 @@ const AppRoutes = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/aboutus" element={<About />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route
+          {/* <Route
             path="/checkout/payment/:bookingId/:date/:pay_type"
             element={<PaymentCheckout />}
+          /> */}
+          <Route
+            path="/checkout/payment/:bookingId/:date/:pay_type"
+            element={<CheckoutPaymentRouter />}
           />
+
           <Route path="/vendor-ratings" element={<VendorRatings />} />
           <Route
             path="/deep-cleaning-packages"

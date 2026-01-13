@@ -1037,8 +1037,6 @@
 
 // export default PaymentCheckout;
 
-
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FiPhone, FiMapPin, FiCheckCircle, FiClock } from "react-icons/fi";
@@ -1072,15 +1070,18 @@ function PaymentCheckout() {
   const [showCustomPopup, setShowCustomPopup] = useState(false);
   const [popupType, setPopupType] = useState(null);
   const [payAmount, setPayAmount] = useState(0);
-  const [averageRating, setAverageRating] = useState("0");
-
-  const assignedProfessionalId =
-    bookingData?.assignedProfessional?.professionalId;
+<<<<<<< Updated upstream
   const [showSlotModal, setShowSlotModal] = useState(false);
 
   const handleCloseSlotModal = () => {
     setShowSlotModal(false);
   };
+=======
+  const [averageRating, setAverageRating] = useState("0");
+
+  const assignedProfessionalId =
+    bookingData?.assignedProfessional?.professionalId;
+>>>>>>> Stashed changes
 
   const fetchBookingDetails = async () => {
     if (!bookingId) {
@@ -1142,24 +1143,26 @@ function PaymentCheckout() {
     }
   }, [bookingId]);
 
-  const getLatLngFromBooking = () => {
-    try {
-      const coords = bookingData?.address?.location?.coordinates;
+<<<<<<< Updated upstream
+ const getLatLngFromBooking = () => {
+  try {
+    const coords = bookingData?.address?.location?.coordinates;
 
-      // GeoJSON => [lng, lat]
-      if (!Array.isArray(coords) || coords.length !== 2) return null;
+    // GeoJSON => [lng, lat]
+    if (!Array.isArray(coords) || coords.length !== 2) return null;
 
-      const lng = Number(coords[0]);
-      const lat = Number(coords[1]);
+    const lng = Number(coords[0]);
+    const lat = Number(coords[1]);
 
-      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
 
-      return { lat, lng };
-    } catch (e) {
-      console.error("getLatLngFromBooking error:", e);
-      return null;
-    }
-  };
+    return { lat, lng };
+  } catch (e) {
+    console.error("getLatLngFromBooking error:", e);
+    return null;
+  }
+};
+
 
   const mapServicesForSlots = (services = []) => {
     try {
@@ -1222,53 +1225,48 @@ function PaymentCheckout() {
   // };
 
   const fetchAvailableSlots = async (date) => {
-    try {
-      const location = getLatLngFromBooking();
-      if (!location) {
-        console.warn(
-          "Lat/Lng missing from bookingData.address.location.coordinates"
-        );
-        return [];
-      }
-
-      if (!bookingData?.serviceType) return [];
-
-      const basePayload = {
-        serviceType: bookingData.serviceType, // deep_cleaning | house_painting
-        date,
-        lat: location.lat,
-        lng: location.lng,
-      };
-
-      const payload =
-        bookingData.serviceType === "deep_cleaning"
-          ? {
-              ...basePayload,
-              services: mapServicesForSlots(bookingData?.service || []),
-            }
-          : basePayload;
-
-      console.log("Slots payload =>", payload);
-
-      const res = await fetch(
-        `${API_BASE_URL}/slots/website/get-available-slots`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const data = await res.json();
-      console.log("Slots response =>", data);
-
-      if (!data?.success) return [];
-      return data.slots || [];
-    } catch (err) {
-      console.error("fetchAvailableSlots error:", err);
+  try {
+    const location = getLatLngFromBooking();
+    if (!location) {
+      console.warn("Lat/Lng missing from bookingData.address.location.coordinates");
       return [];
     }
-  };
+
+    if (!bookingData?.serviceType) return [];
+
+    const basePayload = {
+      serviceType: bookingData.serviceType, // deep_cleaning | house_painting
+      date,
+      lat: location.lat,
+      lng: location.lng,
+    };
+
+    const payload =
+      bookingData.serviceType === "deep_cleaning"
+        ? {
+            ...basePayload,
+            services: mapServicesForSlots(bookingData?.service || []),
+          }
+        : basePayload;
+
+    console.log("Slots payload =>", payload);
+
+    const res = await fetch(`${API_BASE_URL}/slots/website/get-available-slots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log("Slots response =>", data);
+
+    if (!data?.success) return [];
+    return data.slots || [];
+  } catch (err) {
+    console.error("fetchAvailableSlots error:", err);
+    return [];
+  }
+};
 
   const handleProceedToSlotSelection = async () => {
     // if (minimumAmount > TotalPrice) return;
@@ -1315,6 +1313,8 @@ function PaymentCheckout() {
     }
   };
 
+  console.log("Booking Data:", bookingData?.bookingDetails);
+=======
   console.log("assignedProfessionalId", assignedProfessionalId);
 
   const fetchVendorRatings = async () => {
@@ -1346,8 +1346,8 @@ function PaymentCheckout() {
   }, [assignedProfessionalId]);
 
   // console.log("finalized quote", finalizedQoute);
-
-  console.log("Booking Data:", bookingData?.bookingDetails);
+  console.log("Booking Data:", bookingData);
+>>>>>>> Stashed changes
 
   const approvePrice = async (approvedBy = "customer") => {
     // const confirmed = window.confirm(
@@ -1472,7 +1472,7 @@ function PaymentCheckout() {
 
   // ..............--- 💰 Payment Calculation Logic ---..............................
   const bd = bookingData?.bookingDetails ?? {};
-  const installmentRequested = bd?.paymentLink?.installmentStage; // "second" | "final" | undefined
+  const installmentRequested = bd?.paymentLink?.installment; // "second" | "final" | undefined
   const currency = (n) => `₹ ${Number(n ?? 0).toLocaleString("en-IN")}`;
   const category = bookingData?.service?.[0]?.category;
 
@@ -1512,15 +1512,13 @@ function PaymentCheckout() {
   else if (category === "House Painting") {
     if (!firstPaid) {
       currentInstallmentLabel = "First Partial Payment";
-      // currentInstallmentAmount = bd?.firstPayment?.amount || 0; old
-      currentInstallmentAmount = bd?.firstPayment?.requestedAmount || 0;
+      currentInstallmentAmount = bd?.firstPayment?.amount || 0;
     } else if (!secondPaid) {
       currentInstallmentLabel = "Second Partial Payment";
       if (bd?.secondPayment?.status === "partial") {
         currentInstallmentAmount = bd?.secondPayment?.remaining || 0;
       } else {
-        // currentInstallmentAmount = bd?.secondPayment?.amount || 0;
-        currentInstallmentAmount = bd?.secondPayment?.requestedAmount || 0;
+        currentInstallmentAmount = bd?.secondPayment?.amount || 0;
       }
     } else if (!finalPaid) {
       currentInstallmentLabel = "Final Payment";
@@ -1679,8 +1677,7 @@ function PaymentCheckout() {
           <div className="d-flex justify-content-between small mb-2">
             <span>Booking Amount to be Paid</span>
             <span className="fw-semibold">
-              {/* {currency(bd?.firstPayment?.amount || 0)} */}
-              {currency(bd?.firstPayment?.requestedAmount || 0)}
+              {currency(bd?.firstPayment?.amount || 0)}
             </span>
           </div>
         </>
@@ -1702,8 +1699,7 @@ function PaymentCheckout() {
           <div className="d-flex justify-content-between small mb-2">
             <span>Second Partial Amount to be Paid</span>
             <span className="fw-semibold">
-              {/* {currency(bd?.secondPayment?.amount || 0)} */}
-              {currency(bd?.secondPayment?.requestedAmount || 0)}
+              {currency(bd?.secondPayment?.amount || 0)}
             </span>
           </div>
         </>
@@ -1730,9 +1726,7 @@ function PaymentCheckout() {
           <div className="d-flex justify-content-between small mb-2">
             <span>Final Amount to be Paid</span>
             <span className="fw-semibold">
-              {/* {currency(bd?.finalPayment?.amount || 0)} */}
-              {currency(bd?.finalPayment?.remaining || 0)}
-              {/* {currency(bd?.finalPayment?.requestedAmount || 0)} */}
+              {currency(bd?.finalPayment?.amount || 0)}
             </span>
           </div>
         </>
@@ -1864,20 +1858,11 @@ function PaymentCheckout() {
     setShowCustomPopup(true);
   };
 
-  function generateProviderRef() {
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // e.g. "20251120"
-    // Generate a random 4-digit number or pull last count from DB for uniqueness
-    const rand = Math.floor(1000 + Math.random() * 9000);
-    return `OMO${dateStr}${rand}`;
-  }
   const handleProceedToPay = async () => {
-    const paymentStage = bd?.paymentLink.installmentStage;
     const data = {
       bookingId,
       paymentMethod: "UPI",
       paidAmount: payAmount || 0,
-      installmentStage: paymentStage,
-      providerRef: generateProviderRef(),
     };
     try {
       setIsResLoading(true);
@@ -2071,13 +2056,7 @@ function PaymentCheckout() {
           <div className="card-body">
             <h6 className="fw-bold mb-3">Payment Summary</h6>
             {category === "House Painting" &&
-            [
-              "Pending",
-              "Confirmed",
-              "Cancelled",
-              "Survey Ongoing",
-              "Survey Completed",
-            ].includes(bd.status) ? (
+            ["Pending", "Confirmed", "Cancelled"].includes(bd.status) ? (
               <>
                 <div className="d-flex justify-content-between small mb-2">
                   <span>Site Visit Charges</span>

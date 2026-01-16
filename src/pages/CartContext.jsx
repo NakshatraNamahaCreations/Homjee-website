@@ -18,7 +18,8 @@ export const CartProvider = ({ children }) => {
     delta,
     service,
     teamMembers,
-    duration
+    duration,
+    coinsForVendor
   ) => {
     // const safeTeamMembers = teamMembers ?? 1;
     // Validate inputs
@@ -30,6 +31,7 @@ export const CartProvider = ({ children }) => {
         service,
         teamMembers,
         duration,
+        coinsForVendor,
       });
       return;
     }
@@ -78,14 +80,30 @@ export const CartProvider = ({ children }) => {
                 item.name.split(" - ")[0] === prefix && item.service === service
               )
           ),
-          { name, price, quantity: 1, service, teamMembers, duration },
+          {
+            name,
+            price,
+            quantity: 1,
+            service,
+            teamMembers,
+            duration,
+            coinsForVendor,
+          },
         ];
       } else if (delta > 0) {
         // Add new item if no item with this prefix exists
         console.log(`Adding new item: ${name} for service: ${service}`);
         return [
           ...prevCart,
-          { name, price, quantity: 1, service, teamMembers, duration },
+          {
+            name,
+            price,
+            quantity: 1,
+            service,
+            teamMembers,
+            duration,
+            coinsForVendor,
+          },
         ];
       }
       // Return unchanged cart if no updates needed

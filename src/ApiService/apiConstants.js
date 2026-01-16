@@ -1,5 +1,5 @@
-// export const API_BASE_URL = "http://localhost:9000/api"; // development
-export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
+export const API_BASE_URL = "http://localhost:9000/api"; // development
+// export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
 
 export const API_ENDPOINTS = {
   // USER AUTH
@@ -35,7 +35,16 @@ export const API_ENDPOINTS = {
   WRITE_VENDOR_RATING: "/ratings/vendor-ratings/add",
   GET_VENDOR_RATING_BY_ID: "/ratings/vendor-ratings/get",
   GET_VENDOR_OVERALL_RATING: "/ratings/overall-ratings/vendor/",
+
+  // BUY COIN -VENDOR
+  VALIDATE_URL: "/wallet/vendor/payment-link/validate",
+  RECHARGE_WALLET: "/wallet/recharge-wallet/add-coin/vendor",
+
+  // ADMIN
+  FETCH_PACKAGE_CATALOG: "/admin/cleaning-catalog/fetch",
+  UPDATE_PACKAGE_CATALOG: "/admin/cleaning-catalog/update"
 };
+
 
 // Akash 68884d7c02bf3a539293ec61
 // 9595951104

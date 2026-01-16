@@ -1554,8 +1554,6 @@ const Checkout = () => {
   const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
   const showSelectedSlot = JSON.parse(sessionStorage.getItem("selectedSlots"));
 
-  const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
-
   const { phoneNumber: initialPhoneNumber, openAddressModal } =
     location.state || { phoneNumber: "", openAddressModal: false };
   const [isLoading, setIsLoading] = useState(false);
@@ -1572,22 +1570,6 @@ const Checkout = () => {
   const { selectedSlot, setSelectedSlot } = useSelectedSlotContext();
   const { cartItems, setCartItems, updateCartItem, getQuantity, totalPrice } =
     useContext(CartContext);
-
-  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
-  const [showAnotherPopup, setAnotherPopup] = useState(false);
-  const [showLocationPopup, setShowLocationPopup] = useState(false);
-
-  const [mapUrl, setMapUrl] = useState("");
-  const [userAddress, setUserAddress] = useState(null);
-
-  const [mapAddress, setMapAddress] = useState("");
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [houseNumber, setHouseNumber] = useState("");
-  const [landmark, setLandmark] = useState("");
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
 
   console.log("cartItems", cartItems);
 
@@ -1616,91 +1598,6 @@ const Checkout = () => {
   });
   // console.log("addressDataContext context api", addressDataContext);
   const GOOGLE_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
-
-  const getCurrentLocationDraft = () =>
-    new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error("Geolocation not supported"));
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
-
-          try {
-            const response = await fetch(geocodingUrl);
-            const data = await response.json();
-
-            if (data.status === "OK" && data.results.length > 0) {
-              const first = data.results[0];
-              const formatted = first.formatted_address;
-
-              // ✅ city extract (better than split)
-              const comps = first.address_components || [];
-              const cityComp =
-                comps.find((c) => c.types?.includes("locality")) ||
-                comps.find((c) =>
-                  c.types?.includes("administrative_area_level_2")
-                );
-
-              resolve({
-                address: formatted,
-                latitude,
-                longitude,
-                city: cityComp?.long_name || "",
-              });
-              return;
-            }
-
-            reject(new Error("Unable to resolve address"));
-          } catch (e) {
-            reject(e);
-          }
-        },
-        (err) => reject(err),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
-    });
-  const handleCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLatitude(latitude);
-        setLongitude(longitude);
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
-        try {
-          const response = await fetch(geocodingUrl);
-          const data = await response.json();
-          if (data.status === "OK" && data.results.length > 0) {
-            const address = data.results[0].formatted_address;
-            setMapAddress(address);
-            setMapUrl(
-              `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
-            );
-            setHouseNumber("");
-            setLandmark("");
-
-            setShowAddress(true);
-          }
-        } catch (error) {
-          alert("Error getting location.");
-        }
-      },
-      (error) => alert("Location error: " + error.message),
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0,
-      }
-    );
-  };
 
   const fetchUserAddress = async (userId) => {
     try {
@@ -1899,41 +1796,6 @@ const Checkout = () => {
     }
   };
 
-  const handleAddress = async () => {
-    console.log("function called");
-    const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const data = {
-      savedAddress: {
-        uniqueCode: uniqueCode,
-        address: mapAddress,
-        houseNumber: houseNumber,
-        landmark: landmark,
-        latitude: latitude,
-        longitude: longitude,
-      },
-    };
-
-    if (!houseNumber.trim()) return alert("House/Flat Number is required");
-
-    try {
-      const result = await putRequest(
-        `${API_ENDPOINTS.SAVE_ADDRESS}${userId}`,
-        data
-      );
-      setAddressDataContext(data.savedAddress);
-      sessionStorage.setItem(
-        "selectedAddress",
-        JSON.stringify(data.savedAddress)
-      );
-      setShowAddress(false);
-      setAnotherPopup(false);
-      console.log("Address Saved", result);
-      // alert(result.message || "Address Saved");
-    } catch (error) {
-      console.error("Address failed:", error);
-    }
-  };
-
   const cancellationsData = [
     {
       id: 1,
@@ -1951,13 +1813,7 @@ const Checkout = () => {
       fee: "Up to ₹999",
     },
   ];
-  const handleSelectAddress = (addr) => {
-    console.log(addr);
-    setAddressDataContext(addr);
-    setSelectedAddressId(addr.uniqueCode);
-    // sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
-    // navigate("/deep-cleaning-packages");
-  };
+
   // Function to handle opening the slot modal
   const handleOpenSlotModal = () => {
     setShowSlotModal(true);
@@ -2088,10 +1944,7 @@ const Checkout = () => {
   console.log("total Cart Value", totalCartValueAmountDeepCleaning);
   console.log("Advance AMT to be paid", needToPay);
   // console.log("Get booking Amount based on selected pkg", result);
-  console.log(
-    "priceConfig?.siteVisitCharge house painting",
-    priceConfig?.siteVisitCharge
-  );
+  console.log("priceConfig?.siteVisitCharge house painting", priceConfig);
   console.log("RemaingAmountYetToPay", RemaingAmountYetToPay);
   console.log("serviceType", serviceType);
 
@@ -2128,6 +1981,7 @@ const Checkout = () => {
               serviceName: "House Painters & Waterproofing",
               price: Number(priceConfig?.siteVisitCharge || 0),
               quantity: Number(1),
+              coinsForVendor: Number(priceConfig.vendorCoins || 0),
             },
           ]
         : cartItems.map((ele) => ({
@@ -2138,6 +1992,7 @@ const Checkout = () => {
             quantity: Number(ele.quantity),
             teamMembersRequired: Number(ele.teamMembers || 1),
             duration: Number(ele.duration || 0),
+            coinsForVendor: Number(ele.coinsForVendor || 0),
           })),
     bookingDetails: {
       bookingDate: moment().toISOString(), // from form

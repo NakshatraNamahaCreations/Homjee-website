@@ -1070,18 +1070,18 @@ function PaymentCheckout() {
   const [showCustomPopup, setShowCustomPopup] = useState(false);
   const [popupType, setPopupType] = useState(null);
   const [payAmount, setPayAmount] = useState(0);
-<<<<<<< Updated upstream
+
   const [showSlotModal, setShowSlotModal] = useState(false);
 
   const handleCloseSlotModal = () => {
     setShowSlotModal(false);
   };
-=======
+
   const [averageRating, setAverageRating] = useState("0");
 
   const assignedProfessionalId =
     bookingData?.assignedProfessional?.professionalId;
->>>>>>> Stashed changes
+
 
   const fetchBookingDetails = async () => {
     if (!bookingId) {
@@ -1143,25 +1143,25 @@ function PaymentCheckout() {
     }
   }, [bookingId]);
 
-<<<<<<< Updated upstream
- const getLatLngFromBooking = () => {
-  try {
-    const coords = bookingData?.address?.location?.coordinates;
 
-    // GeoJSON => [lng, lat]
-    if (!Array.isArray(coords) || coords.length !== 2) return null;
+  const getLatLngFromBooking = () => {
+    try {
+      const coords = bookingData?.address?.location?.coordinates;
 
-    const lng = Number(coords[0]);
-    const lat = Number(coords[1]);
+      // GeoJSON => [lng, lat]
+      if (!Array.isArray(coords) || coords.length !== 2) return null;
 
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+      const lng = Number(coords[0]);
+      const lat = Number(coords[1]);
 
-    return { lat, lng };
-  } catch (e) {
-    console.error("getLatLngFromBooking error:", e);
-    return null;
-  }
-};
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+      return { lat, lng };
+    } catch (e) {
+      console.error("getLatLngFromBooking error:", e);
+      return null;
+    }
+  };
 
 
   const mapServicesForSlots = (services = []) => {
@@ -1225,48 +1225,48 @@ function PaymentCheckout() {
   // };
 
   const fetchAvailableSlots = async (date) => {
-  try {
-    const location = getLatLngFromBooking();
-    if (!location) {
-      console.warn("Lat/Lng missing from bookingData.address.location.coordinates");
-      return [];
-    }
+    try {
+      const location = getLatLngFromBooking();
+      if (!location) {
+        console.warn("Lat/Lng missing from bookingData.address.location.coordinates");
+        return [];
+      }
 
-    if (!bookingData?.serviceType) return [];
+      if (!bookingData?.serviceType) return [];
 
-    const basePayload = {
-      serviceType: bookingData.serviceType, // deep_cleaning | house_painting
-      date,
-      lat: location.lat,
-      lng: location.lng,
-    };
+      const basePayload = {
+        serviceType: bookingData.serviceType, // deep_cleaning | house_painting
+        date,
+        lat: location.lat,
+        lng: location.lng,
+      };
 
-    const payload =
-      bookingData.serviceType === "deep_cleaning"
-        ? {
+      const payload =
+        bookingData.serviceType === "deep_cleaning"
+          ? {
             ...basePayload,
             services: mapServicesForSlots(bookingData?.service || []),
           }
-        : basePayload;
+          : basePayload;
 
-    console.log("Slots payload =>", payload);
+      console.log("Slots payload =>", payload);
 
-    const res = await fetch(`${API_BASE_URL}/slots/website/get-available-slots`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const res = await fetch(`${API_BASE_URL}/slots/website/get-available-slots`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await res.json();
-    console.log("Slots response =>", data);
+      const data = await res.json();
+      console.log("Slots response =>", data);
 
-    if (!data?.success) return [];
-    return data.slots || [];
-  } catch (err) {
-    console.error("fetchAvailableSlots error:", err);
-    return [];
-  }
-};
+      if (!data?.success) return [];
+      return data.slots || [];
+    } catch (err) {
+      console.error("fetchAvailableSlots error:", err);
+      return [];
+    }
+  };
 
   const handleProceedToSlotSelection = async () => {
     // if (minimumAmount > TotalPrice) return;
@@ -1314,15 +1314,14 @@ function PaymentCheckout() {
   };
 
   console.log("Booking Data:", bookingData?.bookingDetails);
-=======
+
   console.log("assignedProfessionalId", assignedProfessionalId);
 
   const fetchVendorRatings = async () => {
     setIsPageLoading(true);
     try {
       const response = await getRequest(
-        `${
-          API_ENDPOINTS.GET_VENDOR_OVERALL_RATING
+        `${API_ENDPOINTS.GET_VENDOR_OVERALL_RATING
         }${`689472b895ba472e19ad7284`}`
       );
 
@@ -1347,7 +1346,7 @@ function PaymentCheckout() {
 
   // console.log("finalized quote", finalizedQoute);
   console.log("Booking Data:", bookingData);
->>>>>>> Stashed changes
+
 
   const approvePrice = async (approvedBy = "customer") => {
     // const confirmed = window.confirm(
@@ -1633,9 +1632,8 @@ function PaymentCheckout() {
           <div className="d-flex justify-content-between small mb-2">
             <span>Change</span>
             <span
-              className={`fw-semibold ${
-                changeDelta < 0 ? "text-danger" : "text-success"
-              }`}
+              className={`fw-semibold ${changeDelta < 0 ? "text-danger" : "text-success"
+                }`}
             >
               {changeDelta < 0 ? "- " : "+ "}
               {currency(Math.abs(changeDelta))}
@@ -1752,9 +1750,8 @@ function PaymentCheckout() {
           <div className="d-flex justify-content-between small mb-2">
             <span>Change</span>
             <span
-              className={`fw-semibold ${
-                changeDelta < 0 ? "text-danger" : "text-success"
-              }`}
+              className={`fw-semibold ${changeDelta < 0 ? "text-danger" : "text-success"
+                }`}
             >
               {changeDelta < 0 ? "- " : "+ "}
               {currency(Math.abs(changeDelta))}
@@ -1935,8 +1932,8 @@ function PaymentCheckout() {
               <div className="fw-semibold">
                 {bookingData?.selectedSlot?.slotDate
                   ? moment(bookingData.selectedSlot.slotDate).format(
-                      "DD-MM-YYYY"
-                    )
+                    "DD-MM-YYYY"
+                  )
                   : "-"}
               </div>
 
@@ -2056,7 +2053,7 @@ function PaymentCheckout() {
           <div className="card-body">
             <h6 className="fw-bold mb-3">Payment Summary</h6>
             {category === "House Painting" &&
-            ["Pending", "Confirmed", "Cancelled"].includes(bd.status) ? (
+              ["Pending", "Confirmed", "Cancelled"].includes(bd.status) ? (
               <>
                 <div className="d-flex justify-content-between small mb-2">
                   <span>Site Visit Charges</span>
@@ -2222,26 +2219,26 @@ function PaymentCheckout() {
               {/* Team Members Section */}
               {bookingData?.assignedProfessional?.hiring?.teamMember?.length >
                 0 && (
-                <>
-                  <div className="mt-3">
-                    <div className="mb-2" style={{ fontSize: "14px" }}>
-                      Assigned Team Members
+                  <>
+                    <div className="mt-3">
+                      <div className="mb-2" style={{ fontSize: "14px" }}>
+                        Assigned Team Members
+                      </div>
+                      <div className="d-flex flex-wrap gap-2">
+                        {bookingData.assignedProfessional.hiring.teamMember.map(
+                          (teamMember, index) => (
+                            <div
+                              key={index}
+                              className="badge bg-light text-dark px-2 py-1"
+                            >
+                              {teamMember.memberName || "Unnamed Member"}
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                    <div className="d-flex flex-wrap gap-2">
-                      {bookingData.assignedProfessional.hiring.teamMember.map(
-                        (teamMember, index) => (
-                          <div
-                            key={index}
-                            className="badge bg-light text-dark px-2 py-1"
-                          >
-                            {teamMember.memberName || "Unnamed Member"}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
             </div>
           </div>
         )}

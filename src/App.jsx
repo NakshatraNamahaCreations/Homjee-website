@@ -73,13 +73,16 @@ import { useEffect } from "react";
 import PaymentCheckout from "./pages/PaymentCheckout";
 import CheckoutPaymentRouter from "./pages/CheckoutPaymentRouter";
 import VendorRatings from "./pages/VendorRatings";
+import VendorPayment from "./pages/VendorPayment";
+import WalletRechargeLanding from "./pages/WalletRechargeLanding";
+import AdminCleaningCatalogEditor from "./components/AdminCleaningCatalogEditor";
 
 const AppRoutes = () => {
   const location = useLocation();
 
   // List of paths where Footer should be hidden
-  const hideFooterRoutes = ["/checkout", "/vendor-ratings"];
-  const hideRating = ["/vendor-ratings"];
+  const hideFooterRoutes = ["/checkout", "/vendor-ratings", "/wallet-recharge"];
+  const hideRating = ["/vendor-ratings", "/wallet-recharge"];
 
   const shouldHideFooter = hideFooterRoutes.includes(location.pathname);
   const shouldHideHeaderOnRatings = hideRating.includes(location.pathname);
@@ -108,12 +111,17 @@ const AppRoutes = () => {
           />
 
           <Route path="/vendor-ratings" element={<VendorRatings />} />
+          <Route path="/wallet-recharge" element={<WalletRechargeLanding />} />
           <Route
             path="/deep-cleaning-packages"
             element={<DeepCleaningPackages />}
           />
           <Route path="/checkoutcleaning" element={<Checkoutdeepcleaning />} />
           <Route path="/interiorcheckout" element={<Interiorcheckout />} />
+          <Route
+            path="/admincleaningcatalogeditor"
+            element={<AdminCleaningCatalogEditor />}
+          />
         </Routes>
       </div>
       {!shouldHideFooter && <Footer />}

@@ -1992,7 +1992,8 @@ const Checkout = () => {
             quantity: Number(ele.quantity),
             teamMembersRequired: Number(ele.teamMembers || 1),
             duration: Number(ele.duration || 0),
-            coinsForVendor: Number(ele.coinsForVendor || 0),
+            coinsForVendor:
+              Number(ele.coinsForVendor || 0) * Number(ele.quantity),
           })),
     bookingDetails: {
       bookingDate: moment().toISOString(), // from form
@@ -2034,6 +2035,7 @@ const Checkout = () => {
     isEnquiry: checkEnquiry(),
     // formName: "Website Service Page",
   };
+  console.log("Payload Before sending...", data);
 
   // const handleProceedToCheckout = async () => {
   //   // if (cartItems.length === 0) {

@@ -27,36 +27,36 @@ export default function VendorPayment({
 
   const handlePay = async () => {
     setShowSuccesModal(true);
-    // try {
-    //   if (!vendorId) {
-    //     alert("VendorId missing");
-    //     return;
-    //   }
-    //   if (paying) return;
+    try {
+      if (!vendorId) {
+        alert("VendorId missing");
+        return;
+      }
+      if (paying) return;
 
-    //   setPaying(true);
+      setPaying(true);
 
-    //   const url = `${API_BASE_URL}${API_ENDPOINTS.RECHARGE_WALLET}`;
-    //   console.log("Recharge URL:", url, "payload:", { vendorId });
+      const url = `${API_BASE_URL}${API_ENDPOINTS.RECHARGE_WALLET}`;
+      console.log("Recharge URL:", url, "payload:", { vendorId });
 
-    //   const res = await axios.post(url, { vendorId });
+      const res = await axios.post(url, { vendorId });
 
-    //   console.log("Recharge response:", res?.data);
+      console.log("Recharge response:", res?.data);
 
-    //   if (res?.data?.status === "success") {
-    //     console.log("Res", res?.data);
-    //     setShowSuccesModal(true);
-    //     // alert("Wallet recharged successfully ✅");
-    //     return;
-    //   }
+      if (res?.data?.status === "success") {
+        console.log("Res", res?.data);
+        setShowSuccesModal(true);
+        // alert("Wallet recharged successfully ✅");
+        return;
+      }
 
-    //   alert(res?.data?.message || "Recharge failed");
-    // } catch (err) {
-    //   console.log("Recharge error:", err?.response?.data || err?.message);
-    //   alert(err?.response?.data?.message || "Server error");
-    // } finally {
-    //   setPaying(false);
-    // }
+      alert(res?.data?.message || "Recharge failed");
+    } catch (err) {
+      console.log("Recharge error:", err?.response?.data || err?.message);
+      alert(err?.response?.data?.message || "Server error");
+    } finally {
+      setPaying(false);
+    }
   };
 
   const styles = {

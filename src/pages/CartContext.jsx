@@ -153,6 +153,7 @@ export const CartProvider = ({ children }) => {
         getQuantity,
         getQuantityByPrefix,
         totalPrice,
+        // getCoinToDeduct,
       }}
     >
       {children}

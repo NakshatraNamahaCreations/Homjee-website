@@ -1586,7 +1586,7 @@ function PaymentCheckout() {
             </span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid1</span>
+            <span>Amount Paid</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
@@ -1644,7 +1644,7 @@ function PaymentCheckout() {
             <span className="fw-semibold">{currency(newTotal)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid2</span>
+            <span>Amount Paid</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           {bd?.amountYetToPay !== 0 && bd.status !== "Project Completed" && (
@@ -1691,7 +1691,7 @@ function PaymentCheckout() {
             <span className="fw-semibold">{currency(bd?.finalTotal || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid4</span>
+            <span>Amount Paid</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
@@ -1718,7 +1718,7 @@ function PaymentCheckout() {
             <span className="fw-semibold">{currency(bd?.finalTotal || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">
-            <span>Amount Paid5</span>
+            <span>Amount Paid</span>
             <span className="fw-semibold">{currency(bd?.paidAmount || 0)}</span>
           </div>
           <div className="d-flex justify-content-between small mb-2">

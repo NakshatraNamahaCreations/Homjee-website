@@ -1981,7 +1981,7 @@ const Checkout = () => {
               serviceName: "House Painters & Waterproofing",
               price: Number(priceConfig?.siteVisitCharge || 0),
               quantity: Number(1),
-              coinsForVendor: Number(priceConfig.vendorCoins || 0),
+              coinsForVendor: Number(priceConfig?.vendorCoins || 0),
             },
           ]
         : cartItems.map((ele) => ({

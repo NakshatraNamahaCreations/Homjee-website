@@ -905,6 +905,19 @@ const modalComponents = {
 //   ],
 // };
 
+
+
+const resolvePkgImage = (pkg) => {
+  try {
+    const key = String(pkg?.image || "").trim();
+    if (!key) return "/media/placeholder.webp";
+    return `/media/${key}.webp`;
+  } catch (e) {
+    return "/media/placeholder.webp";
+  }
+};
+
+
 const DeepCleaningPackages = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1169,7 +1182,7 @@ const DeepCleaningPackages = () => {
                 borderRadius: "5px",
               }}
             >
-              {/* <img
+              <img
                 src={serviceImages[service]}
                 alt={service}
                 style={{
@@ -1179,7 +1192,7 @@ const DeepCleaningPackages = () => {
                   borderRadius: "5px",
                   marginBottom: "5px",
                 }}
-              /> */}
+              />
               <p
                 style={{
                   fontSize: "10px",
@@ -1294,7 +1307,7 @@ const DeepCleaningPackages = () => {
                         <img
                           // src={pkgGroup[0].image}
                           // alt={pkgGroup[0].name}
-                          src={currentPkg.image}
+                         src={resolvePkgImage(currentPkg)}
                           alt={currentPkg.name}
                           style={{
                             width: "80%",

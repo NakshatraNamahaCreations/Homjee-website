@@ -60,7 +60,7 @@ const About = () => {
         }}
       >
         <img
-          src="https://images.unsplash.com/photo-1581579189317-3ed982f48142?auto=format&fit=crop&w=900&q=80"
+          src="https://plus.unsplash.com/premium_photo-1663045749033-9e71cf3f5663?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Home cleaning service"
           style={{
             width: "100%",

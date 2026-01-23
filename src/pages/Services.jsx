@@ -85,15 +85,15 @@ const Services = () => {
   const [otpValue, setOtpValue] = useState(null);
 
   const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
-  const [houseNumber, setHouseNumber] = useState("");
-  const [landmark, setLandmark] = useState("");
-  const [locationRequested, setLocationRequested] = useState(false);
+  // const [houseNumber, setHouseNumber] = useState("");
+  // const [landmark, setLandmark] = useState("");
+  // const [locationRequested, setLocationRequested] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
 
   const [mapAddress, setMapAddress] = useState("");
-  const [userAddress, setUserAddress] = useState(null);
+  // const [userAddress, setUserAddress] = useState(null);
   const { addressDataContext, setAddressDataContext } = useAddressContext();
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  // const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [currentUser, setCurrentUser] = useState(() => getStoredUser());
   const userId = currentUser?._id; // ✅ use this everywhere
 
@@ -105,11 +105,11 @@ const Services = () => {
 
   const GOOGLE_MAPS_API_KEY = "AIzaSyDLyeYKWC3vssuRVGXktAT_cY-8-qHEA_g";
 
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
+  // const [latitude, setLatitude] = useState(null);
+  // const [longitude, setLongitude] = useState(null);
   const [cityName, setCityName] = useState(null);
 
-  const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
+  // const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
 
   const [showAddress, setShowAddress] = useState(false);
@@ -121,15 +121,7 @@ const Services = () => {
     lng: null,
     city: "",
 
-    allowSearch: false,
-    allowMapPick: false,
-
-    // ✅ NEW
-    disableHouseFlat: false,
-    disableLandmark: false,
-    primaryCtaLabel: "Save & Proceed",
-
-    showChangeButton: false,
+    
   });
 
   console.log("isNewUser", isNewUser);
@@ -193,7 +185,7 @@ const Services = () => {
       );
       setResponseLoader(false);
       console.log("Login Success", result);
-      alert(result.message || "Login successful");
+
       setOtpValue(result.otp);
       setShowModal(true);
     } catch (error) {
@@ -216,7 +208,6 @@ const Services = () => {
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
 
       console.log("OTP Verification Result:", result);
-      alert(result.message || "OTP verified successfully");
 
       if (result?.data) {
         setStoredUser(result.data);
@@ -236,117 +227,58 @@ const Services = () => {
       setOtp(["", "", "", ""]);
       setShowModal(false);
 
-      // ✅ NEW USER FLOW
-      if (isNewUserFlag) {
-        console.log("👤 NEW USER: Opening address modal with current location");
+      // ✅ Get user ID
+      const userId = result?.data?._id;
+      if (!userId) {
+        console.error("No user ID found");
+        alert("User information not found");
+        return;
+      }
+
+      // ✅ Try to fetch saved address
+      const savedAddress = await fetchUserAddress(userId);
+      console.log("Fetched saved address:", savedAddress);
+
+      // ✅ For new users: get current location if no saved address
+      let initialAddress = savedAddress;
+      if (isNewUserFlag && !savedAddress) {
         try {
           const loc = await getCurrentLocationDraft();
-          console.log("📍 Current location fetched:", loc);
-
-          // ✅ NEW USER: Current location locked, house/landmark editable
-          setAddressPickerCfg({
+          initialAddress = {
             address: loc.address || "",
             houseNumber: "",
             landmark: "",
-            lat: Number(loc.latitude) || 12.9716,
-            lng: Number(loc.longitude) || 77.5946,
+            latitude: Number(loc.latitude) || 12.9716,
+            longitude: Number(loc.longitude) || 77.5946,
             city: loc.city || "",
-            allowSearch: false,
-            allowMapPick: false,
-            disableHouseFlat: false,
-            disableLandmark: false,
-            showChangeButton: false,
-            primaryCtaLabel: "Save & Proceed",
-          });
-
-          setShowAddress(true);
+          };
+          console.log("📍 Current location for new user:", initialAddress);
         } catch (e) {
           console.error("Failed to get current location:", e);
-          alert("Unable to fetch current location");
-
-          // Fallback: Allow search
-          setAddressPickerCfg({
-            address: "",
-            houseNumber: "",
-            landmark: "",
-            lat: null,
-            lng: null,
-            city: "",
-            allowSearch: true,
-            allowMapPick: true,
-            disableHouseFlat: false,
-            disableLandmark: false,
-            showChangeButton: false,
-            primaryCtaLabel: "Save & Proceed",
-          });
-          setShowAddress(true);
+          // Continue with empty address
         }
       }
-      // ✅ EXISTING USER FLOW
-      else {
-        console.log("👥 EXISTING USER: Fetching saved address");
-        const userId = result?.data?._id;
 
-        if (!userId) {
-          console.error("No user ID found");
-          alert("User information not found");
-          return;
-        }
+      // ✅ Always open address picker with the address (saved or current location)
+      // Search is always enabled for both new and existing users
+      setAddressPickerCfg({
+        address: initialAddress?.address || "",
+        houseNumber: initialAddress?.houseNumber || "",
+        landmark: initialAddress?.landmark || "",
+        lat: initialAddress?.latitude ? Number(initialAddress.latitude) : (initialAddress?.lat || 12.9716),
+        lng: initialAddress?.longitude ? Number(initialAddress.longitude) : (initialAddress?.lng || 77.5946),
+        city: initialAddress?.city || "",
+       
+      });
 
-        // Fetch saved address from backend
-        const savedAddress = await fetchUserAddress(userId);
-        console.log("Fetched saved address:", savedAddress);
-
-        if (
-          savedAddress?.address &&
-          savedAddress?.latitude &&
-          savedAddress?.longitude
-        ) {
-          console.log("✅ Found saved address, opening locked modal");
-
-          // ✅ EXISTING USER: Show saved address locked
-          setAddressPickerCfg({
-            address: savedAddress.address || "",
-            houseNumber: savedAddress.houseNumber || "",
-            landmark: savedAddress.landmark || "",
-            lat: Number(savedAddress.latitude),
-            lng: Number(savedAddress.longitude),
-            city: savedAddress.city || "",
-            allowSearch: false,
-            allowMapPick: false,
-            disableHouseFlat: true,
-            disableLandmark: true,
-            showChangeButton: true,
-            primaryCtaLabel: "Proceed",
-          });
-
-          // Store in session for backup
-          sessionStorage.setItem(
-            "selectedAddress",
-            JSON.stringify(savedAddress)
-          );
-          setShowAddress(true);
-        } else {
-          console.log("❌ No saved address found, opening searchable modal");
-
-          // No saved address - allow search
-          setAddressPickerCfg({
-            address: "",
-            houseNumber: "",
-            landmark: "",
-            lat: null,
-            lng: null,
-            city: "",
-            allowSearch: true,
-            allowMapPick: true,
-            disableHouseFlat: false,
-            disableLandmark: false,
-            showChangeButton: false,
-            primaryCtaLabel: "Save & Proceed",
-          });
-          setShowAddress(true);
-        }
+      // If we have a saved address, store it in context
+      if (savedAddress) {
+        setAddressDataContext(savedAddress);
+        sessionStorage.setItem("selectedAddress", JSON.stringify(savedAddress));
       }
+
+      setShowAddress(true);
+
     } catch (error) {
       console.error("verifyOTP error:", error);
       alert(error?.message || "Invalid OTP");
@@ -358,14 +290,13 @@ const Services = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.RESEND_OTP, formData);
       console.log("OTP Re-sent", result);
-      alert(result.message || "OTP Re-sent");
+   
       setOtpValue(result.otp);
     } catch (error) {
       console.error("OTP Re-sent Error:", error);
       // NotificationManager.error(error.message || "Login failed");
     }
   };
-
 
   const getCurrentLocationDraft = () =>
     new Promise((resolve, reject) => {
@@ -415,7 +346,6 @@ const Services = () => {
       );
     });
 
-
   const fetchUserAddress = async (userId) => {
     try {
       if (!userId) return null;
@@ -462,35 +392,7 @@ const Services = () => {
     try {
       console.log("💾 Saving address from modal:", picked);
 
-      // ✅ If "Proceed" button was clicked (existing user with saved address)
-      if (addressPickerCfg.primaryCtaLabel === "Proceed") {
-        console.log("🚀 Proceeding with existing address");
-
-        const existingAddress = {
-          uniqueCode: `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          address: addressPickerCfg.address,
-          houseNumber: addressPickerCfg.houseNumber,
-          landmark: addressPickerCfg.landmark,
-          latitude: addressPickerCfg.lat,
-          longitude: addressPickerCfg.lng,
-          city: addressPickerCfg.city,
-        };
-
-        // Store in context and session
-        setAddressDataContext(existingAddress);
-        sessionStorage.setItem(
-          "selectedAddress",
-          JSON.stringify(existingAddress)
-        );
-        setShowAddress(false);
-
-        // Proceed to slot selection
-        await handleProceedToSlotSelection();
-        return;
-      }
-
-      // ✅ For new/changed addresses
-      if (!picked?.houseNumber?.trim() && !addressPickerCfg.disableHouseFlat) {
+      if (!picked?.houseNumber?.trim()) {
         alert("House/Flat Number is required");
         return;
       }
@@ -501,12 +403,12 @@ const Services = () => {
       const addressObj = {
         uniqueCode,
         address: picked.address || addressPickerCfg.address,
-        houseNumber: addressPickerCfg.disableHouseFlat
-          ? addressPickerCfg.houseNumber
-          : picked.houseNumber?.trim() || "",
-        landmark: addressPickerCfg.disableLandmark
-          ? addressPickerCfg.landmark
-          : picked.landmark?.trim() || "",
+        houseNumber: 
+          addressPickerCfg.houseNumber
+          || picked.houseNumber?.trim() || "",
+        landmark: 
+          addressPickerCfg.landmark
+          || picked.landmark?.trim() || "",
         latitude: Number(picked.lat || addressPickerCfg.lat),
         longitude: Number(picked.lng || addressPickerCfg.lng),
         city: picked.city || addressPickerCfg.city || "",
@@ -549,161 +451,6 @@ const Services = () => {
       console.error("storage sync error", e);
     }
   }, []);
-
-
-
-  // useEffect(() => {
-  //   const cleanupFns = [];
-  //   let map, autocomplete, marker, geocoder;
-
-  //   const reverseGeocode = (pos, formattedAddrFromPlace = null) => {
-  //     if (!geocoderRef.current) return;
-
-  //     if (markerRef.current) markerRef.current.setPosition(pos);
-  //     if (mapRef.current) {
-  //       mapRef.current.setCenter(pos);
-  //       mapRef.current.setZoom(17);
-  //     }
-
-  //     if (formattedAddrFromPlace) {
-  //       setAddr(formattedAddrFromPlace);
-  //     }
-
-  //     // ✅ Always update latLng state
-  //     setLatLng({ lat: pos.lat, lng: pos.lng });
-
-  //     geocoderRef.current.geocode({ location: pos }, (results, status) => {
-  //       if (status === "OK" && results?.length) {
-  //         const formattedAddress = results[0].formatted_address;
-  //         const addressComponents = results[0].address_components;
-
-  //         let detectedCity = "";
-  //         let state = "";
-  //         let country = "";
-
-  //         for (const comp of addressComponents) {
-  //           const types = comp.types;
-  //           if (types.includes("locality")) detectedCity = comp.long_name;
-  //           else if (
-  //             types.includes("administrative_area_level_2") &&
-  //             !detectedCity
-  //           )
-  //             detectedCity = comp.long_name;
-  //           else if (types.includes("administrative_area_level_1"))
-  //             state = comp.long_name;
-  //           else if (types.includes("country")) country = comp.long_name;
-  //         }
-
-  //         if (detectedCity)
-  //           detectedCity =
-  //             detectedCity.charAt(0).toUpperCase() + detectedCity.slice(1);
-
-  //         if (!formattedAddrFromPlace) setAddr(formattedAddress);
-
-  //         // Set the city from reverse geocoding
-  //         setCity(detectedCity);
-  //       }
-  //     });
-  //   };
-
-  //   const init = async (posToUse) => {
-  //     await loadGoogleMaps();
-  //     geocoder = new window.google.maps.Geocoder();
-  //     geocoderRef.current = geocoder;
-
-  //     map = new window.google.maps.Map(mapRef.current, {
-  //       center: posToUse,
-  //       zoom: 16,
-  //       streetViewControl: false,
-  //       mapTypeControl: false,
-  //     });
-  //     mapRef.current = map;
-
-  //     marker = new window.google.maps.Marker({
-  //       map,
-  //       position: posToUse,
-  //       draggable: true,
-  //     });
-  //     markerRef.current = marker;
-
-  //     const autocomplete = new window.google.maps.places.Autocomplete(
-  //       inputRef.current,
-  //       { fields: ["formatted_address", "geometry"] }
-  //     );
-
-  //     const ensureAutocompleteZIndex = () => {
-  //       const containers = document.querySelectorAll(".pac-container");
-  //       containers.forEach((el) => {
-  //         el.style.zIndex = "100000";
-  //       });
-  //     };
-  //     ensureAutocompleteZIndex();
-
-  //     autocomplete.addListener("place_changed", () => {
-  //       const place = autocomplete.getPlace();
-  //       if (!place.geometry) return;
-  //       const pos = {
-  //         lat: place.geometry.location.lat(),
-  //         lng: place.geometry.location.lng(),
-  //       };
-
-  //       // ✅ Update state first
-  //       setLatLng(pos);
-
-  //       reverseGeocode(pos, place.formatted_address);
-  //     });
-
-  //     const observer = new MutationObserver(ensureAutocompleteZIndex);
-  //     observer.observe(document.body, {
-  //       childList: true,
-  //       subtree: true,
-  //     });
-
-  //     map.addListener("click", (e) => {
-  //       const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-  //       setLatLng(pos);
-  //       markerRef.current.setPosition(pos);
-  //       reverseGeocode(pos);
-  //     });
-
-  //     marker.addListener("dragend", () => {
-  //       const pos = {
-  //         lat: markerRef.current.getPosition().lat(),
-  //         lng: markerRef.current.getPosition().lng(),
-  //       };
-  //       setLatLng(pos);
-  //       reverseGeocode(pos);
-  //     });
-
-  //     if (!initialAddress) reverseGeocode(posToUse);
-  //     cleanupFns.push(() => observer.disconnect());
-  //   };
-
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const currentPos = {
-  //           lat: position.coords.latitude,
-  //           lng: position.coords.longitude,
-  //         };
-  //         setLatLng(currentPos);
-  //         init(currentPos);
-  //       },
-  //       () => init(initialLatLng || { lat: 12.9716, lng: 77.5946 })
-  //     );
-  //   } else {
-  //     init(initialLatLng || { lat: 12.9716, lng: 77.5946 });
-  //   }
-  //   return () => {
-  //     cleanupFns.forEach((fn) => {
-  //       try {
-  //         fn();
-  //       } catch (err) {
-  //         console.warn("AddressPicker cleanup error:", err);
-  //       }
-  //     });
-  //   };
-  // }, [initialLatLng, initialAddress]);
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
@@ -1632,7 +1379,7 @@ const Services = () => {
         </div>
       </div>
 
-      {/* transperency */}
+      {/* transperancy */}
       <div className="d-none d-lg-block">
         <div
           style={{
@@ -4775,113 +4522,6 @@ const Services = () => {
         </div>
       </div>
 
-      <Modal
-        show={showOptionOpoup}
-        size="small"
-        centered
-        backdrop="static"
-        keyboard={false}
-        onHide={() => {
-          // ✅ close first, open address only after modal is fully removed from DOM
-          openAddressAfterOptionCloseRef.current = true;
-          setShowOptionOpoup(false);
-        }}
-        onExited={() => {
-          if (openAddressAfterOptionCloseRef.current) {
-            openAddressAfterOptionCloseRef.current = false;
-            setShowAddress(true);
-          }
-        }}
-      >
-        <Modal.Header closeButton></Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-6">
-              <div
-                style={{ cursor: "pointer" }}
-                onClick={async () => {
-                  try {
-                    console.log("📍 Current Location selected");
-                    const loc = await getCurrentLocationDraft();
-                    setShowOptionOpoup(false);
-
-                    // ✅ EXISTING -> CURRENT LOCATION: locked map, editable house/landmark
-                    setAddressPickerCfg({
-                      address: loc.address || "",
-                      houseNumber: "",
-                      landmark: "",
-                      lat: Number(loc.latitude),
-                      lng: Number(loc.longitude),
-                      city: loc.city || "",
-                      allowSearch: false,
-                      allowMapPick: false,
-                      disableHouseFlat: false,
-                      disableLandmark: false,
-                      showChangeButton: true,
-                      primaryCtaLabel: "Save & Proceed",
-                    });
-
-                    setTimeout(() => setShowAddress(true), 100);
-                  } catch (e) {
-                    console.error("Failed to get current location:", e);
-                    alert("Unable to fetch current location");
-                  }
-                }}
-              >
-                <img
-                  src={map}
-                  style={{ width: "50%" }}
-                  alt="Current Location"
-                />
-                <p style={{ textAlign: "center", marginTop: 10 }}>
-                  Current Location
-                </p>
-              </div>
-            </div>
-
-            {/* Search Location Option */}
-            <div className="col-md-6">
-              <div
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  console.log("🔍 Search by Location selected");
-                  const cached = JSON.parse(
-                    sessionStorage.getItem("selectedAddress") || "null"
-                  );
-                  setShowOptionOpoup(false);
-
-                  // ✅ EXISTING -> SEARCH LOCATION: fully editable
-                  setAddressPickerCfg({
-                    address: cached?.address || "",
-                    houseNumber: "",
-                    landmark: "",
-                    lat: cached?.latitude ? Number(cached.latitude) : null,
-                    lng: cached?.longitude ? Number(cached.longitude) : null,
-                    city: cached?.city || "",
-                    allowSearch: true,
-                    allowMapPick: true,
-                    disableHouseFlat: false,
-                    disableLandmark: false,
-                    showChangeButton: false,
-                    primaryCtaLabel: "Save & Proceed",
-                  });
-
-                  setTimeout(() => setShowAddress(true), 100);
-                }}
-              >
-                <img
-                  src={searchLocation}
-                  style={{ width: "50%" }}
-                  alt="Search Location"
-                />
-                <p style={{ textAlign: "center", marginTop: 10 }}>
-                  Search By Location
-                </p>
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
 
       <SlotSelectionModal
         show={showSlotModal}
@@ -4905,16 +4545,7 @@ const Services = () => {
           initialHouseFlat={addressPickerCfg.houseNumber || ""}
           initialLandmark={addressPickerCfg.landmark || ""}
           initialCity={addressPickerCfg.city || ""}
-          allowSearch={addressPickerCfg.allowSearch}
-          allowMapPick={addressPickerCfg.allowMapPick}
-          disableHouseFlat={addressPickerCfg.disableHouseFlat}
-          disableLandmark={addressPickerCfg.disableLandmark}
-          primaryCtaLabel={addressPickerCfg.primaryCtaLabel}
-          showChangeButton={addressPickerCfg.showChangeButton}
-          onClickChange={() => {
-            setShowAddress(false);
-            setTimeout(() => setShowOptionOpoup(true), 100);
-          }}
+         
           onSave={(payload) => handleSaveAddressFromModal(payload)}
         />
       )}
@@ -4934,7 +4565,6 @@ const dotStyle = {
 
 export default Services;
 
-// working code
 // import React, { useState, useRef, useEffect } from "react";
 // import { useNavigate } from "react-router-dom";
 // import { Button, Carousel, Form, Modal } from "react-bootstrap";
@@ -4987,6 +4617,26 @@ export default Services;
 // import SlotSelectionModal from "./SlotSelectionModal";
 // import { useSelectedSlotContext } from "../utils/SlotContext";
 // import GlobalLoader from "../utils/GlobalLoader";
+// import AddressPickerModal from "../components/AddressPickerModal";
+
+// const getStoredUser = () => {
+//   try {
+//     const raw = sessionStorage.getItem("user");
+//     return raw ? JSON.parse(raw) : null;
+//   } catch (e) {
+//     console.error("getStoredUser parse error", e);
+//     return null;
+//   }
+// };
+
+// const setStoredUser = (user) => {
+//   try {
+//     if (!user) sessionStorage.removeItem("user");
+//     else sessionStorage.setItem("user", JSON.stringify(user));
+//   } catch (e) {
+//     console.error("setStoredUser error", e);
+//   }
+// };
 
 // const Services = () => {
 //   const navigate = useNavigate();
@@ -5000,21 +4650,20 @@ export default Services;
 //   const [otp, setOtp] = useState(["", "", "", ""]);
 //   const [joinedOtp, setJoinedOTP] = useState(null);
 //   const [otpValue, setOtpValue] = useState(null);
-//   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+
 //   const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
 //   const [houseNumber, setHouseNumber] = useState("");
 //   const [landmark, setLandmark] = useState("");
 //   const [locationRequested, setLocationRequested] = useState(false);
 //   const [isNewUser, setIsNewUser] = useState(false);
-//   const [showLocationPopup, setShowLocationPopup] = useState(false);
-//   const [mapLat, setMapLat] = useState(null);
-//   const [mapLng, setMapLng] = useState(null);
-//   const [mapUrl, setMapUrl] = useState("");
+
 //   const [mapAddress, setMapAddress] = useState("");
 //   const [userAddress, setUserAddress] = useState(null);
-//   const { setAddressDataContext } = useAddressContext();
+//   const { addressDataContext, setAddressDataContext } = useAddressContext();
 //   const [selectedAddressId, setSelectedAddressId] = useState(null);
-//   const userData = JSON.parse(sessionStorage.getItem("user"));
+//   const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+//   const userId = currentUser?._id; // ✅ use this everywhere
+
 //   const SERVICE_TYPE = "house_painting"; // <-- change dynamically if reused
 
 //   // const isNewUser = sessionStorage.getItem("isNewUser") === "true";
@@ -5030,8 +4679,29 @@ export default Services;
 //   const [showSearchBarOptions, setShowSearchBarOptions] = useState(false);
 //   const [showOptionOpoup, setShowOptionOpoup] = useState(false);
 
+//   const [showAddress, setShowAddress] = useState(false);
+//   const [addressPickerCfg, setAddressPickerCfg] = useState({
+//     address: "",
+//     houseNumber: "",
+//     landmark: "",
+//     lat: null,
+//     lng: null,
+//     city: "",
+
+//     allowSearch: false,
+//     allowMapPick: false,
+
+//     // ✅ NEW
+//     disableHouseFlat: false,
+//     disableLandmark: false,
+//     primaryCtaLabel: "Save & Proceed",
+
+//     showChangeButton: false,
+//   });
+
 //   console.log("isNewUser", isNewUser);
 //   const inputRefs = useRef([]);
+//   const openAddressAfterOptionCloseRef = useRef(false);
 
 //   // const formattedAddress = "Channasandra, Srinivaspura, Bengaluru, Karnataka 560060, India";
 
@@ -5080,6 +4750,8 @@ export default Services;
 //     e.preventDefault();
 //     if (!phoneNumber || !userName) {
 //       alert("Please enter your Name and Phone number");
+//       setResponseLoader(false);
+//       return;
 //     }
 //     try {
 //       const result = await postRequest(
@@ -5099,27 +4771,152 @@ export default Services;
 //   };
 
 //   const verifyOTP = async () => {
-//     if (joinedOtp === null) {
-//       alert("Please enter OTP");
-//     }
 //     try {
+//       console.log("=== OTP VERIFICATION START ===");
+
+//       if (!joinedOtp || joinedOtp.length !== 4) {
+//         alert("Please enter valid OTP");
+//         return;
+//       }
+
 //       const data = { otp: joinedOtp, mobileNumber: phoneNumber, userName };
 //       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
-//       console.log("OTP Verified", result);
+
+//       console.log("OTP Verification Result:", result);
 //       alert(result.message || "OTP verified successfully");
-//       // console.log("otp verified");
-//       if (result.data) {
-//         sessionStorage.setItem("user", JSON.stringify(result.data));
+
+//       if (result?.data) {
+//         setStoredUser(result.data);
+//         setCurrentUser(result.data);
 //       }
-//       sessionStorage.setItem("isNewUser", result.isNewUser);
-//       // console.log("otp verified");
-//       // setJoinedOTP(null);
+
+//       // ✅ Store user in session
+//       sessionStorage.setItem("user", JSON.stringify(result.data));
+
+//       // ✅ Get isNewUser correctly
+//       const isNewUserFlag = Boolean(result.isNewUser);
+//       console.log("isNewUser from backend:", isNewUserFlag);
+
+//       sessionStorage.setItem("isNewUser", String(isNewUserFlag));
+//       setIsNewUser(isNewUserFlag);
+
 //       setOtp(["", "", "", ""]);
 //       setShowModal(false);
-//       setShowLocationPopup(true);
+
+//       // ✅ NEW USER FLOW
+//       if (isNewUserFlag) {
+//         console.log("👤 NEW USER: Opening address modal with current location");
+//         try {
+//           const loc = await getCurrentLocationDraft();
+//           console.log("📍 Current location fetched:", loc);
+
+//           // ✅ NEW USER: Current location locked, house/landmark editable
+//           setAddressPickerCfg({
+//             address: loc.address || "",
+//             houseNumber: "",
+//             landmark: "",
+//             lat: Number(loc.latitude) || 12.9716,
+//             lng: Number(loc.longitude) || 77.5946,
+//             city: loc.city || "",
+//             allowSearch: false,
+//             allowMapPick: false,
+//             disableHouseFlat: false,
+//             disableLandmark: false,
+//             showChangeButton: false,
+//             primaryCtaLabel: "Save & Proceed",
+//           });
+
+//           setShowAddress(true);
+//         } catch (e) {
+//           console.error("Failed to get current location:", e);
+//           alert("Unable to fetch current location");
+
+//           // Fallback: Allow search
+//           setAddressPickerCfg({
+//             address: "",
+//             houseNumber: "",
+//             landmark: "",
+//             lat: null,
+//             lng: null,
+//             city: "",
+//             allowSearch: true,
+//             allowMapPick: true,
+//             disableHouseFlat: false,
+//             disableLandmark: false,
+//             showChangeButton: false,
+//             primaryCtaLabel: "Save & Proceed",
+//           });
+//           setShowAddress(true);
+//         }
+//       }
+//       // ✅ EXISTING USER FLOW
+//       else {
+//         console.log("👥 EXISTING USER: Fetching saved address");
+//         const userId = result?.data?._id;
+
+//         if (!userId) {
+//           console.error("No user ID found");
+//           alert("User information not found");
+//           return;
+//         }
+
+//         // Fetch saved address from backend
+//         const savedAddress = await fetchUserAddress(userId);
+//         console.log("Fetched saved address:", savedAddress);
+
+//         if (
+//           savedAddress?.address &&
+//           savedAddress?.latitude &&
+//           savedAddress?.longitude
+//         ) {
+//           console.log("✅ Found saved address, opening locked modal");
+
+//           // ✅ EXISTING USER: Show saved address locked
+//           setAddressPickerCfg({
+//             address: savedAddress.address || "",
+//             houseNumber: savedAddress.houseNumber || "",
+//             landmark: savedAddress.landmark || "",
+//             lat: Number(savedAddress.latitude),
+//             lng: Number(savedAddress.longitude),
+//             city: savedAddress.city || "",
+//             allowSearch: false,
+//             allowMapPick: false,
+//             disableHouseFlat: true,
+//             disableLandmark: true,
+//             showChangeButton: true,
+//             primaryCtaLabel: "Proceed",
+//           });
+
+//           // Store in session for backup
+//           sessionStorage.setItem(
+//             "selectedAddress",
+//             JSON.stringify(savedAddress)
+//           );
+//           setShowAddress(true);
+//         } else {
+//           console.log("❌ No saved address found, opening searchable modal");
+
+//           // No saved address - allow search
+//           setAddressPickerCfg({
+//             address: "",
+//             houseNumber: "",
+//             landmark: "",
+//             lat: null,
+//             lng: null,
+//             city: "",
+//             allowSearch: true,
+//             allowMapPick: true,
+//             disableHouseFlat: false,
+//             disableLandmark: false,
+//             showChangeButton: false,
+//             primaryCtaLabel: "Save & Proceed",
+//           });
+//           setShowAddress(true);
+//         }
+//       }
 //     } catch (error) {
-//       alert(error.message || "Invalid OTP");
-//       console.error("Login failed:", error);
+//       console.error("verifyOTP error:", error);
+//       alert(error?.message || "Invalid OTP");
 //     }
 //   };
 
@@ -5136,134 +4933,191 @@ export default Services;
 //     }
 //   };
 
-//   const handleSelectAddress = (addr) => {
-//     console.log(addr);
-//     setAddressDataContext(addr);
-//     setSelectedAddressId(addr.uniqueCode);
-//     sessionStorage.setItem("selectedAddress", JSON.stringify(addr));
-//     // navigate("/deep-cleaning-packages");
-//   };
 
-//   const getCurrentLocation = () => {
-//     if (!navigator.geolocation) {
-//       alert("Geolocation is not supported by this browser.");
-//       return;
-//     }
-//     navigator.geolocation.getCurrentPosition(
-//       async (position) => {
-//         const { latitude, longitude } = position.coords;
-//         setLatitude(latitude);
-//         setLongitude(longitude);
-//         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
-//         try {
-//           const response = await fetch(geocodingUrl);
-//           const data = await response.json();
-//           if (data.status === "OK" && data.results.length > 0) {
-//             const address = data.results[0].formatted_address;
-//             setMapAddress(address);
-//             setMapUrl(
-//               `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`
-//             );
-//             setHouseNumber("");
-//             setLandmark("");
-//             setShowOptionOpoup(false);
-//             setShowLocationPopup(true);
+//   const getCurrentLocationDraft = () =>
+//     new Promise((resolve, reject) => {
+//       if (!navigator.geolocation) {
+//         reject(new Error("Geolocation not supported"));
+//         return;
+//       }
+
+//       navigator.geolocation.getCurrentPosition(
+//         async (position) => {
+//           const { latitude, longitude } = position.coords;
+
+//           const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
+
+//           try {
+//             const response = await fetch(geocodingUrl);
+//             const data = await response.json();
+
+//             if (data.status === "OK" && data.results.length > 0) {
+//               const first = data.results[0];
+//               const formatted = first.formatted_address;
+
+//               // ✅ city extract (better than split)
+//               const comps = first.address_components || [];
+//               const cityComp =
+//                 comps.find((c) => c.types?.includes("locality")) ||
+//                 comps.find((c) =>
+//                   c.types?.includes("administrative_area_level_2")
+//                 );
+
+//               resolve({
+//                 address: formatted,
+//                 latitude,
+//                 longitude,
+//                 city: cityComp?.long_name || "",
+//               });
+//               return;
+//             }
+
+//             reject(new Error("Unable to resolve address"));
+//           } catch (e) {
+//             reject(e);
 //           }
-//         } catch (error) {
-//           alert("Error getting location.");
-//         }
-//       },
-//       (error) => alert("Location error: " + error.message),
-//       {
-//         enableHighAccuracy: true,
-//         timeout: 15000,
-//         maximumAge: 0,
-//       }
-//     );
-//   };
-
-//   useEffect(() => {
-//     if (isNewUser && showLocationPopup) {
-//       getCurrentLocation();
-//     }
-//   }, [isNewUser, showLocationPopup]);
-
-//   const fetchUserAddress = async () => {
-//     try {
-//       const response = await getRequest(
-//         `${API_ENDPOINTS.GET_ADDRESS}${userData?._id}`
+//         },
+//         (err) => reject(err),
+//         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
 //       );
-//       if (response.address) {
-//         setIsNewUser(false);
-//         setUserAddress(response.address);
-//         const urlMap = `https://www.google.com/maps?q=${response.address.latitude},${response.address.longitude}&z=15&output=embed`;
-//         setMapUrl(urlMap);
-//         setMapAddress(response.address.address);
-//         setLatitude(response.address.latitude);
-//         setLongitude(response.address.longitude);
-//         setCityName(response.address.city);
-//         setHouseNumber((prev) =>
-//           prev.trim() ? prev : response.address?.houseNumber || ""
-//         );
-//         setLandmark((prev) =>
-//           prev.trim() ? prev : response.address?.landmark || ""
-//         );
-//       } else {
-//         setIsNewUser(true);
-//         // setLocationRequested(true);
-//         setMapAddress("");
-//         setMapUrl("");
-//         getCurrentLocation();
+//     });
+
+
+//   const fetchUserAddress = async (userId) => {
+//     try {
+//       if (!userId) return null;
+
+//       const response = await getRequest(
+//         `${API_ENDPOINTS.GET_ADDRESS}${userId}`
+//       );
+
+//       // Check if the address is in `savedAddress` or `address` field
+//       const addressData = response?.address || response?.savedAddress;
+
+//       if (addressData) {
+//         const addrObj = {
+//           uniqueCode:
+//             addressData.uniqueCode ||
+//             `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+//           address: addressData.address,
+//           houseNumber: addressData.houseNumber || "",
+//           landmark: addressData.landmark || "",
+//           latitude: Number(addressData.latitude),
+//           longitude: Number(addressData.longitude),
+//           city: addressData.city || "",
+//         };
+
+//         setAddressDataContext(addrObj);
+//         sessionStorage.setItem("selectedAddress", JSON.stringify(addrObj));
+//         return addrObj;
 //       }
+
+//       return null;
 //     } catch (error) {
-//       console.error("GET error:", error.response || error);
+//       console.error("fetchUserAddress error:", error?.response || error);
+//       return null;
 //     }
 //   };
-
 //   useEffect(() => {
-//     if (userData?._id) {
-//       fetchUserAddress();
-//     }
-//   }, [userData?._id]);
+//     if (!userId) return;
+//     fetchUserAddress(userId);
+//   }, [userId]);
+
 //   console.log("mapAddress", mapAddress);
 
-//   const handleAddress = async () => {
-//     console.log("function called");
-//     const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-//     const data = {
-//       savedAddress: {
-//         uniqueCode: uniqueCode,
-//         address: mapAddress,
-//         houseNumber: houseNumber,
-//         landmark: landmark,
-//         latitude: latitude,
-//         longitude: longitude,
-//         city: cityName,
-//       },
-//     };
-
-//     if (!houseNumber.trim()) return alert("House/Flat Number is required");
-
+//   const handleSaveAddressFromModal = async (picked) => {
 //     try {
-//       const result = await putRequest(
-//         `${API_ENDPOINTS.SAVE_ADDRESS}${userData?._id}`,
-//         data
-//       );
-//       setAddressDataContext(data.savedAddress);
-//       sessionStorage.setItem(
-//         "selectedAddress",
-//         JSON.stringify(data.savedAddress)
-//       );
-//       setShowLocationPopup(false);
-//       console.log("Address Saved", result);
+//       console.log("💾 Saving address from modal:", picked);
 
-//       handleProceedToSlotSelection();
+//       // ✅ If "Proceed" button was clicked (existing user with saved address)
+//       if (addressPickerCfg.primaryCtaLabel === "Proceed") {
+//         console.log("🚀 Proceeding with existing address");
 
-//       alert(result.message || "Address Saved");
+//         const existingAddress = {
+//           uniqueCode: `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+//           address: addressPickerCfg.address,
+//           houseNumber: addressPickerCfg.houseNumber,
+//           landmark: addressPickerCfg.landmark,
+//           latitude: addressPickerCfg.lat,
+//           longitude: addressPickerCfg.lng,
+//           city: addressPickerCfg.city,
+//         };
+
+//         // Store in context and session
+//         setAddressDataContext(existingAddress);
+//         sessionStorage.setItem(
+//           "selectedAddress",
+//           JSON.stringify(existingAddress)
+//         );
+//         setShowAddress(false);
+
+//         // Proceed to slot selection
+//         await handleProceedToSlotSelection();
+//         return;
+//       }
+
+//       // ✅ For new/changed addresses
+//       if (!picked?.houseNumber?.trim() && !addressPickerCfg.disableHouseFlat) {
+//         alert("House/Flat Number is required");
+//         return;
+//       }
+
+//       const uniqueCode = `ADDR-${Date.now()}-${Math.floor(
+//         Math.random() * 1000
+//       )}`;
+//       const addressObj = {
+//         uniqueCode,
+//         address: picked.address || addressPickerCfg.address,
+//         houseNumber: addressPickerCfg.disableHouseFlat
+//           ? addressPickerCfg.houseNumber
+//           : picked.houseNumber?.trim() || "",
+//         landmark: addressPickerCfg.disableLandmark
+//           ? addressPickerCfg.landmark
+//           : picked.landmark?.trim() || "",
+//         latitude: Number(picked.lat || addressPickerCfg.lat),
+//         longitude: Number(picked.lng || addressPickerCfg.lng),
+//         city: picked.city || addressPickerCfg.city || "",
+//       };
+
+//       console.log("📝 Address to save:", addressObj);
+
+//       // Save to backend for existing users
+//       if (currentUser?._id) {
+//         const payload = { savedAddress: addressObj };
+//         console.log("📤 Saving to backend:", payload);
+
+//         const result = await putRequest(
+//           `${API_ENDPOINTS.SAVE_ADDRESS}${currentUser._id}`,
+//           payload
+//         );
+//         console.log("✅ Save result:", result);
+//       }
+
+//       // Store in context and session
+//       setAddressDataContext(addressObj);
+//       sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
+//       setShowAddress(false);
+
+//       // Proceed to slot selection
+//       await handleProceedToSlotSelection();
 //     } catch (error) {
-//       console.error("Address failed:", error);
+//       console.error("💥 handleSaveAddressFromModal error:", error);
+//       alert(error?.message || "Failed to save address");
 //     }
 //   };
+//   useEffect(() => {
+//     try {
+//       const onStorage = (e) => {
+//         if (e.key === "user") setCurrentUser(getStoredUser());
+//       };
+//       window.addEventListener("storage", onStorage);
+//       return () => window.removeEventListener("storage", onStorage);
+//     } catch (e) {
+//       console.error("storage sync error", e);
+//     }
+//   }, []);
+
+
 
 //   // useEffect(() => {
 //   //   const cleanupFns = [];
@@ -5418,30 +5272,40 @@ export default Services;
 //   //   };
 //   // }, [initialLatLng, initialAddress]);
 
-//   const handleSubmitOTP = () => {
-//     setShowModal(false); // Hide OTP modal
-//     setIsLocationModalVisible(true); // Show location modal
-//   };
-
 //   const handlePhoneNumberChange = (e) => {
 //     setPhoneNumber(e.target.value);
 //   };
 
 //   const handleOtpChange = (e, index) => {
-//     const value = e.target.value;
-//     const newOtp = [...otp];
-//     newOtp[index] = value;
-//     const joinString = newOtp?.join("");
-//     setJoinedOTP(joinString);
-//     setOtp(newOtp);
-//     if (value && index < 5) {
-//       inputRefs.current[index + 1].focus();
+//     try {
+//       const value = e.target.value.replace(/\D/g, ""); // only digit
+//       const newOtp = [...otp];
+//       newOtp[index] = value;
+
+//       const joinString = newOtp.join("");
+//       setJoinedOTP(joinString);
+//       setOtp(newOtp);
+
+//       if (value && index < newOtp.length - 1) {
+//         inputRefs.current[index + 1]?.focus();
+//       }
+//     } catch (err) {
+//       console.error("handleOtpChange error:", err);
 //     }
 //   };
 
 //   const handleKeyDown = (e, index) => {
-//     if (e.key === "Backspace" && !otp[index] && index > 0) {
-//       inputRefs.current[index - 1].focus();
+//     if (e.key === "Backspace") {
+//       if (otp[index]) {
+//         // clear current box
+//         const newOtp = [...otp];
+//         newOtp[index] = "";
+//         setOtp(newOtp);
+//         setJoinedOTP(newOtp.join(""));
+//       } else if (index > 0) {
+//         // go to prev box
+//         inputRefs.current[index - 1]?.focus();
+//       }
 //     }
 //   };
 
@@ -5878,7 +5742,7 @@ export default Services;
 //           </button>
 
 //           {/* OTP Modal */}
-//           {showModal && !isLocationModalVisible && (
+//           {showModal && (
 //             <>
 //               {/* Backdrop */}
 //               <div
@@ -5962,7 +5826,7 @@ export default Services;
 //                       maxLength="1"
 //                       value={digit}
 //                       onChange={(e) => handleOtpChange(e, index)}
-//                       // onKeyDown={(e) => handleKeyDown(e, index)}
+//                       onKeyDown={(e) => handleKeyDown(e, index)}
 //                       ref={(el) => (inputRefs.current[index] = el)}
 //                       style={{
 //                         width: "40px",
@@ -5986,7 +5850,10 @@ export default Services;
 //                       textDecoration: "none",
 //                       fontSize: "14px",
 //                     }}
-//                     onClick={ResendOTP}
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       ResendOTP();
+//                     }}
 //                   >
 //                     Resend OTP
 //                   </a>
@@ -7877,6 +7744,7 @@ export default Services;
 //   mask-image: url("data:image/svg+xml;utf8,<svg fill='red' xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 16 16'><path d='M5 1l8 7-8 7' stroke='red' stroke-width='2' fill='none'/></svg>");
 // }
 
+
 //     .carousel-indicators {
 //       bottom: -63px;
 //     }
@@ -8638,7 +8506,7 @@ export default Services;
 //     .carousel-indicators {
 //       bottom: -40px;
 //     }
-
+  
 //     .carousel-indicators [data-bs-target] {
 //       width: 24px;
 //       height: 4px;
@@ -8648,17 +8516,17 @@ export default Services;
 //       transition: all 0.3s ease;
 //       opacity: 1;
 //     }
-
+  
 //     .carousel-indicators .active {
 //       background-color: red;
 //       width: 30px;
 //     }
-
+  
 //     .carousel-control-prev-icon,
 //   .carousel-control-next-icon {
 //     background-image: none !important;
 //   }
-
+  
 //     /* Updated Control Styles */
 //     .recent-carousel .carousel-control-prev,
 //     .recent-carousel .carousel-control-next {
@@ -8675,17 +8543,17 @@ export default Services;
 //       justify-content: center;
 //       align-items: center;
 //     }
-
+  
 //     /* Center Prev to 1st Image Left */
 //     .recent-carousel .carousel-control-prev {
 //       left: calc(50% - 600px); /* Assuming each image is 350px + 2 * 20px gap */
 //     }
-
+  
 //     /* Center Next to 3rd Image Right */
 //     .recent-carousel .carousel-control-next {
 //       right: calc(50% - 600px);
 //     }
-
+  
 //   .custom-icon {
 //     background-color: #ff4d4d; /* <-- Light red */
 //     width: 20px;
@@ -8697,12 +8565,13 @@ export default Services;
 //     -webkit-mask-repeat: no-repeat;
 //     -webkit-mask-position: center;
 //   }
-
+  
+  
 //     .carousel-control-prev-icon.custom-icon {
 //       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M10.5 2L4.5 8L10.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //       -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M10.5 2L4.5 8L10.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //     }
-
+  
 //     .carousel-control-next-icon.custom-icon {
 //       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M5.5 2L11.5 8L5.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //       -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M5.5 2L11.5 8L5.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
@@ -9473,171 +9342,6 @@ export default Services;
 //         </div>
 //       </div>
 
-//       {/* showing current location */}
-//       <Modal
-//         show={showLocationPopup}
-//         size="lg"
-//         centered
-//         backdrop="static"
-//         keyboard={false}
-//         onHide={() => {
-//           setShowLocationPopup(false);
-//           // setIsLocationModalVisible(true);
-//         }}
-//       >
-//         <Modal.Header closeButton>
-//           <Modal.Title>
-//             <h5>Current Location</h5>
-//           </Modal.Title>
-//         </Modal.Header>
-//         <Modal.Body>
-//           <div className="row">
-//             <div className="col-md-6">
-//               <div
-//                 style={{
-//                   display: "flex",
-//                   flexDirection: "column",
-//                   gap: "10px",
-//                 }}
-//               >
-//                 {" "}
-//                 {showSearchBarOptions ? (
-//                   <Autocomplete
-//                     apiKey={GOOGLE_MAPS_API_KEY}
-//                     onPlaceSelected={(place) => {
-//                       if (place.geometry) {
-//                         const lat = place.geometry.location.lat();
-//                         const lng = place.geometry.location.lng();
-//                         const formattedAddress = place.formatted_address;
-
-//                         console.log("city while fetching locatons>>>", place);
-//                         // const cityComponent = place.address_components?.find(comp =>
-//                         //   comp.types.includes("locality")
-//                         //   || comp.types.includes("administrative_area_level_2")
-//                         // );
-//                         // const city = cityComponent ? cityComponent.long_name : "";
-
-//                         // setCityName(city)
-//                         setLatitude(lat);
-//                         setLongitude(lng);
-//                         setMapAddress(formattedAddress);
-//                         setMapUrl(
-//                           `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
-//                         );
-//                         setIsLocationModalVisible(false);
-//                         setShowLocationPopup(true);
-//                       }
-//                     }}
-//                     style={{
-//                       width: "100%",
-//                       backgroundColor: "#f1f1f1",
-//                       border: "1px solid #dfdfdf",
-//                       borderRadius: "6px",
-//                       padding: "7px 10px",
-//                       color: "black",
-//                       fontSize: "14px",
-//                       outline: "none",
-//                     }}
-//                   />
-//                 ) : null}
-//                 <div style={{ height: "300px", width: "100%" }}>
-//                   <iframe
-//                     title="map"
-//                     width="100%"
-//                     height="100%"
-//                     style={{ border: 0 }}
-//                     loading="lazy"
-//                     src={mapUrl}
-//                   />
-//                 </div>
-//               </div>
-//             </div>
-
-//             <div className="col-md-6">
-//               <div>
-//                 {isNewUser ? (
-//                   mapAddress ? (
-//                     <div style={{ fontSize: 14, marginBottom: 16 }}>
-//                       {mapAddress}
-//                     </div>
-//                   ) : (
-//                     <div style={{ fontSize: 14, color: "#999" }}>
-//                       Detecting current location...
-//                     </div>
-//                   )
-//                 ) : (
-//                   <div style={{ marginBottom: 16 }}>
-//                     <Button
-//                       onClick={() => {
-//                         setShowLocationPopup(false);
-//                         setShowOptionOpoup(true);
-//                       }}
-//                       style={{
-//                         backgroundColor: "red",
-//                         color: "white",
-//                         border: "none",
-//                         borderRadius: 8,
-//                         alignSelf: "flex-start",
-//                         padding: "6px 12px",
-//                         fontSize: 14,
-//                         fontWeight: 500,
-//                       }}
-//                     >
-//                       Change
-//                     </Button>
-//                     <div className="mt-4" style={{ fontSize: 14 }}>
-//                       {mapAddress}
-//                     </div>
-//                   </div>
-//                 )}
-
-//                 <Form.Group className="mb-3">
-//                   <Form.Label>
-//                     House/Flat Number <span style={{ color: "red" }}>*</span>
-//                   </Form.Label>
-//                   <Form.Control
-//                     defaultValue={houseNumber}
-//                     onChange={(e) => {
-//                       console.log("Typing:", e.target.value);
-//                       setHouseNumber(e.target.value);
-//                     }}
-//                     placeholder="Enter House/Flat Number"
-//                     style={{ borderRadius: 8, fontSize: 14 }}
-//                   />
-//                 </Form.Group>
-
-//                 <Form.Group className="mb-3">
-//                   <Form.Label>Landmark (Optional)</Form.Label>
-//                   <Form.Control
-//                     value={landmark}
-//                     onChange={(e) => setLandmark(e.target.value)}
-//                     placeholder="Enter Landmark"
-//                     style={{ borderRadius: 8, fontSize: 14 }}
-//                   />
-//                 </Form.Group>
-
-//                 <Button
-//                   onClick={handleAddress}
-//                   disabled={!houseNumber.trim()}
-//                   style={{
-//                     width: "100%",
-//                     padding: "12px",
-//                     background: !houseNumber.trim() ? "#eee" : "#FF0000",
-//                     color: !houseNumber.trim() ? "#aaa" : "#fff",
-//                     border: "none",
-//                     borderRadius: 8,
-//                     fontSize: 15,
-//                     // fontWeight: 600,
-//                     cursor: !houseNumber.trim() ? "not-allowed" : "pointer",
-//                   }}
-//                 >
-//                   Save and proceed
-//                 </Button>
-//               </div>
-//             </div>
-//           </div>
-//         </Modal.Body>
-//       </Modal>
 //       <Modal
 //         show={showOptionOpoup}
 //         size="small"
@@ -9645,8 +9349,15 @@ export default Services;
 //         backdrop="static"
 //         keyboard={false}
 //         onHide={() => {
+//           // ✅ close first, open address only after modal is fully removed from DOM
+//           openAddressAfterOptionCloseRef.current = true;
 //           setShowOptionOpoup(false);
-//           setShowLocationPopup(true);
+//         }}
+//         onExited={() => {
+//           if (openAddressAfterOptionCloseRef.current) {
+//             openAddressAfterOptionCloseRef.current = false;
+//             setShowAddress(true);
+//           }
 //         }}
 //       >
 //         <Modal.Header closeButton></Modal.Header>
@@ -9654,47 +9365,126 @@ export default Services;
 //           <div className="row">
 //             <div className="col-md-6">
 //               <div
-//                 style={{
-//                   display: "flex",
-//                   justifyContent: "space-around",
-//                   alignItems: "center",
-//                   cursor: "pointer",
+//                 style={{ cursor: "pointer" }}
+//                 onClick={async () => {
+//                   try {
+//                     console.log("📍 Current Location selected");
+//                     const loc = await getCurrentLocationDraft();
+//                     setShowOptionOpoup(false);
+
+//                     // ✅ EXISTING -> CURRENT LOCATION: locked map, editable house/landmark
+//                     setAddressPickerCfg({
+//                       address: loc.address || "",
+//                       houseNumber: "",
+//                       landmark: "",
+//                       lat: Number(loc.latitude),
+//                       lng: Number(loc.longitude),
+//                       city: loc.city || "",
+//                       allowSearch: false,
+//                       allowMapPick: false,
+//                       disableHouseFlat: false,
+//                       disableLandmark: false,
+//                       showChangeButton: true,
+//                       primaryCtaLabel: "Save & Proceed",
+//                     });
+
+//                     setTimeout(() => setShowAddress(true), 100);
+//                   } catch (e) {
+//                     console.error("Failed to get current location:", e);
+//                     alert("Unable to fetch current location");
+//                   }
 //                 }}
-//                 onClick={getCurrentLocation}
 //               >
-//                 <img src={map} style={{ width: "50%" }} />
+//                 <img
+//                   src={map}
+//                   style={{ width: "50%" }}
+//                   alt="Current Location"
+//                 />
+//                 <p style={{ textAlign: "center", marginTop: 10 }}>
+//                   Current Location
+//                 </p>
 //               </div>
-//               <p style={{ textAlign: "center" }}>Current Location</p>
 //             </div>
+
+//             {/* Search Location Option */}
 //             <div className="col-md-6">
 //               <div
-//                 style={{
-//                   display: "flex",
-//                   justifyContent: "space-around",
-//                   alignItems: "center",
-//                   cursor: "pointer",
-//                 }}
+//                 style={{ cursor: "pointer" }}
 //                 onClick={() => {
-//                   setHouseNumber("");
-//                   setLandmark("");
+//                   console.log("🔍 Search by Location selected");
+//                   const cached = JSON.parse(
+//                     sessionStorage.getItem("selectedAddress") || "null"
+//                   );
 //                   setShowOptionOpoup(false);
-//                   setShowLocationPopup(true);
-//                   setShowSearchBarOptions(true);
+
+//                   // ✅ EXISTING -> SEARCH LOCATION: fully editable
+//                   setAddressPickerCfg({
+//                     address: cached?.address || "",
+//                     houseNumber: "",
+//                     landmark: "",
+//                     lat: cached?.latitude ? Number(cached.latitude) : null,
+//                     lng: cached?.longitude ? Number(cached.longitude) : null,
+//                     city: cached?.city || "",
+//                     allowSearch: true,
+//                     allowMapPick: true,
+//                     disableHouseFlat: false,
+//                     disableLandmark: false,
+//                     showChangeButton: false,
+//                     primaryCtaLabel: "Save & Proceed",
+//                   });
+
+//                   setTimeout(() => setShowAddress(true), 100);
 //                 }}
 //               >
-//                 <img src={searchLocation} style={{ width: "50%" }} />
+//                 <img
+//                   src={searchLocation}
+//                   style={{ width: "50%" }}
+//                   alt="Search Location"
+//                 />
+//                 <p style={{ textAlign: "center", marginTop: 10 }}>
+//                   Search By Location
+//                 </p>
 //               </div>
-//               <p style={{ textAlign: "center" }}>Search By Location</p>
 //             </div>
 //           </div>
 //         </Modal.Body>
 //       </Modal>
+
 //       <SlotSelectionModal
 //         show={showSlotModal}
 //         onClose={handleCloseSlotModal}
 //         handleSelectSlot={handleSelectSlot}
 //         fetchAvailableSlots={fetchAvailableSlots}
+//         type="booking"
 //       />
+
+    
+
+//       {showAddress && (
+//         <AddressPickerModal
+//           show={showAddress}
+//           onClose={() => setShowAddress(false)}
+//           initialLatLng={{
+//             lat: addressPickerCfg.lat || 12.9716,
+//             lng: addressPickerCfg.lng || 77.5946,
+//           }}
+//           initialAddress={addressPickerCfg.address || ""}
+//           initialHouseFlat={addressPickerCfg.houseNumber || ""}
+//           initialLandmark={addressPickerCfg.landmark || ""}
+//           initialCity={addressPickerCfg.city || ""}
+//           allowSearch={addressPickerCfg.allowSearch}
+//           allowMapPick={addressPickerCfg.allowMapPick}
+//           disableHouseFlat={addressPickerCfg.disableHouseFlat}
+//           disableLandmark={addressPickerCfg.disableLandmark}
+//           primaryCtaLabel={addressPickerCfg.primaryCtaLabel}
+//           showChangeButton={addressPickerCfg.showChangeButton}
+//           onClickChange={() => {
+//             setShowAddress(false);
+//             setTimeout(() => setShowOptionOpoup(true), 100);
+//           }}
+//           onSave={(payload) => handleSaveAddressFromModal(payload)}
+//         />
+//       )}
 //     </>
 //   );
 // };

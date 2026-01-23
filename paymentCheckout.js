@@ -1305,7 +1305,7 @@ function PaymentCheckout() {
         return;
       }
 
-      alert("Booking rescheduled successfully");
+      // alert("Booking rescheduled successfully");
       fetchBookingDetails();
     } catch (err) {
       console.error(err);

@@ -53,7 +53,7 @@ export default function AdminCleaningCatalogEditor() {
         }
       );
       await fetchConfig();
-      alert("Saved ✅");
+      // alert("Saved ✅");
     } catch (e) {
       const msg = e?.response?.data?.message || e.message;
       const errs = e?.response?.data?.errors || [];

@@ -47,7 +47,7 @@ function ManualPaymentCheckout() {
         }
       );
 
-      alert("Payment Successful");
+      // alert("Payment Successful");
 
       // Update payment status in state, updating nested payment object properly
       setPayment({

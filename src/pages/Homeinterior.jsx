@@ -116,16 +116,6 @@ const Homeinterior = () => {
     lat: null,
     lng: null,
     city: "",
-
-    allowSearch: false,
-    allowMapPick: false,
-
-    // ✅ NEW
-    disableHouseFlat: false,
-    disableLandmark: false,
-    primaryCtaLabel: "Save & Proceed",
-
-    showChangeButton: false,
   });
   const videos = [testimonialVideo, testimonialVideo, testimonialVideo];
   const inputRefs = useRef([]);
@@ -211,7 +201,7 @@ const Homeinterior = () => {
               const cityComp =
                 comps.find((c) => c.types?.includes("locality")) ||
                 comps.find((c) =>
-                  c.types?.includes("administrative_area_level_2")
+                  c.types?.includes("administrative_area_level_2"),
                 );
 
               resolve({
@@ -229,7 +219,7 @@ const Homeinterior = () => {
           }
         },
         (err) => reject(err),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
       );
     });
 
@@ -250,11 +240,10 @@ const Homeinterior = () => {
     try {
       const result = await postRequest(
         API_ENDPOINTS.LOGIN_WITH_MOBILE,
-        formData
+        formData,
       );
       setResponseLoader(false);
       console.log("Login Success", result);
-      alert(result.message || "Login successful");
       setOtpValue(result.otp);
       setShowModal(true);
     } catch (error) {
@@ -277,7 +266,7 @@ const Homeinterior = () => {
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
       console.log("FULL verifyOTP result:", result); // log the entire response
       console.log("OTP Verification Result:", result);
-      alert(result.message || "OTP verified successfully");
+
 
       if (result?.data) {
         setStoredUser(result.data);
@@ -293,7 +282,7 @@ const Homeinterior = () => {
       console.log(
         "result.isNewUser raw:",
         result.isNewUser,
-        typeof result.isNewUser
+        typeof result.isNewUser,
       );
       console.log("isNewUserFlag after Boolean():", isNewUserFlag);
 
@@ -319,12 +308,6 @@ const Homeinterior = () => {
             lat: Number(loc.latitude) || 12.9716,
             lng: Number(loc.longitude) || 77.5946,
             city: loc.city || "",
-            allowSearch: false,
-            allowMapPick: false,
-            disableHouseFlat: false,
-            disableLandmark: false,
-            showChangeButton: false,
-            primaryCtaLabel: "Save & Proceed",
           });
 
           setShowAddress(true);
@@ -340,12 +323,6 @@ const Homeinterior = () => {
             lat: null,
             lng: null,
             city: "",
-            allowSearch: true,
-            allowMapPick: true,
-            disableHouseFlat: false,
-            disableLandmark: false,
-            showChangeButton: false,
-            primaryCtaLabel: "Save & Proceed",
           });
           setShowAddress(true);
         }
@@ -382,18 +359,12 @@ const Homeinterior = () => {
             lat: Number(savedAddress.latitude),
             lng: Number(savedAddress.longitude),
             city: savedAddress.city || "",
-            allowSearch: false,
-            allowMapPick: false,
-            disableHouseFlat: true,
-            disableLandmark: true,
-            showChangeButton: true,
-            primaryCtaLabel: "Proceed",
           });
 
           // Store in session for backup
           sessionStorage.setItem(
             "selectedAddress",
-            JSON.stringify(savedAddress)
+            JSON.stringify(savedAddress),
           );
           setShowAddress(true);
         } else {
@@ -407,12 +378,6 @@ const Homeinterior = () => {
             lat: null,
             lng: null,
             city: "",
-            allowSearch: true,
-            allowMapPick: true,
-            disableHouseFlat: false,
-            disableLandmark: false,
-            showChangeButton: false,
-            primaryCtaLabel: "Save & Proceed",
           });
           setShowAddress(true);
         }
@@ -428,7 +393,6 @@ const Homeinterior = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.RESEND_OTP, formData);
       console.log("OTP Re-sent", result);
-      alert(result.message || "OTP Re-sent");
       setOtpValue(result.otp);
     } catch (error) {
       console.error("OTP Re-sent Error:", error);
@@ -441,7 +405,7 @@ const Homeinterior = () => {
       if (!userId) return null;
 
       const response = await getRequest(
-        `${API_ENDPOINTS.GET_ADDRESS}${userId}`
+        `${API_ENDPOINTS.GET_ADDRESS}${userId}`,
       );
 
       // Check if the address is in `savedAddress` or `address` field
@@ -563,8 +527,7 @@ const Homeinterior = () => {
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
       console.log("Booking Success", result);
       setShowSuccessModal(true);
-      // alert("Enquiry Verified! Thank you! We'll get back to you shortly.");
-      // window.location.assign("/");
+     
     } catch (error) {
       console.error("Booking failed:", error);
     }
@@ -572,8 +535,6 @@ const Homeinterior = () => {
 
   const handleSaveAddressFromModal = async () => {
     try {
-
-
       // ✅ If "Proceed" button was clicked (existing user with saved address)
       if (addressPickerCfg.primaryCtaLabel === "Proceed") {
         console.log("🚀 Proceeding with existing address");
@@ -592,7 +553,7 @@ const Homeinterior = () => {
         setAddressDataContext(existingAddress);
         sessionStorage.setItem(
           "selectedAddress",
-          JSON.stringify(existingAddress)
+          JSON.stringify(existingAddress),
         );
         setShowAddress(false);
 
@@ -601,22 +562,17 @@ const Homeinterior = () => {
         return;
       }
 
-
       const uniqueCode = `ADDR-${Date.now()}-${Math.floor(
-        Math.random() * 1000
+        Math.random() * 1000,
       )}`;
       const addressObj = {
         uniqueCode,
-        address: picked.address || addressPickerCfg.address,
-        houseNumber: addressPickerCfg.disableHouseFlat
-          ? addressPickerCfg.houseNumber
-          : picked.houseNumber?.trim() || "",
-        landmark: addressPickerCfg.disableLandmark
-          ? addressPickerCfg.landmark
-          : picked.landmark?.trim() || "",
-        latitude: Number(picked.lat || addressPickerCfg.lat),
-        longitude: Number(picked.lng || addressPickerCfg.lng),
-        city: picked.city || addressPickerCfg.city || "",
+        address: addressPickerCfg.address,
+        houseNumber: addressPickerCfg.houseNumber || "",
+        landmark: addressPickerCfg.landmark || "",
+        latitude: Number(addressPickerCfg.lat),
+        longitude: Number(addressPickerCfg.lng),
+        city: addressPickerCfg.city || "",
       };
 
       console.log("📝 Address to save:", addressObj);
@@ -628,7 +584,7 @@ const Homeinterior = () => {
 
         const result = await putRequest(
           `${API_ENDPOINTS.SAVE_ADDRESS}${currentUser._id}`,
-          payload
+          payload,
         );
         console.log("✅ Save result:", result);
       }
@@ -665,12 +621,12 @@ const Homeinterior = () => {
     try {
       const result = await putRequest(
         `${API_ENDPOINTS.SAVE_ADDRESS}${userId}`,
-        data
+        data,
       );
       setAddressDataContext(data.savedAddress);
       sessionStorage.setItem(
         "selectedAddress",
-        JSON.stringify(data.savedAddress)
+        JSON.stringify(data.savedAddress),
       );
       console.log("Address Saved", result);
       await handleProceedToCheckout();
@@ -4628,12 +4584,6 @@ const Homeinterior = () => {
                       lat: Number(loc.latitude),
                       lng: Number(loc.longitude),
                       city: loc.city || "",
-                      allowSearch: false,
-                      allowMapPick: false,
-                      disableHouseFlat: false,
-                      disableLandmark: false,
-                      showChangeButton: true,
-                      primaryCtaLabel: "Save & Proceed",
                     });
 
                     setTimeout(() => setShowAddress(true), 100);
@@ -4658,7 +4608,7 @@ const Homeinterior = () => {
                 onClick={() => {
                   console.log("🔍 Search by Location selected");
                   const cached = JSON.parse(
-                    sessionStorage.getItem("selectedAddress") || "null"
+                    sessionStorage.getItem("selectedAddress") || "null",
                   );
                   setShowOptionOpoup(false);
 
@@ -4670,13 +4620,6 @@ const Homeinterior = () => {
                     lat: cached?.latitude ? Number(cached.latitude) : null,
                     lng: cached?.longitude ? Number(cached.longitude) : null,
                     city: cached?.city || "",
-                    allowSearch: true,
-                    allowMapPick: true,
-                    disableHouseFlat: false,
-                    disableLandmark: false,
-                    showChangeButton: false,
-                    primaryCtaLabel: "Save & Proceed",
-                    showChangeButton: false,
                   });
                   setShowAddress(true);
                 }}
@@ -4720,17 +4663,6 @@ const Homeinterior = () => {
           initialHouseFlat={addressPickerCfg.houseNumber}
           initialLandmark={addressPickerCfg.landmark}
           initialCity={addressPickerCfg.city}
-          allowSearch={addressPickerCfg.allowSearch}
-          allowMapPick={addressPickerCfg.allowMapPick}
-          disableHouseFlat={addressPickerCfg.disableHouseFlat}
-          disableLandmark={addressPickerCfg.disableLandmark}
-          primaryCtaLabel={addressPickerCfg.primaryCtaLabel}
-          showChangeButton={addressPickerCfg.showChangeButton}
-          onClickChange={() => {
-            // ✅ Wrap in arrow function
-            setShowAddress(false);
-            setTimeout(() => setShowOptionOpoup(true), 100);
-          }}
           onSave={handleSaveAddressFromModal}
         />
       )}

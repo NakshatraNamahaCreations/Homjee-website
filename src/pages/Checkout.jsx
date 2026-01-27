@@ -336,21 +336,30 @@ const Checkout = () => {
     }
   };
 
-  const cancellationsData = [
+  const housePaintingcancellationsData = [
     {
       id: 1,
-      title: "More than 48 hrs before the service",
+      title: "More than 3 hrs before the service",
       fee: "Free",
     },
     {
       id: 2,
-      title: "Within 48 hrs of the service",
-      fee: "Up to ₹499",
+      title: "Within 3 hrs of the service",
+      fee: "100% of Cart Value",
+    },
+   
+  ];
+
+  const deepcleaingcancellationsData = [
+    {
+      id: 1,
+      title: "More than 24 hrs before the service",
+      fee: "Free",
     },
     {
-      id: 3,
+      id: 2,
       title: "Within 24 hrs of the service",
-      fee: "Up to ₹999",
+      fee: "20% of Cart Value",
     },
   ];
 
@@ -603,6 +612,9 @@ const Checkout = () => {
   useEffect(() => {
     fetchDeepCleaningPackages();
   }, []);
+
+  const isDeepCleaning = serviceType === "deep_cleaning";
+  const isHousePainting = serviceType === "house_painting";
 
   return (
     <div className="d-none d-lg-block">
@@ -891,7 +903,7 @@ const Checkout = () => {
                 fontSize: "12px",
               }}
             >
-              Free cancellations if done more than 48 hrs before the service or
+              Free cancellations if done more than {serviceType == "deep_cleaning" ? "24" :"3"} hrs before the service or
               if a professional isn't assigned. A fee will be charged otherwise.
             </p>
             <div
@@ -918,19 +930,34 @@ const Checkout = () => {
                   <div className="col-md-6">Time</div>
                   <div className="col-md-6">Fee</div>
                 </div>
-                {cancellationsData.map((ele, idx) => (
-                  <div
-                    key={idx}
-                    className="row mb-1"
-                    style={{
-                      fontSize: "13px",
-                      borderBottom: "1px solid #c7c9c9",
-                    }}
-                  >
-                    <div className="col-md-6">{ele.title}</div>
-                    <div className="col-md-6">{ele.fee} </div>
-                  </div>
-                ))}
+                {serviceType !== "house_painting"
+                  ? deepcleaingcancellationsData.map((ele, idx) => (
+                      <div
+                        key={idx}
+                        className="row mb-1"
+                        style={{
+                          fontSize: "13px",
+                          borderBottom: "1px solid #c7c9c9",
+                        }}
+                      >
+                        <div className="col-md-6">{ele.title}</div>
+                        <div className="col-md-6">{ele.fee} </div>
+                      </div>
+                    ))
+                  : housePaintingcancellationsData.map((ele, idx) => (
+                      <div
+                        key={idx}
+                        className="row mb-1"
+                        style={{
+                          fontSize: "13px",
+                          borderBottom: "1px solid #c7c9c9",
+                        }}
+                      >
+                        <div className="col-md-6">{ele.title}</div>
+                        <div className="col-md-6">{ele.fee} </div>
+                      </div>
+                    ))}
+
                 <div className="mt-3">
                   <div style={{ fontSize: "13px", color: "#05945b" }}>
                     <CiCircleInfo
@@ -1401,8 +1428,8 @@ export default Checkout;
 //   const [currentUser, setCurrentUser] = useState(() => getStoredUser());
 //   const userId = currentUser?._id; // ✅ use this everywhere
 
-//   const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
-//   const showSelectedSlot = JSON.parse(sessionStorage.getItem("selectedSlots"));
+// const selectedAddress = JSON.parse(sessionStorage.getItem("selectedAddress"));
+// const showSelectedSlot = JSON.parse(sessionStorage.getItem("selectedSlots"));
 
 //   const { phoneNumber: initialPhoneNumber, openAddressModal } =
 //     location.state || { phoneNumber: "", openAddressModal: false };
@@ -1421,7 +1448,7 @@ export default Checkout;
 //   const { cartItems, setCartItems, updateCartItem, getQuantity, totalPrice } =
 //     useContext(CartContext);
 
-//   console.log("cartItems", cartItems);
+// console.log("cartItems", cartItems);
 
 //   const [deepCleaningPackageValues, setDeepCleaningPackageValues] =
 //     useState(null);

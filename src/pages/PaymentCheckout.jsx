@@ -1037,8 +1037,6 @@
 
 // export default PaymentCheckout;
 
-
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FiPhone, FiMapPin, FiCheckCircle, FiClock } from "react-icons/fi";
@@ -1059,8 +1057,47 @@ import "./payment-checkout.css";
 import { Modal } from "react-bootstrap";
 import SlotSelectionModal from "./SlotSelectionModal";
 import axios from "axios";
-
+import { CiCircleInfo } from "react-icons/ci";
 const avatarSrc = "/mnt/data/WhatsApp Image 2025-11-25 at 4.53.03 PM.jpeg";
+
+// const housePaintingcancellationsData = [
+//   {
+//     id: 1,
+//     title: "More than 3 hrs before the service",
+//     fee: "Free",
+//   },
+//   {
+//     id: 2,
+//     title: "Within 3 hrs of the service",
+//     fee: "100% of Cart Value",
+//   },
+// ];
+
+const housePaintingcancellationsData = [
+  {
+    id: 1,
+    title: "More than 24 hrs before the service",
+    fee: "Free",
+  },
+  {
+    id: 2,
+    title: "Within 24 hrs of the service",
+    fee: "10% of Cart Value",
+  },
+];
+
+const deepcleaingcancellationsData = [
+  {
+    id: 1,
+    title: "More than 24 hrs before the service",
+    fee: "Free",
+  },
+  {
+    id: 2,
+    title: "Within 24 hrs of the service",
+    fee: "20% of Cart Value",
+  },
+];
 
 function PaymentCheckout() {
   const { bookingId, date, type } = useParams();
@@ -1070,6 +1107,7 @@ function PaymentCheckout() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isResLoading, setIsResLoading] = useState(false);
   const [showCustomPopup, setShowCustomPopup] = useState(false);
+  const [showPolicy, setShowPolicy] = useState(false);
   const [popupType, setPopupType] = useState(null);
   const [payAmount, setPayAmount] = useState(0);
   const [averageRating, setAverageRating] = useState("0");
@@ -1091,7 +1129,7 @@ function PaymentCheckout() {
     setIsPageLoading(true);
     try {
       const response = await getRequest(
-        `${API_ENDPOINTS.GET_BOOKINGS_BY_BOOKING_ID}${bookingId}`
+        `${API_ENDPOINTS.GET_BOOKINGS_BY_BOOKING_ID}${bookingId}`,
       );
       // console.log("response", response);
       if (response && response.booking) {
@@ -1119,7 +1157,7 @@ function PaymentCheckout() {
     setIsPageLoading(true);
     try {
       const response = await getRequest(
-        `${API_ENDPOINTS.GET_FINALIZED_QUOTE}${bookingId}`
+        `${API_ENDPOINTS.GET_FINALIZED_QUOTE}${bookingId}`,
       );
 
       if (response && response.message === "OK") {
@@ -1226,7 +1264,7 @@ function PaymentCheckout() {
       const location = getLatLngFromBooking();
       if (!location) {
         console.warn(
-          "Lat/Lng missing from bookingData.address.location.coordinates"
+          "Lat/Lng missing from bookingData.address.location.coordinates",
         );
         return [];
       }
@@ -1256,7 +1294,7 @@ function PaymentCheckout() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await res.json();
@@ -1297,7 +1335,7 @@ function PaymentCheckout() {
             slotDate: slot.date,
             slotTime: slot.time,
           },
-        }
+        },
       );
 
       const data = res.data;
@@ -1323,7 +1361,7 @@ function PaymentCheckout() {
       const response = await getRequest(
         `${
           API_ENDPOINTS.GET_VENDOR_OVERALL_RATING
-        }${`689472b895ba472e19ad7284`}`
+        }${`689472b895ba472e19ad7284`}`,
       );
 
       if (response && response.status === "success") {
@@ -1360,7 +1398,7 @@ function PaymentCheckout() {
 
       const result = await postRequest(
         `${API_ENDPOINTS.APPROVE_PRICING}${bookingId}`,
-        { approvedBy }
+        { approvedBy },
       );
 
       // Custom success alert (replace with your own toast/snackbar)
@@ -1381,7 +1419,7 @@ function PaymentCheckout() {
 
       const result = await postRequest(
         `${API_ENDPOINTS.REJECT_PRICING}${bookingId}`,
-        { approvedBy }
+        { approvedBy },
       );
       // alert("Price has been rejected.");
       window.location.reload();
@@ -1903,7 +1941,7 @@ function PaymentCheckout() {
       setIsResLoading(true);
       const result = await postRequest(
         API_ENDPOINTS.PAY_AND_CONVERT_ENQUIRY_TO_LEAD,
-        data
+        data,
       );
       console.log("Booking Success", result);
       setShowSuccessModal(true);
@@ -1950,7 +1988,7 @@ function PaymentCheckout() {
               <div className="fw-semibold">
                 {bookingData?.selectedSlot?.slotDate
                   ? moment(bookingData.selectedSlot.slotDate).format(
-                      "DD-MM-YYYY"
+                      "DD-MM-YYYY",
                     )
                   : "-"}
               </div>
@@ -2257,7 +2295,7 @@ function PaymentCheckout() {
                           >
                             {teamMember.memberName || "Unnamed Member"}
                           </div>
-                        )
+                        ),
                       )}
                     </div>
                   </div>
@@ -2266,6 +2304,96 @@ function PaymentCheckout() {
             </div>
           </div>
         )}
+
+        <div className="card shadow-sm mb-3 p-3"> 
+          <h5 style={{ fontSize: "16px" }}>Cancellation policy</h5>
+          <p
+            style={{
+              color: "#444444",
+              fontSize: "12px",
+            }}
+          >
+            Free cancellations if done more than{" "}
+            {bookingData?.serviceType === "deep_cleaning" ? "24" : "24"} hrs before the service
+            or if a professional isn't assigned. A fee will be charged
+            otherwise.
+          </p>
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: 500,
+              textDecorationStyle: "solid",
+              textDecorationLine: "underline",
+              cursor: "pointer",
+            }}
+            onClick={() => setShowPolicy(!showPolicy)}
+          >
+            Read full policy
+          </div>
+
+          {showPolicy && <div className="mt-4 px-3">
+            <div
+              className="row mb-2"
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+              }}
+            >
+              <div className="col-md-7">Time</div>
+              <div className="col-md-5">Fee</div>
+            </div>
+            {    bookingData?.serviceType  !== "house_painting"
+              ? deepcleaingcancellationsData.map((ele, idx) => (
+                  <div
+                    key={idx}
+                    className="row mb-1"
+                    style={{
+                      fontSize: "13px",
+                      borderBottom: "1px solid #c7c9c9",
+                    }}
+                  >
+                    <div className="col-md-7">{ele.title}</div>
+                    <div className="col-md-5">{ele.fee} </div>
+                  </div>
+                ))
+              : housePaintingcancellationsData.map((ele, idx) => (
+                  <div
+                    key={idx}
+                    className="row mb-1"
+                    style={{
+                      fontSize: "13px",
+                      borderBottom: "1px solid #c7c9c9",
+                    }}
+                  >
+                    <div className="col-md-7">{ele.title}</div>
+                    <div className="col-md-5">{ele.fee} </div>
+                  </div>
+                ))}
+
+            <div className="mt-3">
+              <div style={{ fontSize: "13px", color: "#05945b" }}>
+                <CiCircleInfo
+                  style={{
+                    marginRight: "8px",
+                    fontSize: "14px",
+                    color: "#05945b",
+                    marginBottom: "2px",
+                  }}
+                />{" "}
+                No fee if a professional is not assigned
+              </div>
+            </div>
+            <div className="mt-3">
+              <h5 style={{ fontSize: "16px" }}>
+                This fee goes to the professional
+              </h5>
+              <div style={{ fontSize: "13px", color: "#545454" }}>
+                Their time is reserved for the service & they cannot get another
+                job for the reserved time
+              </div>
+            </div>
+          </div>}
+        </div>
 
         {/* Tips Section */}
         <div className="card shadow-sm">

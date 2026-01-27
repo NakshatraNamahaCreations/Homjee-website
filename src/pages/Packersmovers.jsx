@@ -421,31 +421,37 @@ const Packersmovers = () => {
   ];
 
   const reviewers = [
-    {
-      name: "Sandhya Nair",
-      review:
-        "I availed painting and false ceiling services from Homjee in Mar 2023 after much research... Read more",
-    },
-    {
-      name: "Aniket Sharma",
-      review:
-        "Quality work at affordable prices, team is very polite and skilled...",
-    },
-    {
-      name: "Deepak Patil",
-      review:
-        "Homjee commitment to timelines is commendable. They completed our project ahead of schedule...",
-    },
-    {
-      name: "Yuvraj Chourasia",
-      review: "Painter was very punctual, professional, and hard working...",
-    },
-    {
-      name: "Lucky Sharma",
-      review:
-        "Work done was good and they even completed the work in promised time...",
-    },
-  ];
+  {
+    name: "Harish Choudhary",
+    img: "https://images.unsplash.com/photo-1609252509102-aa73ff792667?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:0]{index=0}
+    review:
+      "Shifted my household items with Homjee Packers & Movers recently. The team was very professional and packed everything with high-quality bubble wrap and boxes. Not a single item was damaged. Very happy with their service!",
+  },
+  {
+    name: "Meena Solanki",
+    img: "https://images.pexels.com/photos/7813769/pexels-photo-7813769.jpeg", // :contentReference[oaicite:1]{index=1}
+    review:
+      "I was worried about moving my kitchen glass items, but the Homjee team handled everything so carefully. They are very punctual and reached my new house exactly on time. Best packers and movers service I have used so far."
+  },
+  {
+    name: "Abhinav Saxena",
+    img: "https://images.unsplash.com/photo-1601665778378-98563fb0edd7?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
+    review:
+      "Homjee made my shifting very easy and stress-free. The staff is polite and they know how to handle heavy furniture properly. They even helped in placing the items in the right rooms at my new place. Highly recommended!",
+  },
+  {
+    name: "Jyoti Malhotra",
+    img: "https://images.pexels.com/photos/17993730/pexels-photo-17993730.jpeg", // :contentReference[oaicite:3]{index=3}
+    review:
+      "Very professional and honest service. The pricing was clear from the start and there were no hidden charges. They used good quality packing material for my electronics and delivered everything safely. Great experience!",
+  },
+  {
+    name: "Nitin Gadkari",
+    img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=848&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
+    review:
+      "Excellent team work by Homjee Packers & Movers. They arrived early in the morning and finished the packing and loading very quickly. The delivery was on time and the unloading was done very neatly. A very reliable team.",
+  },
+];
 
   const faqData = [
     "Are your painters trained and experienced professionals?",

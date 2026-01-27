@@ -541,32 +541,39 @@ const Deepcleaning = () => {
     "https://randomuser.me/api/portraits/women/51.jpg",
   ];
 
-  const reviewers = [
-    {
-      name: "Sandhya Nair",
-      review:
-        "I availed painting and false ceiling services from Homjee in Mar 2023 after much research... Read more",
-    },
-    {
-      name: "Aniket Sharma",
-      review:
-        "Quality work at affordable prices, team is very polite and skilled...",
-    },
-    {
-      name: "Deepak Patil",
-      review:
-        "Homjee commitment to timelines is commendable. They completed our project ahead of schedule...",
-    },
-    {
-      name: "Yuvraj Chourasia",
-      review: "Painter was very punctual, professional, and hard working...",
-    },
-    {
-      name: "Lucky Sharma",
-      review:
-        "Work done was good and they even completed the work in promised time...",
-    },
-  ];
+ const reviewers = [
+  {
+    name: "Rajesh Kumar",
+    img: "https://images.unsplash.com/photo-1694871420373-e9c1031b91ee?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:0]{index=0}
+    review:
+      "Very happy with the service. The Homjee team is very professional and arrived right on time. They brought big vacuum machines and special tools for every corner. My house looks brand new now. Highly recommended!",
+  },
+  {
+    name: "Priya Sharma",
+    img: "https://images.pexels.com/photos/32198550/pexels-photo-32198550.jpeg", // :contentReference[oaicite:1]{index=1}
+    review:
+      "I was worried about harsh smells, but Homjee uses eco-friendly chemicals that are safe for kids and pets. The cleaners were very polite and did a thorough job. Great experience overall.",
+  },
+  {
+    name: "Amit Patel",
+    img: "https://images.unsplash.com/photo-1549045337-967927d923c0?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
+    review:
+      "Best deep cleaning service I have used so far. They don't just sweep, they bring professional machines for floor scrubbing and sofa cleaning. Every tile in my kitchen is shining. Thank you, Homjee!",
+  },
+  {
+    name: "Sunita Iyer",
+    img: "https://images.pexels.com/photos/14180403/pexels-photo-14180403.jpeg", // :contentReference[oaicite:3]{index=3}
+    review:
+      "The team is very hardworking. They moved the furniture and cleaned areas I usually can’t reach. It is good to know they use eco-friendly products. Professional service at a fair price.",
+  },
+  {
+    name: "Vikram Singh",
+    img: "https://plus.unsplash.com/premium_photo-1689977871600-e755257fb5f8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
+    review:
+      "Impressive work by the Homjee team. They are well-equipped with all the necessary machinery and cleaning kits. They spent 5 hours and made sure the entire flat was spotless. Very satisfied.",
+  },
+];
+
 
   const faqData = [
     "Are your painters trained and experienced professionals?",

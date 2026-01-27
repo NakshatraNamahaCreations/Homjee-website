@@ -508,32 +508,39 @@ const Services = () => {
     "https://randomuser.me/api/portraits/women/51.jpg",
   ];
 
-  const reviewers = [
-    {
-      name: "Sandhya Nair",
-      review:
-        "I availed painting and false ceiling services from Homjee in Mar 2023 after much research... Read more",
-    },
-    {
-      name: "Aniket Sharma",
-      review:
-        "Quality work at affordable prices, team is very polite and skilled...",
-    },
-    {
-      name: "Deepak Patil",
-      review:
-        "Homjee commitment to timelines is commendable. They completed our project ahead of schedule...",
-    },
-    {
-      name: "Yuvraj Chourasia",
-      review: "Painter was very punctual, professional, and hard working...",
-    },
-    {
-      name: "Lucky Sharma",
-      review:
-        "Work done was good and they even completed the work in promised time...",
-    },
-  ];
+ const reviewers = [
+  {
+    name: "Manoj Tiwari",
+    img: "https://plus.unsplash.com/premium_photo-1682092603230-1ce7cf8ca451?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW5kaWFuJTIwbWFufGVufDB8fDB8fHww", // :contentReference[oaicite:0]{index=0}
+    review:
+      "Excellent work by the Homjee team. They finished the painting much faster than I expected. The finish on the walls is very smooth and they used high-quality paints. Very professional behavior.",
+  },
+  {
+    name: "Anjali Gupta",
+    img: "https://images.pexels.com/photos/26617600/pexels-photo-26617600.jpeg", // :contentReference[oaicite:1]{index=1}
+    review:
+      "I recently got my 2BHK painted through Homjee. I really liked how they covered all my furniture with plastic sheets before starting. No paint stains were left on the floor. Very neat and clean work!",
+  },
+  {
+    name: "Sandeep Reddy",
+    img: "https://images.unsplash.com/photo-1534339480783-6816b68be29c?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
+    review:
+      "The painters are very skilled and polite. They helped me choose the right color shades for my living room. The price was also very transparent with no hidden costs. Truly a hassle-free experience.",
+  },
+  {
+    name: "Kavita Deshmukh",
+    img: "https://images.pexels.com/photos/15602468/pexels-photo-15602468.jpeg", // :contentReference[oaicite:3]{index=3}
+    review:
+      "Homjee provides great service. Their team arrived on time every day and worked very hard. They even fixed the small cracks in the walls before painting. My home looks beautiful now!",
+  },
+  {
+    name: "Rahul Verma",
+    img: "https://images.unsplash.com/photo-1607081692251-d689f1b9af84?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
+    review:
+      "Top-class painting service in the city. The staff is professional and they use genuine branded paints. They did a final inspection after finishing to make sure I was satisfied. Will definitely use them again.",
+  },
+];
+
 
   const faqData = [
     "Are your painters trained and experienced professionals?",
@@ -4218,7 +4225,7 @@ const Services = () => {
               }}
             >
               <img
-                src={randomAvatars[index % randomAvatars.length]}
+                src={person.img}
                 alt={person.name}
                 style={{
                   width: "50px",
@@ -4231,9 +4238,7 @@ const Services = () => {
                 <h4 style={{ margin: "0 0 4px", fontSize: "16px" }}>
                   {person.name}
                 </h4>
-                <span style={{ fontSize: "13px", color: "#777" }}>
-                  PageMaker
-                </span>
+           
                 <p style={{ marginTop: "10px", fontSize: "14px" }}>
                   {person.review}
                 </p>
@@ -4260,267 +4265,7 @@ const Services = () => {
           </div>
         </div>
       </div>
-      <div className="d-block d-lg-none">
-        <div
-          style={{
-            background: "#f4e6ff",
-            padding: "60px 20px",
-            borderRadius: "30px",
-            width: "90%",
-            maxWidth: "1200px",
-            margin: "40px auto",
-            textAlign: "center",
-          }}
-        >
-          {/* Heading */}
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "32px",
-              fontWeight: "bold",
-              marginBottom: "40px",
-              position: "relative",
-              whiteSpace: "nowrap",
-              display: "inline-block",
-            }}
-          >
-            Customer Reviews
-            <img
-              src={vectoricon}
-              alt="underline"
-              style={{
-                position: "absolute",
-                bottom: "-14px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "130px",
-                height: "auto",
-                borderRadius: "10px",
-                pointerEvents: "none",
-              }}
-            />
-          </h2>
-
-          {/* Rating & Photos */}
-          <div
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: "20px",
-              padding: "20px",
-              display: "flex",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              alignItems: "center",
-              marginBottom: "40px",
-            }}
-          >
-            {/* Rating Box */}
-            <div style={{ flex: "1 1 260px", padding: "10px" }}>
-              <h1 style={{ fontSize: "40px", margin: "0", fontWeight: "bold" }}>
-                4.94{" "}
-                <span style={{ fontSize: "16px", fontWeight: "normal" }}>
-                  /5
-                </span>
-              </h1>
-              <div
-                style={{ margin: "10px 0", fontSize: "16px", color: "#111" }}
-              >
-                ⭐️⭐️⭐️⭐️⭐️
-                <div style={{ fontSize: "14px", color: "#777" }}>
-                  2,452 Ratings
-                </div>
-              </div>
-
-              {/* Rating breakdown */}
-              <div style={{ marginTop: "20px" }}>
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const ratings = { 5: 1524, 4: 235, 3: 152, 2: 95, 1: 20 };
-                  const total = 2452;
-                  const width = (ratings[star] / total) * 100;
-
-                  return (
-                    <div
-                      key={star}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        fontSize: "13px",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      <span style={{ width: "20px" }}>{star}★</span>
-                      <div
-                        style={{
-                          flex: 1,
-                          margin: "0 10px",
-                          background: "#eee",
-                          height: "6px",
-                          borderRadius: "4px",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${width}%`,
-                            background: "#fbbc04",
-                            height: "100%",
-                          }}
-                        />
-                      </div>
-                      <span style={{ minWidth: "30px", textAlign: "right" }}>
-                        {ratings[star]}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Customer Media */}
-            <div style={{ flex: "2", padding: "10px", textAlign: "center" }}>
-              <p style={{ fontWeight: "600", whiteSpace: "nowrap" }}>
-                Customer Photos And Videos
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "10px",
-                  marginTop: "10px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {[1, 2, 3, 4].map((i) => (
-                  <img
-                    key={i}
-                    src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=160&h=120&q=80"
-                    alt="Customer media"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      borderRadius: "12px",
-                      objectFit: "cover",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Reviews */}
-          <h3
-            style={{
-              textAlign: "center",
-              fontWeight: "600",
-              marginBottom: "20px",
-            }}
-          >
-            All Reviews
-          </h3>
-
-          {reviewers.map((person, index) => (
-            <div
-              key={index}
-              style={{
-                backgroundColor: "#fff",
-                padding: "16px",
-                borderRadius: "15px",
-                marginBottom: "16px",
-                display: "flex",
-                gap: "14px",
-                alignItems: "flex-start",
-                position: "relative",
-              }}
-            >
-              {/* Avatar */}
-              <img
-                src={randomAvatars[index % randomAvatars.length]}
-                alt={person.name}
-                style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
-              />
-
-              {/* Content */}
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <div>
-                    <h4
-                      style={{
-                        margin: 0,
-                        fontSize: "15px",
-                        fontWeight: 600,
-                        textAlign: "left",
-                      }}
-                    >
-                      {person.name}
-                    </h4>
-                    <span
-                      style={{
-                        fontSize: "13px",
-                        color: "#777",
-                        textAlign: "left",
-                      }}
-                    >
-                      PageMaker
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      color: "#fbbc04",
-                      whiteSpace: "nowrap",
-                      border: "none",
-                      outline: "none",
-                    }}
-                  >
-                    ⭐️⭐️⭐️⭐️⭐️
-                  </div>
-                </div>
-
-                <p
-                  style={{
-                    marginTop: "8px",
-                    fontSize: "14px",
-                    lineHeight: 1.5,
-                    color: "#333",
-                    textAlign: "left",
-                  }}
-                >
-                  {person.review}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {/* Load More Button */}
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <button
-              style={{
-                backgroundColor: "#fff",
-                color: "#e60000",
-                border: "1px solid #e60000",
-                padding: "10px 24px",
-                borderRadius: "999px",
-                fontWeight: "600",
-                cursor: "pointer",
-              }}
-            >
-              LOAD MORE
-            </button>
-          </div>
-        </div>
-      </div>
+   
 
 
       <SlotSelectionModal

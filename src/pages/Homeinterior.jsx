@@ -141,31 +141,38 @@ const Homeinterior = () => {
   ];
 
   const reviewers = [
-    {
-      name: "Sandhya Nair",
-      review:
-        "I availed painting and false ceiling services from Homjee in Mar 2023 after much research... Read more",
-    },
-    {
-      name: "Aniket Sharma",
-      review:
-        "Quality work at affordable prices, team is very polite and skilled...",
-    },
-    {
-      name: "Deepak Patil",
-      review:
-        "Homjee commitment to timelines is commendable. They completed our project ahead of schedule...",
-    },
-    {
-      name: "Yuvraj Chourasia",
-      review: "Painter was very punctual, professional, and hard working...",
-    },
-    {
-      name: "Lucky Sharma",
-      review:
-        "Work done was good and they even completed the work in promised time...",
-    },
-  ];
+  {
+    name: "Manish Sharma",
+    img: "https://plus.unsplash.com/premium_photo-1663040643667-a793a0f118bc?q=80&w=388&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:0]{index=0}
+    review:
+      "Homjee provides the best end-to-end interior service. They managed the entire design and execution perfectly, and the fact that they also handle painting and deep cleaning is a huge plus point. I got a completely finished, sparkling clean home on the promised date.",
+  },
+  {
+    name: "Rashmi Verma",
+    img: "https://images.pexels.com/photos/31447236/pexels-photo-31447236.jpeg", // :contentReference[oaicite:1]{index=1}
+    review:
+      "I am very impressed with the home interiors done by Homjee. Their design team is very creative and the quality of the material used is top-class. Everything was delivered exactly on time. If you want a beautiful home without any stress, go for them!",
+  },
+  {
+    name: "Anil Kulkarni",
+    img: "https://images.unsplash.com/photo-1508341591423-4347099e1f19?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
+    review:
+      "The professional approach of the Homjee team is what I liked most. They transformed my empty flat into a luxury home with great interior work. They are very punctual and kept me updated throughout the project by sending regular WhatsApp updates with photos and videos. Highly recommended for quality interiors.",
+  },
+  {
+    name: "Sunita Bansal",
+    img: "https://images.pexels.com/photos/13408311/pexels-photo-13408311.jpeg", // :contentReference[oaicite:3]{index=3}
+    review:
+      "Homjee made our dream home a reality. Their interior work is very neat and modern. It was so convenient that they also took care of the final painting and cleaning themselves. It saved us so much effort. Great team and on-time delivery!",
+  },
+  {
+    name: "Karthik Iyer",
+    img: "https://images.unsplash.com/photo-1729157659231-a9090b02987a?q=80&w=465&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
+    review:
+      "Excellent interior service by Homjee. The finishing of the work is very premium and they stick to the timeline. They are very honest with their work and the final result looks even better than the 3D designs. Very happy with the timely handover.",
+  },
+];
+
 
   const faqData = [
     "Are your painters trained and experienced professionals?",

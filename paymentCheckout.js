@@ -1321,8 +1321,7 @@ function PaymentCheckout() {
     setIsPageLoading(true);
     try {
       const response = await getRequest(
-        `${API_ENDPOINTS.GET_VENDOR_OVERALL_RATING
-        }${`689472b895ba472e19ad7284`}`
+        `${API_ENDPOINTS.GET_VENDOR_OVERALL_RATING}${assignedProfessionalId}`
       );
 
       if (response && response.status === "success") {

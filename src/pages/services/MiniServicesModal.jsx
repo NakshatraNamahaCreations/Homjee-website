@@ -102,7 +102,8 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                     pkg.price,
                     1,
                     pkg.teamMembers,
-                    pkg.duration
+                    pkg.duration,
+                    pkg.coinsForVendor,
                   );
                 }
               }}
@@ -158,7 +159,8 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                           pkg.price,
                           -1,
                           pkg.teamMembers,
-                          pkg.duration
+                          pkg.duration,
+                          pkg.coinsForVendor,
                         );
                       }}
                       style={{
@@ -183,7 +185,8 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
                           pkg.price,
                           1,
                           pkg.teamMembers,
-                          pkg.duration
+                          pkg.duration,
+                          pkg.coinsForVendor,
                         );
                       }}
                       style={{
@@ -232,12 +235,12 @@ const MiniServicesModal = ({ pkgGroup, closeModal }) => {
             <div style={{ fontWeight: "bold", fontSize: "16px" }}>
               {pkgGroup.reduce(
                 (total, pkg) => total + getQuantity(pkg.name),
-                0
+                0,
               )}{" "}
               × ₹
               {pkgGroup.reduce(
                 (total, pkg) => total + getQuantity(pkg.name) * pkg.price,
-                0
+                0,
               )}
             </div>
             <button

@@ -21,11 +21,11 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
 
   const totalQuantity = pkgGroup.reduce(
     (total, pkg) => total + getQuantity(pkg.name, serviceName),
-    0
+    0,
   );
   const totalPrice = pkgGroup.reduce(
     (total, pkg) => total + getQuantity(pkg.name, serviceName) * pkg.price,
-    0
+    0,
   );
 
   // Group packages by prefix for UI organization
@@ -197,7 +197,8 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                               -1,
                               serviceName,
                               pkg.teamMembers,
-                              pkg.duration
+                              pkg.duration,
+                              pkg.coinsForVendor,
                             );
                           }}
                           style={{
@@ -224,7 +225,8 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                               1,
                               serviceName,
                               pkg.teamMembers,
-                              pkg.duration
+                              pkg.duration,
+                              pkg.coinsForVendor,
                             );
                           }}
                           style={{
@@ -259,7 +261,8 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                             1,
                             serviceName,
                             pkg.teamMembers,
-                            pkg.duration
+                            pkg.duration,
+                            pkg.coinsForVendor,
                           )
                         }
                         aria-label={`Add ${pkg.name} to cart`}

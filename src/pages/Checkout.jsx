@@ -17,6 +17,7 @@ import { Button, Modal } from "react-bootstrap";
 import SlotSelectionModal from "./SlotSelectionModal";
 import "./checkout.css";
 import AddressPickerModal from "../components/AddressPickerModal";
+import { payWithRazorpay } from "../payments/payWithRazorpay";
 
 const getStoredUser = () => {
   try {
@@ -272,19 +273,19 @@ const Checkout = () => {
       const data = await res.json();
 
       if (!data?.success) {
-        console.warn("Slot API returned failure:", data);
+        // console.warn("Slot API returned failure:", data);
         return [];
       }
 
       const allSlots = data?.slots || [];
       const filtered = filterSlotsTwoHoursAhead(date, allSlots);
 
-      console.log("Available slots raw:", allSlots);
-      console.log("Available slots (2hr ahead):", filtered);
+      // console.log("Available slots raw:", allSlots);
+      // console.log("Available slots (2hr ahead):", filtered);
 
       return filtered;
     } catch (err) {
-      console.error("fetchAvailableSlots error:", err);
+      // console.error("fetchAvailableSlots error:", err);
       return [];
     }
   };
@@ -347,7 +348,6 @@ const Checkout = () => {
       title: "Within 3 hrs of the service",
       fee: "100% of Cart Value",
     },
-   
   ];
 
   const deepcleaingcancellationsData = [
@@ -477,11 +477,140 @@ const Checkout = () => {
     isEnquiry: checkEnquiry(),
   };
 
+  // const handleProceedToCheckout = async () => {
+  //   try {
+  //     setIsLoading(true);
+
+  //     // First check if slot is selected
+  //     if (!selectedSlot) {
+  //       setSlotWarning("Please select a time slot");
+  //       setShowSlotModal(true);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // Debug logging
+  //     console.log("Selected Slot:", selectedSlot);
+  //     console.log("Selected Slot Date:", selectedSlot.date);
+  //     console.log("Selected Slot Time:", selectedSlot.time);
+
+  //     // Fetch available slots for the selected date
+  //     const availableSlots = await fetchAvailableSlots(selectedSlot.date);
+
+  //     console.log("Available Slots:", availableSlots);
+
+  //     if (!availableSlots || availableSlots.length === 0) {
+  //       setSlotWarning(
+  //         "No slots available for this date. Please select another date.",
+  //       );
+  //       setShowSlotModal(true);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // Check if selected slot exists in fetched slots
+  //     const slotExists = availableSlots.includes(selectedSlot.time);
+
+  //     if (!slotExists) {
+  //       const msg =
+  //         "Selected slot is no longer available. Please select a different slot.";
+
+  //       setSlotWarning(msg);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     console.log("Slot exists check:", slotExists);
+  //     console.log(
+  //       "Looking for:",
+  //       selectedSlot.time,
+  //       "in array:",
+  //       availableSlots,
+  //     );
+
+  //     if (!slotExists) {
+  //       setSlotWarning(
+  //         "Selected slot is no longer available. Please select a different slot.",
+  //       );
+  //       // Keep the selected slot displayed but show warning
+  //       setIsLoading(false);
+  //       return; // Don't proceed to booking
+  //     }
+
+  //     // Slot is valid, proceed with booking
+  //     // ✅ HOUSE PAINTING LOGIC
+  //     if (serviceType === "house_painting") {
+  //       const amountToPay = priceConfig?.siteVisitCharge || 0;
+
+  //       // CASE 1: Amount > 0 → Direct booking
+  //       if (amountToPay > 0) {
+  //         const payload = {
+  //           ...data,
+  //           isEnquiry: false,
+  //         };
+
+  //         const result = await postRequest(
+  //           API_ENDPOINTS.CREATE_BOOKINGS,
+  //           payload,
+  //         );
+  //         alert(result.message || "Booking successful");
+  //         setIsLoading(false);
+  //         return;
+  //       }
+
+  //       // ..........................RAZOR PAY.......................................
+
+  //       const bookingId = result.data?.bookingId || result.data?.booking?._id;
+  //       const razorpayOrder = result.data?.razorpayOrder;
+
+  //       if (!bookingId)
+  //         throw new Error("bookingId missing from createBooking response");
+
+  //       // ✅ If no payment required (e.g. siteVisitCharges=0), just finish
+  //       if (!razorpayOrder) {
+  //         alert(result.data?.message || "Booking created");
+  //         setIsLoading(false);
+  //         return;
+  //       }
+
+  //       // ✅ Open Razorpay (same for deep cleaning first / house painting site visit)
+  //       await payWithRazorpay({
+  //         bookingId,
+  //         razorpayOrder,
+  //         customer: data?.customer,
+  //         BASE_URL,
+  //         onSuccess: () => {
+  //           alert("Payment successful & booking confirmed");
+  //           setIsLoading(false);
+  //         },
+  //         onFailure: (msg) => {
+  //           alert(msg || "Payment failed");
+  //           setIsLoading(false);
+  //         },
+  //       });
+  //       // ................................................................
+  //       // CASE 2: Amount = 0 → Ask confirmation
+  //       setShowPaintingConfirm(true);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // 🔒 DEEP CLEANING
+  //     const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
+  //     alert(result.message || "Booking successful");
+  //     setIsLoading(false);
+  //   } catch (error) {
+  //     console.error("Booking failed:", error);
+  //     alert(error?.message || "Booking failed. Please try again.");
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleProceedToCheckout = async () => {
     try {
       setIsLoading(true);
 
-      // First check if slot is selected
+      // ✅ Slot validation (keep same)
       if (!selectedSlot) {
         setSlotWarning("Please select a time slot");
         setShowSlotModal(true);
@@ -489,16 +618,7 @@ const Checkout = () => {
         return;
       }
 
-      // Debug logging
-      console.log("Selected Slot:", selectedSlot);
-      console.log("Selected Slot Date:", selectedSlot.date);
-      console.log("Selected Slot Time:", selectedSlot.time);
-
-      // Fetch available slots for the selected date
       const availableSlots = await fetchAvailableSlots(selectedSlot.date);
-
-      console.log("Available Slots:", availableSlots);
-
       if (!availableSlots || availableSlots.length === 0) {
         setSlotWarning(
           "No slots available for this date. Please select another date.",
@@ -508,65 +628,93 @@ const Checkout = () => {
         return;
       }
 
-      // Check if selected slot exists in fetched slots
       const slotExists = availableSlots.includes(selectedSlot.time);
-
-      if (!slotExists) {
-        const msg =
-          "Selected slot is no longer available. Please select a different slot.";
-
-        setSlotWarning(msg);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("Slot exists check:", slotExists);
-      console.log(
-        "Looking for:",
-        selectedSlot.time,
-        "in array:",
-        availableSlots,
-      );
-
       if (!slotExists) {
         setSlotWarning(
           "Selected slot is no longer available. Please select a different slot.",
         );
-        // Keep the selected slot displayed but show warning
-        setIsLoading(false);
-        return; // Don't proceed to booking
-      }
-
-      // Slot is valid, proceed with booking
-      // ✅ HOUSE PAINTING LOGIC
-      if (serviceType === "house_painting") {
-        const amountToPay = priceConfig?.siteVisitCharge || 0;
-
-        // CASE 1: Amount > 0 → Direct booking
-        if (amountToPay > 0) {
-          const payload = {
-            ...data,
-            isEnquiry: false,
-          };
-
-          const result = await postRequest(
-            API_ENDPOINTS.CREATE_BOOKINGS,
-            payload,
-          );
-          alert(result.message || "Booking successful");
-          setIsLoading(false);
-          return;
-        }
-
-        // CASE 2: Amount = 0 → Ask confirmation
-        setShowPaintingConfirm(true);
         setIsLoading(false);
         return;
       }
 
-      // 🔒 DEEP CLEANING
+      // ✅ HOUSE PAINTING
+      if (serviceType === "house_painting") {
+        const amountToPay = Number(priceConfig?.siteVisitCharge || 0);
+
+        const payload = { ...data, isEnquiry: false };
+
+        // ✅ Always create booking first
+        const result = await postRequest(
+          API_ENDPOINTS.CREATE_BOOKINGS,
+          payload,
+        );
+
+        // NOTE: postRequest usually returns JSON directly, not axios response
+        // so use result.bookingId, not result.data.bookingId
+        const bookingId = result?.bookingId || result?.booking?._id;
+        const razorpayOrder = result?.razorpayOrder;
+
+        if (!bookingId)
+          throw new Error("bookingId missing from createBooking response");
+
+        // ✅ If site visit charge is 0, no need to open Razorpay
+        if (amountToPay <= 0 || !razorpayOrder) {
+          // your old behaviour
+          setShowPaintingConfirm(true); // or alert(result.message)
+          setIsLoading(false);
+          return;
+        }
+
+        // ✅ Open Razorpay for site visit
+        await payWithRazorpay({
+          bookingId,
+          razorpayOrder,
+          customer: data?.customer,
+          API_BASE_URL,
+          onSuccess: () => {
+            alert("Payment successful & booking confirmed");
+            setIsLoading(false);
+          },
+          onFailure: (msg) => {
+            alert(msg || "Payment failed");
+            setIsLoading(false);
+          },
+        });
+
+        console.log("createBooking result:", result);
+        console.log("bookingId:", result?.bookingId, result?.booking?._id);
+        console.log("razorpayOrder:", result?.razorpayOrder);
+        console.log("window.Razorpay exists?", !!window.Razorpay);
+
+        return;
+      }
+
+      // ✅ DEEP CLEANING (first installment)
       const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
-      alert(result.message || "Booking successful");
+
+      const bookingId = result?.bookingId || result?.booking?._id;
+      const razorpayOrder = result?.razorpayOrder;
+
+      // if your backend returns razorpayOrder for deep_cleaning first payment
+      if (razorpayOrder && bookingId) {
+        await payWithRazorpay({
+          bookingId,
+          razorpayOrder,
+          customer: data?.customer,
+          API_BASE_URL,
+          onSuccess: () => {
+            alert("Payment successful & booking confirmed");
+            setIsLoading(false);
+          },
+          onFailure: (msg) => {
+            alert(msg || "Payment failed");
+            setIsLoading(false);
+          },
+        });
+        return;
+      }
+
+      alert(result?.message || "Booking successful");
       setIsLoading(false);
     } catch (error) {
       console.error("Booking failed:", error);
@@ -903,8 +1051,10 @@ const Checkout = () => {
                 fontSize: "12px",
               }}
             >
-              Free cancellations if done more than {serviceType == "deep_cleaning" ? "24" :"3"} hrs before the service or
-              if a professional isn't assigned. A fee will be charged otherwise.
+              Free cancellations if done more than{" "}
+              {serviceType == "deep_cleaning" ? "24" : "3"} hrs before the
+              service or if a professional isn't assigned. A fee will be charged
+              otherwise.
             </p>
             <div
               style={{

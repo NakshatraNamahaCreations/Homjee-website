@@ -681,10 +681,10 @@ const Checkout = () => {
           },
         });
 
-        console.log("createBooking result:", result);
-        console.log("bookingId:", result?.bookingId, result?.booking?._id);
-        console.log("razorpayOrder:", result?.razorpayOrder);
-        console.log("window.Razorpay exists?", !!window.Razorpay);
+        // console.log("createBooking result:", result);
+        // console.log("bookingId:", result?.bookingId, result?.booking?._id);
+        // console.log("razorpayOrder:", result?.razorpayOrder);
+        // console.log("window.Razorpay exists?", !!window.Razorpay);
 
         return;
       }

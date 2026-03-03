@@ -18,6 +18,7 @@ import SlotSelectionModal from "./SlotSelectionModal";
 import "./checkout.css";
 import AddressPickerModal from "../components/AddressPickerModal";
 import { payWithRazorpay } from "../payments/payWithRazorpay";
+import PopupModal from "../utils/PopupModal";
 
 const getStoredUser = () => {
   try {
@@ -108,6 +109,12 @@ const Checkout = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [showAddress, setShowAddress] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [navigationDecision, setNavigationDecision] = useState(null);
+  const [prompt, setPrompt] = useState({
+    promptTile: "",
+    promptBody: "",
+  });
   const [addressPickerCfg, setAddressPickerCfg] = useState({
     address: "",
     houseNumber: "",
@@ -606,6 +613,13 @@ const Checkout = () => {
   //   }
   // };
 
+  const handleModalDone = () => {
+    setShowMessageModal(false);
+    if (navigationDecision && navigationDecision !== "close") {
+      navigate(navigationDecision);
+    }
+  };
+
   const handleProceedToCheckout = async () => {
     try {
       setIsLoading(true);
@@ -672,20 +686,25 @@ const Checkout = () => {
           customer: data?.customer,
           API_BASE_URL,
           onSuccess: () => {
-            alert("Payment successful & booking confirmed");
+            setPrompt({
+              promptTile: "Payment successful",
+              promptBody: "Payment successful & booking confirmed",
+            });
+            setNavigationDecision("/"); // 🟢 navigate home
+            setShowMessageModal(true);
             setIsLoading(false);
           },
           onFailure: (msg) => {
-            alert(msg || "Payment failed");
+            setShowMessageModal(true);
+            setPrompt({
+              promptTile: "Payment Failed",
+              promptBody: msg || "Payment failed",
+            });
+            setNavigationDecision("close");
+            setShowMessageModal(true);
             setIsLoading(false);
           },
         });
-
-        // console.log("createBooking result:", result);
-        // console.log("bookingId:", result?.bookingId, result?.booking?._id);
-        // console.log("razorpayOrder:", result?.razorpayOrder);
-        // console.log("window.Razorpay exists?", !!window.Razorpay);
-
         return;
       }
 
@@ -703,22 +722,44 @@ const Checkout = () => {
           customer: data?.customer,
           API_BASE_URL,
           onSuccess: () => {
-            alert("Payment successful & booking confirmed");
+            setShowMessageModal(true);
+            setPrompt({
+              promptTile: "Payment successful",
+              promptBody: "Payment successful & booking confirmed",
+            });
+            setNavigationDecision("/"); // 🟢 navigate
+            setShowMessageModal(true);
             setIsLoading(false);
           },
           onFailure: (msg) => {
-            alert(msg || "Payment failed");
+            setShowMessageModal(true);
+            setPrompt({
+              promptTile: "Payment Failed",
+              promptBody: msg || "Payment failed",
+            });
+            setNavigationDecision("close"); // 🟢 just close
+            setShowMessageModal(true);
             setIsLoading(false);
           },
         });
         return;
       }
 
-      alert(result?.message || "Booking successful");
+      setPrompt({
+        promptTile: "Success",
+        promptBody: result?.message || "Booking successful",
+      });
+      setNavigationDecision("/"); // 🟢 navigate home
+      setShowMessageModal(true);
       setIsLoading(false);
     } catch (error) {
       console.error("Booking failed:", error);
-      alert(error?.message || "Booking failed. Please try again.");
+      setShowMessageModal(true);
+      setPrompt({
+        promptTile: "Booking failed",
+        promptBody: error?.message || "Booking failed. Please try again.",
+      });
+      setNavigationDecision("close");
       setIsLoading(false);
     }
   };
@@ -1526,6 +1567,13 @@ const Checkout = () => {
           initialLandmark={addressPickerCfg.landmark || ""}
           initialCity={addressPickerCfg.city || ""}
           onSave={handleSaveAddressFromModal}
+        />
+      )}
+      {showMessageModal && (
+        <PopupModal
+          show={showMessageModal}
+          message={prompt}
+          onSave={handleModalDone}
         />
       )}
     </div>

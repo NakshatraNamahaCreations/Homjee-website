@@ -3,6 +3,8 @@ import logo from "../assets/logohomjee.svg";
 import axios from "axios";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
 import WalletSuccesModal from "./WalletSuccesModal";
+import { postRequest } from "../ApiService/apiHelper";
+import { payWithRazorpay } from "../payments/payWithRazorpay";
 
 export default function VendorPayment({
   vendorId,
@@ -11,6 +13,8 @@ export default function VendorPayment({
   baseAmount = 5000,
   gstPercent = 18,
   currencySymbol = "₹",
+  vendorName,
+  vendorPhone,
 }) {
   const { gstAmount, finalAmount } = useMemo(() => {
     const safeBase = Number(baseAmount) || 0;
@@ -25,35 +29,92 @@ export default function VendorPayment({
   const formatINR = (n) =>
     `${currencySymbol} ${Number(n).toLocaleString("en-IN")}`;
 
+  // const handlePay = async () => {
+  //   setShowSuccesModal(true);
+  //   try {
+  //     if (!vendorId) {
+  //       alert("VendorId missing");
+  //       return;
+  //     }
+  //     if (paying) return;
+
+  //     setPaying(true);
+
+  //     const url = `${API_BASE_URL}${API_ENDPOINTS.RECHARGE_WALLET}`;
+  //     console.log("Recharge URL:", url, "payload:", { vendorId });
+
+  //     const res = await axios.post(url, { vendorId });
+
+  //     console.log("Recharge response:", res?.data);
+
+  //     if (res?.data?.status === "success") {
+  //       console.log("Res", res?.data);
+  //       setShowSuccesModal(true);
+  //       // alert("Wallet recharged successfully ✅");
+  //       return;
+  //     }
+
+  //     alert(res?.data?.message || "Recharge failed");
+  //   } catch (err) {
+  //     console.log("Recharge error:", err?.response?.data || err?.message);
+  //     alert(err?.response?.data?.message || "Server error");
+  //   } finally {
+  //     setPaying(false);
+  //   }
+  // };
+
   const handlePay = async () => {
-    setShowSuccesModal(true);
     try {
-      if (!vendorId) {
-        alert("VendorId missing");
-        return;
-      }
+      if (!vendorId) return alert("VendorId missing");
       if (paying) return;
 
       setPaying(true);
 
-      const url = `${API_BASE_URL}${API_ENDPOINTS.RECHARGE_WALLET}`;
-      console.log("Recharge URL:", url, "payload:", { vendorId });
+      // STEP 1: create order
+      const orderRes = await postRequest(API_ENDPOINTS.RECHARGE_WALLET, {
+        vendorId,
+      });
 
-      const res = await axios.post(url, { vendorId });
-
-      console.log("Recharge response:", res?.data);
-
-      if (res?.data?.status === "success") {
-        console.log("Res", res?.data);
-        setShowSuccesModal(true);
-        // alert("Wallet recharged successfully ✅");
-        return;
+      if (!orderRes?.success || orderRes?.action !== "PAYMENT_ORDER_CREATED") {
+        throw new Error(orderRes?.message || "Failed to create recharge order");
       }
 
-      alert(res?.data?.message || "Recharge failed");
+      const razorpayOrder = orderRes.razorpayOrder;
+
+      await payWithRazorpay({
+        razorpayOrder,
+        // optional prefill:
+        customer: { name: vendorName, contact: vendorPhone },
+
+        onVerify: async (response) => {
+          // STEP 2: verify and credit wallet
+          const verifyRes = await postRequest(API_ENDPOINTS.RECHARGE_VERIFY, {
+            vendorId,
+            providerRef: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+          });
+
+          if (!verifyRes?.success) {
+            throw new Error(
+              verifyRes?.message || "Recharge verification failed",
+            );
+          }
+          return verifyRes;
+        },
+
+        onSuccess: async (data) => {
+          setShowSuccesModal(true);
+          // optionally refetch vendor wallet coins here
+        },
+
+        onFailure: (msg) => {
+          if (msg && msg !== "Payment cancelled") alert(msg);
+        },
+      });
     } catch (err) {
       console.log("Recharge error:", err?.response?.data || err?.message);
-      alert(err?.response?.data?.message || "Server error");
+      alert(err?.response?.data?.message || err?.message || "Server error");
     } finally {
       setPaying(false);
     }

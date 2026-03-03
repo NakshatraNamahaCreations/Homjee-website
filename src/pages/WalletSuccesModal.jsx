@@ -87,7 +87,8 @@ function WalletSuccesModal({ show, onClose }) {
           </button> */}
           <button
             className="btn btn-primary px-4"
-            onClick={() => window.location.reload()}
+            onClick={() => window.location.assign("/")}
+            // onClick={() => window.location.reload()}
           >
             Done
           </button>

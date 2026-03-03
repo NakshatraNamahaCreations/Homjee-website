@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom";
 import VendorPayment from "./VendorPayment";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
 import GlobalLoader from "../utils/GlobalLoader";
-import { Alert } from "react-bootstrap";
 
 export default function WalletRechargeLanding() {
   const [searchParams] = useSearchParams();
@@ -16,6 +15,8 @@ export default function WalletRechargeLanding() {
     message: "",
     linkExpiry: null,
     data: null,
+    vendorName: "",
+    vendorPhone: "",
   });
 
   const timeLeftText = useMemo(() => {
@@ -42,7 +43,7 @@ export default function WalletRechargeLanding() {
         }
         const res = await axios.get(
           `${API_BASE_URL}${API_ENDPOINTS.VALIDATE_URL}`,
-          { params: { vendorId, ref } }
+          { params: { vendorId, ref } },
         );
 
         const payload = res?.data || {};
@@ -60,6 +61,8 @@ export default function WalletRechargeLanding() {
             message: "",
             linkExpiry: payload.linkExpiry,
             data: payload,
+            vendorName: payload.vendorname,
+            vendorPhone: payload.vendorPhone,
           });
           return;
         }
@@ -71,6 +74,8 @@ export default function WalletRechargeLanding() {
             message: payload.message || "This payment link has expired.",
             linkExpiry: payload.linkExpiry || null,
             data: payload,
+            vendorName: payload.vendorname,
+            vendorPhone: payload.vendorPhone,
           });
           return;
         }
@@ -83,6 +88,8 @@ export default function WalletRechargeLanding() {
               payload.message || "This payment link is already used / paid.",
             linkExpiry: payload.linkExpiry || null,
             data: payload,
+            vendorName: payload.vendorname,
+            vendorPhone: payload.vendorPhone,
           });
           return;
         }
@@ -93,6 +100,8 @@ export default function WalletRechargeLanding() {
           message: payload.message || "Unable to validate link.",
           linkExpiry: payload.linkExpiry || null,
           data: payload,
+          vendorName: payload.vendorname,
+          vendorPhone: payload.vendorPhone,
         });
       } catch (err) {
         setState({
@@ -103,12 +112,16 @@ export default function WalletRechargeLanding() {
             "Server error while validating link.",
           linkExpiry: null,
           data: null,
+          vendorName: "",
+          vendorPhone: "",
         });
       }
     };
 
     validate();
   }, [vendorId, ref]);
+
+  console.log("state", state);
 
   if (state.loading) return <GlobalLoader />;
 
@@ -160,6 +173,8 @@ export default function WalletRechargeLanding() {
       baseAmount={payload.baseAmount ?? 5000}
       gstPercent={payload.gstPercent ?? 18}
       currentCoins={payload.currentCoins ?? 0}
+      vendorName={payload.vendorName}
+      vendorPhone={payload.vendorPhone}
       //   onPayNow={onPayNow}
       //   busy={paying}
     />
@@ -172,10 +187,10 @@ function PageShell({ title, desc, variant = "info", action = null }) {
     variant === "danger"
       ? "#ffe8e8"
       : variant === "success"
-      ? "#e9ffe8"
-      : variant === "warn"
-      ? "#fff6db"
-      : "#eef5ff";
+        ? "#e9ffe8"
+        : variant === "warn"
+          ? "#fff6db"
+          : "#eef5ff";
 
   return (
     <div

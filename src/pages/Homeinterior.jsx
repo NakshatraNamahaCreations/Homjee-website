@@ -1044,6 +1044,7 @@ const Homeinterior = () => {
                       onChange={(e) => handleOtpChange(e, index)}
                       onKeyDown={(e) => handleKeyDown(e, index)}
                       ref={(el) => (inputRefs.current[index] = el)}
+                        autoFocus={index === 0}
                       style={{
                         width: "40px",
                         height: "40px",

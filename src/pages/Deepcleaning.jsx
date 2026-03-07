@@ -123,7 +123,6 @@ const Deepcleaning = () => {
     lat: null,
     lng: null,
     city: "",
-
   });
 
   console.log("userAddress", userAddress);
@@ -144,10 +143,10 @@ const Deepcleaning = () => {
 
       const result = await postRequest(
         API_ENDPOINTS.LOGIN_WITH_MOBILE,
-        formData
+        formData,
       );
       setResponseLoader(false);
-    
+
       setOtpValue(result.otp);
       setShowModal(true);
     } catch (error) {
@@ -171,7 +170,6 @@ const Deepcleaning = () => {
       const result = await postRequest(API_ENDPOINTS.VERIFY_OTP, data);
 
       console.log("OTP Verification Result:", result);
-
 
       if (result?.data) {
         setStoredUser(result.data);
@@ -206,7 +204,6 @@ const Deepcleaning = () => {
             lat: Number(loc.latitude) || 12.9716,
             lng: Number(loc.longitude) || 77.5946,
             city: loc.city || "",
-     
           });
 
           setShowAddress(true);
@@ -222,8 +219,6 @@ const Deepcleaning = () => {
             lat: null,
             lng: null,
             city: "",
-          
-         
           });
           setShowAddress(true);
         }
@@ -258,13 +253,12 @@ const Deepcleaning = () => {
             lat: Number(savedAddress.latitude),
             lng: Number(savedAddress.longitude),
             city: savedAddress.city || "",
-          
           });
 
           // Store in session for backup
           sessionStorage.setItem(
             "selectedAddress",
-            JSON.stringify(savedAddress)
+            JSON.stringify(savedAddress),
           );
           setShowAddress(true);
         } else {
@@ -278,7 +272,6 @@ const Deepcleaning = () => {
             lat: null,
             lng: null,
             city: "",
-           
           });
           setShowAddress(true);
         }
@@ -294,7 +287,7 @@ const Deepcleaning = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.RESEND_OTP, formData);
       console.log("OTP Re-sent", result);
-   
+
       setOtpValue(result.otp);
     } catch (error) {
       console.error("OTP Re-sent Error:", error);
@@ -328,7 +321,7 @@ const Deepcleaning = () => {
               const cityComp =
                 comps.find((c) => c.types?.includes("locality")) ||
                 comps.find((c) =>
-                  c.types?.includes("administrative_area_level_2")
+                  c.types?.includes("administrative_area_level_2"),
                 );
 
               resolve({
@@ -346,7 +339,7 @@ const Deepcleaning = () => {
           }
         },
         (err) => reject(err),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
       );
     });
 
@@ -355,7 +348,7 @@ const Deepcleaning = () => {
       if (!userId) return null;
 
       const response = await getRequest(
-        `${API_ENDPOINTS.GET_ADDRESS}${userId}`
+        `${API_ENDPOINTS.GET_ADDRESS}${userId}`,
       );
 
       // Check if the address is in `savedAddress` or `address` field
@@ -466,7 +459,7 @@ const Deepcleaning = () => {
         setAddressDataContext(existingAddress);
         sessionStorage.setItem(
           "selectedAddress",
-          JSON.stringify(existingAddress)
+          JSON.stringify(existingAddress),
         );
         setShowAddress(false);
 
@@ -482,7 +475,7 @@ const Deepcleaning = () => {
       }
 
       const uniqueCode = `ADDR-${Date.now()}-${Math.floor(
-        Math.random() * 1000
+        Math.random() * 1000,
       )}`;
       const addressObj = {
         uniqueCode,
@@ -507,7 +500,7 @@ const Deepcleaning = () => {
 
         const result = await putRequest(
           `${API_ENDPOINTS.SAVE_ADDRESS}${currentUser._id}`,
-          payload
+          payload,
         );
         console.log("✅ Save result:", result);
       }
@@ -541,39 +534,38 @@ const Deepcleaning = () => {
     "https://randomuser.me/api/portraits/women/51.jpg",
   ];
 
- const reviewers = [
-  {
-    name: "Rajesh Kumar",
-    img: "https://images.unsplash.com/photo-1694871420373-e9c1031b91ee?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:0]{index=0}
-    review:
-      "Very happy with the service. The Homjee team is very professional and arrived right on time. They brought big vacuum machines and special tools for every corner. My house looks brand new now. Highly recommended!",
-  },
-  {
-    name: "Priya Sharma",
-    img: "https://images.pexels.com/photos/32198550/pexels-photo-32198550.jpeg", // :contentReference[oaicite:1]{index=1}
-    review:
-      "I was worried about harsh smells, but Homjee uses eco-friendly chemicals that are safe for kids and pets. The cleaners were very polite and did a thorough job. Great experience overall.",
-  },
-  {
-    name: "Amit Patel",
-    img: "https://images.unsplash.com/photo-1549045337-967927d923c0?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
-    review:
-      "Best deep cleaning service I have used so far. They don't just sweep, they bring professional machines for floor scrubbing and sofa cleaning. Every tile in my kitchen is shining. Thank you, Homjee!",
-  },
-  {
-    name: "Sunita Iyer",
-    img: "https://images.pexels.com/photos/14180403/pexels-photo-14180403.jpeg", // :contentReference[oaicite:3]{index=3}
-    review:
-      "The team is very hardworking. They moved the furniture and cleaned areas I usually can’t reach. It is good to know they use eco-friendly products. Professional service at a fair price.",
-  },
-  {
-    name: "Vikram Singh",
-    img: "https://plus.unsplash.com/premium_photo-1689977871600-e755257fb5f8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
-    review:
-      "Impressive work by the Homjee team. They are well-equipped with all the necessary machinery and cleaning kits. They spent 5 hours and made sure the entire flat was spotless. Very satisfied.",
-  },
-];
-
+  const reviewers = [
+    {
+      name: "Rajesh Kumar",
+      img: "https://images.unsplash.com/photo-1694871420373-e9c1031b91ee?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:0]{index=0}
+      review:
+        "Very happy with the service. The Homjee team is very professional and arrived right on time. They brought big vacuum machines and special tools for every corner. My house looks brand new now. Highly recommended!",
+    },
+    {
+      name: "Priya Sharma",
+      img: "https://images.pexels.com/photos/32198550/pexels-photo-32198550.jpeg", // :contentReference[oaicite:1]{index=1}
+      review:
+        "I was worried about harsh smells, but Homjee uses eco-friendly chemicals that are safe for kids and pets. The cleaners were very polite and did a thorough job. Great experience overall.",
+    },
+    {
+      name: "Amit Patel",
+      img: "https://images.unsplash.com/photo-1549045337-967927d923c0?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
+      review:
+        "Best deep cleaning service I have used so far. They don't just sweep, they bring professional machines for floor scrubbing and sofa cleaning. Every tile in my kitchen is shining. Thank you, Homjee!",
+    },
+    {
+      name: "Sunita Iyer",
+      img: "https://images.pexels.com/photos/14180403/pexels-photo-14180403.jpeg", // :contentReference[oaicite:3]{index=3}
+      review:
+        "The team is very hardworking. They moved the furniture and cleaned areas I usually can’t reach. It is good to know they use eco-friendly products. Professional service at a fair price.",
+    },
+    {
+      name: "Vikram Singh",
+      img: "https://plus.unsplash.com/premium_photo-1689977871600-e755257fb5f8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
+      review:
+        "Impressive work by the Homjee team. They are well-equipped with all the necessary machinery and cleaning kits. They spent 5 hours and made sure the entire flat was spotless. Very satisfied.",
+    },
+  ];
 
   const faqData = [
     "Are your painters trained and experienced professionals?",
@@ -1029,6 +1021,7 @@ const Deepcleaning = () => {
                       onChange={(e) => handleOtpChange(e, index)}
                       onKeyDown={(e) => handleKeyDown(e, index)}
                       ref={(el) => (inputRefs.current[index] = el)}
+                      autoFocus={index === 0}
                       style={{
                         width: "40px",
                         height: "40px",
@@ -4785,7 +4778,6 @@ const Deepcleaning = () => {
                       lat: Number(loc.latitude),
                       lng: Number(loc.longitude),
                       city: loc.city || "",
-                    
                     });
 
                     setTimeout(() => setShowAddress(true), 100);
@@ -4810,7 +4802,7 @@ const Deepcleaning = () => {
                 onClick={() => {
                   console.log("🔍 Search by Location selected");
                   const cached = JSON.parse(
-                    sessionStorage.getItem("selectedAddress") || "null"
+                    sessionStorage.getItem("selectedAddress") || "null",
                   );
                   setShowOptionOpoup(false);
 
@@ -4822,7 +4814,6 @@ const Deepcleaning = () => {
                     lat: cached?.latitude ? Number(cached.latitude) : null,
                     lng: cached?.longitude ? Number(cached.longitude) : null,
                     city: cached?.city || "",
-
                   });
 
                   setTimeout(() => setShowAddress(true), 100);
@@ -4855,8 +4846,6 @@ const Deepcleaning = () => {
           initialHouseFlat={addressPickerCfg.houseNumber || ""}
           initialLandmark={addressPickerCfg.landmark || ""}
           initialCity={addressPickerCfg.city || ""}
-  
-      
           onSave={(payload) => handleSaveAddressFromModal(payload)}
         />
       )}
@@ -8054,7 +8043,6 @@ export default Deepcleaning;
 //   mask-image: url("data:image/svg+xml;utf8,<svg fill='red' xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 16 16'><path d='M5 1l8 7-8 7' stroke='red' stroke-width='2' fill='none'/></svg>");
 // }
 
-
 //     .carousel-indicators {
 //       bottom: -63px;
 //     }
@@ -8816,7 +8804,7 @@ export default Deepcleaning;
 //     .carousel-indicators {
 //       bottom: -40px;
 //     }
-  
+
 //     .carousel-indicators [data-bs-target] {
 //       width: 24px;
 //       height: 4px;
@@ -8826,17 +8814,17 @@ export default Deepcleaning;
 //       transition: all 0.3s ease;
 //       opacity: 1;
 //     }
-  
+
 //     .carousel-indicators .active {
 //       background-color: red;
 //       width: 30px;
 //     }
-  
+
 //     .carousel-control-prev-icon,
 //   .carousel-control-next-icon {
 //     background-image: none !important;
 //   }
-  
+
 //     /* Updated Control Styles */
 //     .recent-carousel .carousel-control-prev,
 //     .recent-carousel .carousel-control-next {
@@ -8853,17 +8841,17 @@ export default Deepcleaning;
 //       justify-content: center;
 //       align-items: center;
 //     }
-  
+
 //     /* Center Prev to 1st Image Left */
 //     .recent-carousel .carousel-control-prev {
 //       left: calc(50% - 600px); /* Assuming each image is 350px + 2 * 20px gap */
 //     }
-  
+
 //     /* Center Next to 3rd Image Right */
 //     .recent-carousel .carousel-control-next {
 //       right: calc(50% - 600px);
 //     }
-  
+
 //   .custom-icon {
 //     background-color: #ff4d4d; /* <-- Light red */
 //     width: 20px;
@@ -8875,13 +8863,12 @@ export default Deepcleaning;
 //     -webkit-mask-repeat: no-repeat;
 //     -webkit-mask-position: center;
 //   }
-  
-  
+
 //     .carousel-control-prev-icon.custom-icon {
 //       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M10.5 2L4.5 8L10.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //       -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M10.5 2L4.5 8L10.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //     }
-  
+
 //     .carousel-control-next-icon.custom-icon {
 //       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M5.5 2L11.5 8L5.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //       -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M5.5 2L11.5 8L5.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");

@@ -120,14 +120,30 @@ const Services = () => {
     lat: null,
     lng: null,
     city: "",
-
-    
   });
 
   console.log("isNewUser", isNewUser);
   const inputRefs = useRef([]);
   const openAddressAfterOptionCloseRef = useRef(false);
 
+
+useEffect(() => {
+  try {
+    if (!showModal) return;
+
+    const timer = setTimeout(() => {
+      const firstInput = inputRefs.current?.[0];
+      if (firstInput) {
+        firstInput.focus();
+        firstInput.select();
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  } catch (e) {
+    console.error("OTP autofocus error", e);
+  }
+}, [showModal]);
   // const formattedAddress = "Channasandra, Srinivaspura, Bengaluru, Karnataka 560060, India";
 
   useEffect(() => {
@@ -181,7 +197,7 @@ const Services = () => {
     try {
       const result = await postRequest(
         API_ENDPOINTS.LOGIN_WITH_MOBILE,
-        formData
+        formData,
       );
       setResponseLoader(false);
       console.log("Login Success", result);
@@ -265,10 +281,13 @@ const Services = () => {
         address: initialAddress?.address || "",
         houseNumber: initialAddress?.houseNumber || "",
         landmark: initialAddress?.landmark || "",
-        lat: initialAddress?.latitude ? Number(initialAddress.latitude) : (initialAddress?.lat || 12.9716),
-        lng: initialAddress?.longitude ? Number(initialAddress.longitude) : (initialAddress?.lng || 77.5946),
+        lat: initialAddress?.latitude
+          ? Number(initialAddress.latitude)
+          : initialAddress?.lat || 12.9716,
+        lng: initialAddress?.longitude
+          ? Number(initialAddress.longitude)
+          : initialAddress?.lng || 77.5946,
         city: initialAddress?.city || "",
-       
       });
 
       // If we have a saved address, store it in context
@@ -278,7 +297,6 @@ const Services = () => {
       }
 
       setShowAddress(true);
-
     } catch (error) {
       console.error("verifyOTP error:", error);
       alert(error?.message || "Invalid OTP");
@@ -290,7 +308,7 @@ const Services = () => {
     try {
       const result = await postRequest(API_ENDPOINTS.RESEND_OTP, formData);
       console.log("OTP Re-sent", result);
-   
+
       setOtpValue(result.otp);
     } catch (error) {
       console.error("OTP Re-sent Error:", error);
@@ -324,7 +342,7 @@ const Services = () => {
               const cityComp =
                 comps.find((c) => c.types?.includes("locality")) ||
                 comps.find((c) =>
-                  c.types?.includes("administrative_area_level_2")
+                  c.types?.includes("administrative_area_level_2"),
                 );
 
               resolve({
@@ -342,7 +360,7 @@ const Services = () => {
           }
         },
         (err) => reject(err),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
       );
     });
 
@@ -351,7 +369,7 @@ const Services = () => {
       if (!userId) return null;
 
       const response = await getRequest(
-        `${API_ENDPOINTS.GET_ADDRESS}${userId}`
+        `${API_ENDPOINTS.GET_ADDRESS}${userId}`,
       );
 
       // Check if the address is in `savedAddress` or `address` field
@@ -397,18 +415,14 @@ const Services = () => {
         return;
       }
 
-      const uniqueCode = `ADDR-${Date.now()}-${Math.floor(
-        Math.random() * 1000
-      )}`;
+      const uniqueCode = `ADDR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
       const addressObj = {
         uniqueCode,
-        address: picked.address || addressPickerCfg.address,
-        houseNumber: 
-          addressPickerCfg.houseNumber
-          || picked.houseNumber?.trim() || "",
-        landmark: 
-          addressPickerCfg.landmark
-          || picked.landmark?.trim() || "",
+        address: picked.address || addressPickerCfg.address || "",
+        houseNumber:
+          picked.houseNumber?.trim() || addressPickerCfg.houseNumber || "",
+        landmark: picked.landmark?.trim() || addressPickerCfg.landmark || "",
         latitude: Number(picked.lat || addressPickerCfg.lat),
         longitude: Number(picked.lng || addressPickerCfg.lng),
         city: picked.city || addressPickerCfg.city || "",
@@ -416,30 +430,28 @@ const Services = () => {
 
       console.log("📝 Address to save:", addressObj);
 
-      // Save to backend for existing users
       if (currentUser?._id) {
         const payload = { savedAddress: addressObj };
         console.log("📤 Saving to backend:", payload);
 
         const result = await putRequest(
           `${API_ENDPOINTS.SAVE_ADDRESS}${currentUser._id}`,
-          payload
+          payload,
         );
         console.log("✅ Save result:", result);
       }
 
-      // Store in context and session
       setAddressDataContext(addressObj);
       sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
       setShowAddress(false);
 
-      // Proceed to slot selection
       await handleProceedToSlotSelection();
     } catch (error) {
       console.error("💥 handleSaveAddressFromModal error:", error);
       alert(error?.message || "Failed to save address");
     }
   };
+
   useEffect(() => {
     try {
       const onStorage = (e) => {
@@ -508,39 +520,38 @@ const Services = () => {
     "https://randomuser.me/api/portraits/women/51.jpg",
   ];
 
- const reviewers = [
-  {
-    name: "Manoj Tiwari",
-    img: "https://plus.unsplash.com/premium_photo-1682092603230-1ce7cf8ca451?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW5kaWFuJTIwbWFufGVufDB8fDB8fHww", // :contentReference[oaicite:0]{index=0}
-    review:
-      "Excellent work by the Homjee team. They finished the painting much faster than I expected. The finish on the walls is very smooth and they used high-quality paints. Very professional behavior.",
-  },
-  {
-    name: "Anjali Gupta",
-    img: "https://images.pexels.com/photos/26617600/pexels-photo-26617600.jpeg", // :contentReference[oaicite:1]{index=1}
-    review:
-      "I recently got my 2BHK painted through Homjee. I really liked how they covered all my furniture with plastic sheets before starting. No paint stains were left on the floor. Very neat and clean work!",
-  },
-  {
-    name: "Sandeep Reddy",
-    img: "https://images.unsplash.com/photo-1534339480783-6816b68be29c?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
-    review:
-      "The painters are very skilled and polite. They helped me choose the right color shades for my living room. The price was also very transparent with no hidden costs. Truly a hassle-free experience.",
-  },
-  {
-    name: "Kavita Deshmukh",
-    img: "https://images.pexels.com/photos/15602468/pexels-photo-15602468.jpeg", // :contentReference[oaicite:3]{index=3}
-    review:
-      "Homjee provides great service. Their team arrived on time every day and worked very hard. They even fixed the small cracks in the walls before painting. My home looks beautiful now!",
-  },
-  {
-    name: "Rahul Verma",
-    img: "https://images.unsplash.com/photo-1607081692251-d689f1b9af84?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
-    review:
-      "Top-class painting service in the city. The staff is professional and they use genuine branded paints. They did a final inspection after finishing to make sure I was satisfied. Will definitely use them again.",
-  },
-];
-
+  const reviewers = [
+    {
+      name: "Manoj Tiwari",
+      img: "https://plus.unsplash.com/premium_photo-1682092603230-1ce7cf8ca451?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW5kaWFuJTIwbWFufGVufDB8fDB8fHww", // :contentReference[oaicite:0]{index=0}
+      review:
+        "Excellent work by the Homjee team. They finished the painting much faster than I expected. The finish on the walls is very smooth and they used high-quality paints. Very professional behavior.",
+    },
+    {
+      name: "Anjali Gupta",
+      img: "https://images.pexels.com/photos/26617600/pexels-photo-26617600.jpeg", // :contentReference[oaicite:1]{index=1}
+      review:
+        "I recently got my 2BHK painted through Homjee. I really liked how they covered all my furniture with plastic sheets before starting. No paint stains were left on the floor. Very neat and clean work!",
+    },
+    {
+      name: "Sandeep Reddy",
+      img: "https://images.unsplash.com/photo-1534339480783-6816b68be29c?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:2]{index=2}
+      review:
+        "The painters are very skilled and polite. They helped me choose the right color shades for my living room. The price was also very transparent with no hidden costs. Truly a hassle-free experience.",
+    },
+    {
+      name: "Kavita Deshmukh",
+      img: "https://images.pexels.com/photos/15602468/pexels-photo-15602468.jpeg", // :contentReference[oaicite:3]{index=3}
+      review:
+        "Homjee provides great service. Their team arrived on time every day and worked very hard. They even fixed the small cracks in the walls before painting. My home looks beautiful now!",
+    },
+    {
+      name: "Rahul Verma",
+      img: "https://images.unsplash.com/photo-1607081692251-d689f1b9af84?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // :contentReference[oaicite:4]{index=4}
+      review:
+        "Top-class painting service in the city. The staff is professional and they use genuine branded paints. They did a final inspection after finishing to make sure I was satisfied. Will definitely use them again.",
+    },
+  ];
 
   const faqData = [
     "Are your painters trained and experienced professionals?",
@@ -596,7 +607,7 @@ const Services = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await res.json();
@@ -1007,26 +1018,30 @@ const Services = () => {
                   }}
                 >
                   {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      maxLength="1"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(e, index)}
-                      onKeyDown={(e) => handleKeyDown(e, index)}
-                      ref={(el) => (inputRefs.current[index] = el)}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        textAlign: "center",
-                        border: "1px solid #ccc",
-                        borderRadius: "5px",
-                        color: "black",
-                        fontSize: "18px",
-                        outline: "none",
-                        backgroundColor: "#fff",
-                      }}
-                    />
+                   <input
+  key={index}
+  type="tel"
+  inputMode="numeric"
+  autoComplete={index === 0 ? "one-time-code" : "off"}
+  maxLength={1}
+  value={digit}
+  onChange={(e) => handleOtpChange(e, index)}
+  onKeyDown={(e) => handleKeyDown(e, index)}
+  ref={(el) => (inputRefs.current[index] = el)}
+  autoFocus={index === 0}
+  style={{
+    width: "40px",
+    height: "40px",
+    textAlign: "center",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    color: "black",
+    fontSize: "18px",
+    outline: "none",
+    backgroundColor: "#fff",
+    caretColor: "#000",
+  }}
+/>
                   ))}
                 </div>
                 <p style={{ marginBottom: "20px" }}>
@@ -4238,7 +4253,7 @@ const Services = () => {
                 <h4 style={{ margin: "0 0 4px", fontSize: "16px" }}>
                   {person.name}
                 </h4>
-           
+
                 <p style={{ marginTop: "10px", fontSize: "14px" }}>
                   {person.review}
                 </p>
@@ -4265,8 +4280,6 @@ const Services = () => {
           </div>
         </div>
       </div>
-   
-
 
       <SlotSelectionModal
         show={showSlotModal}
@@ -4275,8 +4288,6 @@ const Services = () => {
         fetchAvailableSlots={fetchAvailableSlots}
         type="booking"
       />
-
-    
 
       {showAddress && (
         <AddressPickerModal
@@ -4290,8 +4301,7 @@ const Services = () => {
           initialHouseFlat={addressPickerCfg.houseNumber || ""}
           initialLandmark={addressPickerCfg.landmark || ""}
           initialCity={addressPickerCfg.city || ""}
-         
-          onSave={(payload) => handleSaveAddressFromModal(payload)}
+          onSave={handleSaveAddressFromModal}
         />
       )}
     </>
@@ -4678,7 +4688,6 @@ export default Services;
 //     }
 //   };
 
-
 //   const getCurrentLocationDraft = () =>
 //     new Promise((resolve, reject) => {
 //       if (!navigator.geolocation) {
@@ -4726,7 +4735,6 @@ export default Services;
 //         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
 //       );
 //     });
-
 
 //   const fetchUserAddress = async (userId) => {
 //     try {
@@ -4861,8 +4869,6 @@ export default Services;
 //       console.error("storage sync error", e);
 //     }
 //   }, []);
-
-
 
 //   // useEffect(() => {
 //   //   const cleanupFns = [];
@@ -7489,7 +7495,6 @@ export default Services;
 //   mask-image: url("data:image/svg+xml;utf8,<svg fill='red' xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 16 16'><path d='M5 1l8 7-8 7' stroke='red' stroke-width='2' fill='none'/></svg>");
 // }
 
-
 //     .carousel-indicators {
 //       bottom: -63px;
 //     }
@@ -8251,7 +8256,7 @@ export default Services;
 //     .carousel-indicators {
 //       bottom: -40px;
 //     }
-  
+
 //     .carousel-indicators [data-bs-target] {
 //       width: 24px;
 //       height: 4px;
@@ -8261,17 +8266,17 @@ export default Services;
 //       transition: all 0.3s ease;
 //       opacity: 1;
 //     }
-  
+
 //     .carousel-indicators .active {
 //       background-color: red;
 //       width: 30px;
 //     }
-  
+
 //     .carousel-control-prev-icon,
 //   .carousel-control-next-icon {
 //     background-image: none !important;
 //   }
-  
+
 //     /* Updated Control Styles */
 //     .recent-carousel .carousel-control-prev,
 //     .recent-carousel .carousel-control-next {
@@ -8288,17 +8293,17 @@ export default Services;
 //       justify-content: center;
 //       align-items: center;
 //     }
-  
+
 //     /* Center Prev to 1st Image Left */
 //     .recent-carousel .carousel-control-prev {
 //       left: calc(50% - 600px); /* Assuming each image is 350px + 2 * 20px gap */
 //     }
-  
+
 //     /* Center Next to 3rd Image Right */
 //     .recent-carousel .carousel-control-next {
 //       right: calc(50% - 600px);
 //     }
-  
+
 //   .custom-icon {
 //     background-color: #ff4d4d; /* <-- Light red */
 //     width: 20px;
@@ -8310,13 +8315,12 @@ export default Services;
 //     -webkit-mask-repeat: no-repeat;
 //     -webkit-mask-position: center;
 //   }
-  
-  
+
 //     .carousel-control-prev-icon.custom-icon {
 //       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M10.5 2L4.5 8L10.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //       -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M10.5 2L4.5 8L10.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //     }
-  
+
 //     .carousel-control-next-icon.custom-icon {
 //       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M5.5 2L11.5 8L5.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
 //       -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M5.5 2L11.5 8L5.5 14' stroke='%23e60000' stroke-width='2' fill='none'/></svg>");
@@ -9202,8 +9206,6 @@ export default Services;
 //         fetchAvailableSlots={fetchAvailableSlots}
 //         type="booking"
 //       />
-
-    
 
 //       {showAddress && (
 //         <AddressPickerModal

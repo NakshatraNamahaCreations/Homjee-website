@@ -93,7 +93,7 @@ const AddressModal = ({
       console.log("Address Saved", result);
       handleClose();
       navigate("/deep-cleaning-packages");
-      alert(result.message || "Address Saved");
+      // alert(result.message || "Address Saved");
     } catch (error) {
       console.error("Address failed:", error);
     }

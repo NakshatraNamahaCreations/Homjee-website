@@ -374,7 +374,7 @@ const SlotSelectionModal = ({
         </h3>
         <p style={{ color: "#666", fontSize: 14 }}>
           {/* optional: update based on your actual duration */}
-          Service will take approx. 5 hrs
+          {/* Service will take approx. 5 hrs */}
         </p>
 
         {/* Date Selection */}

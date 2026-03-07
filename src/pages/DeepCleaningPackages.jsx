@@ -1,3 +1,987 @@
+// import React, { useContext, useRef, useState, useEffect } from "react";
+// import { useNavigate, useLocation } from "react-router-dom";
+// import { CartContext } from "./CartContext";
+// import FurnishedApartmentModal from "./services/FurnishedApartmentModal";
+// import UnfurnishedApartmentModal from "./services/UnfurnishedApartmentModal";
+// import BookByRoomModal from "./services/BookByRoomModal";
+// import FurnishedBungalowModal from "./services/FurnishedBungalowModal";
+// import UnfurnishedBungalowModal from "./services/UnfurnishedBungalowModal";
+// import MiniServicesModal from "./services/MiniServicesModal";
+// import sparkling from "../assets/sparkling.jpeg";
+// import furnishedApartmentImg from "../assets/Furnishedapartment.webp";
+// import unfurnishedApartmentImg from "../assets/Unfurnishedapartment.webp";
+// import bookByRoomImg from "../assets/Bookbyroom.webp";
+// import furnishedBungalowImg from "../assets/Furnishedbungalow.webp";
+// import unfurnishedBungalowImg from "../assets/Unfurnishedbungalow.webp";
+// import miniServicesImg from "../assets/Miniservices.webp";
+// import one from "/media/one.webp";
+// import twwo from "/media/twwo.webp";
+// import three from "/media/three.webp";
+// import four from "/media/four.webp";
+// import five from "/media/five.webp";
+// import six from "/media/six.webp";
+// import seven from "/media/seven.webp";
+// import eight from "/media/eight.webp";
+// import nine from "/media/nine.webp";
+// import ten from "/media/ten.webp";
+// import eleven from "/media/eleven.webp";
+// import tweleve from "/media/tweleve.webp";
+// import thirteen from "/media/thirteen.webp";
+// import fourteen from "/media/fourteen.webp";
+// import fifteen from "/media/fifteen.webp";
+// import sixteen from "/media/sixteen.webp";
+// import seventeen from "/media/seventeen.webp";
+// import eighteen from "/media/eighteen.webp";
+// import ninteen from "/media/ninteen.webp";
+// import twenty from "/media/twenty.webp";
+// import twentyone from "/media/twentyone.webp";
+// import twentytwo from "/media/twentytwo.webp";
+// import twentythree from "/media/twentythree.webp";
+// import twentyfour from "/media/twentyfour.webp";
+// import twentyfive from "/media/twentyfive.webp";
+// import twentysix from "/media/twentysix.webp";
+// import twentyseven from "/media/twentyseven.webp";
+// import twentyeight from "/media/twentyeight.webp";
+// import twentynine from "/media/twentynine.webp";
+// import thirty from "/media/thirty.webp";
+// import thirtytwo from "/media/thirtytwo.webp";
+// import thirtythree from "/media/thirtythree.webp";
+// import thirtyfour from "/media/thirtyfour.webp";
+// import thirtyfive from "/media/thirtyfive.webp";
+// import SlotSelectionModal from "./SlotSelectionModal";
+// import { useSelectedSlotContext } from "../utils/SlotContext";
+// import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
+// import axios from "axios";
+
+// // Map services to their corresponding images
+// const serviceImages = {
+//   "Furnished apartment": furnishedApartmentImg,
+//   "Unfurnished apartment": unfurnishedApartmentImg,
+//   "Book by room": bookByRoomImg,
+//   "Furnished bungalow/duplex": furnishedBungalowImg,
+//   "Unfurnished bungalow/duplex": unfurnishedBungalowImg,
+//   "Mini services": miniServicesImg,
+// };
+
+// // Map services to their modal components
+// const modalComponents = {
+//   "Furnished apartment": FurnishedApartmentModal,
+//   "Unfurnished apartment": UnfurnishedApartmentModal,
+//   "Book by room": BookByRoomModal,
+//   "Furnished bungalow/duplex": FurnishedBungalowModal,
+//   "Unfurnished bungalow/duplex": UnfurnishedBungalowModal,
+//   "Mini services": MiniServicesModal,
+// };
+
+// const resolvePkgImage = (pkg) => {
+//   try {
+//     const key = String(pkg?.image || "").trim();
+//     if (!key) return "/media/placeholder.webp";
+//     return `/media/${key}.webp`;
+//   } catch (e) {
+//     return "/media/placeholder.webp";
+//   }
+// };
+
+// const DeepCleaningPackages = () => {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const [loading, setLoading] = useState(false);
+//   const [showSlotModal, setShowSlotModal] = useState(false);
+//   const [minimumAmount, setMinimumAmount] = useState(0);
+//   const [cleaningServices, setCleaningServices] = useState({});
+
+//   // Function to handle closing the slot modal
+//   const handleCloseSlotModal = () => {
+//     setShowSlotModal(false);
+//   };
+//   const { selectedSlot, setSelectedSlot } = useSelectedSlotContext();
+
+//   const getLatLngFromSession = () => {
+//     const addr = sessionStorage.getItem("selectedAddress");
+//     if (!addr) return null;
+
+//     const parsed = JSON.parse(addr);
+//     return {
+//       lat: Number(parsed.latitude),
+//       lng: Number(parsed.longitude),
+//     };
+//   };
+
+//   const mapCartItemsToServices = (items) => {
+//     return items.map((item) => ({
+//       name: item.name,
+//       price: item.price,
+//       quantity: item.quantity,
+//       service: item.service,
+//       teamMembers: Number(item.teamMembers || 1),
+//       duration: Number(item.duration || 0), // already in minutes ✅
+//     }));
+//   };
+
+//   const fetchConfig = async () => {
+//     try {
+//       setLoading(true);
+//       // setError("");
+//       const res = await axios.get(
+//         `${API_BASE_URL}${API_ENDPOINTS.FETCH_PACKAGE_CATALOG}`
+//       );
+//       const catalog = res?.data?.data?.data || {};
+//       setCleaningServices(catalog);
+//       // setConfig(res.data.data);
+//     } catch (e) {
+//       console.log("package error", e?.response?.data?.message || e.message);
+//       // setError(e?.response?.data?.message || e.message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchConfig();
+//   }, []);
+
+//   const fetchAvailableSlots = async (date) => {
+//     const location = getLatLngFromSession();
+//     if (!location) return [];
+
+//     const payload = {
+//       serviceType: "deep_cleaning",
+//       date,
+//       lat: location.lat,
+//       lng: location.lng,
+//       services: mapCartItemsToServices(cartItems),
+//     };
+
+//     const res = await fetch(
+//       `${API_BASE_URL}/slots/website/get-available-slots`,
+//       {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     const data = await res.json();
+//     if (!data.success) return [];
+
+//     return data.slots || [];
+//   };
+
+//   const handleProceedToSlotSelection = async () => {
+//     if (minimumAmount > TotalPrice) return;
+
+//     const today = new Date().toISOString().split("T")[0];
+//     const slots = await fetchAvailableSlots(today);
+
+//     sessionStorage.setItem("availableSlots", JSON.stringify(slots));
+//     setShowSlotModal(true);
+//   };
+
+//   // Function to handle selecting a slot
+//   const handleSelectSlot = (slot) => {
+//     // console.log("slot", slot);
+//     setSelectedSlot(slot);
+//     sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
+//     setShowSlotModal(false);
+//     navigate("/checkout", {
+//       state: {
+//         serviceType: "deep_cleaning",
+//       },
+//     });
+//   };
+
+//   const { cartItems, updateCartItem, getQuantity } = useContext(CartContext);
+
+//   console.log("cartItems checking team members>>>", cartItems);
+
+//   const serviceRefs = useRef({});
+//   const [selectedPackageGroup, setSelectedPackageGroup] = useState(null);
+
+//   const getDisplayTitle = (service) => {
+//     if (service.includes("bungalow")) {
+//       return service.split(" ")[0] + " Bungalow/Duplex";
+//     }
+//     return service;
+//   };
+
+//   // console.log("selectedSlot from context api>>>", selectedSlot);
+
+//   const groupPackages = (packages) => {
+//     const grouped = {};
+//     packages.forEach((pkg) => {
+//       const baseName = pkg.name.split(" - ")[0];
+//       if (!grouped[baseName]) {
+//         grouped[baseName] = [];
+//       }
+//       grouped[baseName].push(pkg);
+//     });
+//     return Object.values(grouped);
+//   };
+
+//   const openModal = (pkgGroup, service) => {
+//     setSelectedPackageGroup(pkgGroup);
+//     navigate(
+//       `/deep-cleaning-packages?modal=${service
+//         .toLowerCase()
+//         .replace(/ /g, "-")}`
+//     );
+//   };
+
+//   const closeModal = () => {
+//     setSelectedPackageGroup(null);
+//     navigate("/deep-cleaning-packages");
+//   };
+
+//   const scrollToService = (service) => {
+//     if (serviceRefs.current[service]) {
+//       serviceRefs.current[service].scrollIntoView({ behavior: "smooth" });
+//     }
+//   };
+
+//   // Get modal type from query parameter
+//   const query = new URLSearchParams(location.search);
+//   const modalType = query.get("modal");
+//   const ModalComponent = modalType
+//     ? modalComponents[
+//         Object.keys(modalComponents).find(
+//           (key) => key.toLowerCase().replace(/ /g, "-") === modalType
+//         )
+//       ]
+//     : null;
+
+//   // Set selected package group based on modal type
+//   useEffect(() => {
+//     if (modalType) {
+//       const service = Object.keys(modalComponents).find(
+//         (key) => key.toLowerCase().replace(/ /g, "-") === modalType
+//       );
+//       if (service && !selectedPackageGroup) {
+//         const firstPkgGroup = groupPackages(cleaningServices[service])[0];
+//         setSelectedPackageGroup(firstPkgGroup);
+//       }
+//     }
+//   }, [modalType]);
+
+//   const TotalPrice = cartItems.reduce(
+//     (sum, item) => sum + item.price * item.quantity,
+//     0
+//   );
+
+//   // console.log("TotalPrice", TotalPrice);
+
+//   // const advancedAmount = 10000;
+
+//   const fetchMinimumAmount = async () => {
+//     try {
+//       const res = await fetch(
+//         `${API_BASE_URL}${API_ENDPOINTS.GET_MINIMUM_ORDERS_VALUE}`
+//       );
+//       const json = await res.json();
+//       if (!json.success)
+//         throw new Error(json.message || "Failed to fetch Minimum Amount");
+//       setMinimumAmount(json.data.amount || 0);
+//     } catch (err) {
+//       console.error("GET Minimum Amount:", err.message);
+//     }
+//   };
+//   useEffect(() => {
+//     fetchMinimumAmount();
+//   }, []);
+
+//   const balanceamount = minimumAmount - TotalPrice;
+
+//   // console.log("minimumAmount", minimumAmount);
+
+//   return (
+//     <div
+//       style={{
+//         maxWidth: "1400px",
+//         margin: "0 auto",
+//         padding: "20px",
+//         display: "flex",
+//         gap: "20px",
+//         marginTop: "4%",
+//         backgroundColor: "#fff",
+//         fontFamily: "Arial, sans-serif",
+//       }}
+//     >
+//       {/* Left Sidebar - Service Selection */}
+//       <div
+//         style={{
+//           width: "450px",
+//           backgroundColor: "#fff",
+//           padding: "20px",
+//           borderRadius: "10px",
+//           boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+//           maxHeight: "350px",
+//           overflowY: "auto",
+//           scrollbarWidth: "none",
+//           msOverflowStyle: "none",
+//         }}
+//         className="hide-scrollbar"
+//       >
+//         <style>
+//           {`
+//             .hide-scrollbar::-webkit-scrollbar {
+//               display: none;
+//             }
+//           `}
+//         </style>
+//         <h2
+//           style={{ fontSize: "14px", fontWeight: "700", marginBottom: "20px" }}
+//         >
+//           Select a service
+//         </h2>
+//         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+//           {Object.keys(cleaningServices || {}).map((service, index) => (
+//             <div
+//               key={index}
+//               onClick={() => scrollToService(service)}
+//               style={{
+//                 width: "calc(33.33% - 6.66px)",
+//                 textAlign: "center",
+//                 cursor: "pointer",
+//                 padding: "5px",
+//                 backgroundColor: "#fff",
+//                 borderRadius: "5px",
+//               }}
+//             >
+//               <img
+//                 src={serviceImages[service]}
+//                 alt={service}
+//                 style={{
+//                   width: "50px",
+//                   height: "50px",
+//                   objectFit: "cover",
+//                   borderRadius: "5px",
+//                   marginBottom: "5px",
+//                 }}
+//               />
+//               <p
+//                 style={{
+//                   fontSize: "10px",
+//                   color: "#333",
+//                   textTransform: "capitalize",
+//                 }}
+//               >
+//                 {service}
+//               </p>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* Middle Section - Service Details */}
+//       <div
+//         style={{
+//           flex: 1,
+//           maxWidth: "900px",
+//           // padding: "20px",
+//         }}
+//       >
+//         <div
+//           style={{
+//             maxHeight: "600px",
+//             overflowY: "auto",
+//             width: "500px",
+//             paddingRight: "10px",
+//             marginBottom: "30px",
+//             position: "relative", // Ensure the container is positioned for sticky child
+//           }}
+//           className="scroll-section"
+//         >
+//           {Object.keys(cleaningServices).map((service, serviceIndex) => (
+//             <div
+//               key={serviceIndex}
+//               ref={(el) => (serviceRefs.current[service] = el)}
+//             >
+//               <h2
+//                 style={{
+//                   fontSize: "22px",
+//                   fontWeight: "600",
+//                   // marginBottom: "20px",
+//                   position: "sticky",
+//                   top: "0",
+//                   backgroundColor: "#fff",
+//                   zIndex: 1,
+//                   paddingBottom: "10px",
+//                 }}
+//               >
+//                 {getDisplayTitle(service)}
+//               </h2>
+//               {groupPackages(cleaningServices[service]).map(
+//                 (pkgGroup, index) => {
+//                   const currentPkg =
+//                     pkgGroup.find((pkg) => pkg.teamMembers !== undefined) ||
+//                     pkgGroup[0];
+//                   // console.log("currentPkg", currentPkg);
+//                   return (
+//                     <div
+//                       key={`${serviceIndex}-${index}`}
+//                       style={{
+//                         border: "1px solid #e0e0e0",
+//                         borderRadius: "10px",
+//                         padding: "15px",
+//                         marginBottom: "20px",
+//                         display: "flex",
+//                         justifyContent: "space-between",
+//                         gap: "20px",
+//                       }}
+//                     >
+//                       <div style={{ flex: 1 }}>
+//                         <h3
+//                           style={{
+//                             fontSize: "16px",
+//                             fontWeight: "600",
+//                             marginBottom: "8px",
+//                           }}
+//                         >
+//                           {currentPkg.name.split(" - ")[0]}
+//                           {/* {pkgGroup[0].name.split(" - ")[0]} */}
+//                           {/* cleaning */}
+//                         </h3>
+//                         <p style={{ margin: "0", color: "#333" }}>
+//                           {/* Starts at ₹{pkgGroup[0].price} */}
+//                           Starts at ₹{currentPkg.price}
+//                         </p>
+//                         <ul
+//                           style={{
+//                             paddingLeft: "20px",
+//                             fontSize: "13px",
+//                             margin: "10px 0",
+//                           }}
+//                         >
+//                           <li>{currentPkg.details}</li>
+//                           <li>{currentPkg.extras}</li>
+//                           {/* <li>{pkgGroup[0].details}</li>
+//                           <li>{pkgGroup[0].extras}</li> */}
+//                         </ul>
+//                         <p
+//                           style={{
+//                             color: "red",
+//                             fontSize: "14px",
+//                             cursor: "pointer",
+//                           }}
+//                           onClick={() => openModal(pkgGroup, service)}
+//                         >
+//                           View details
+//                         </p>
+//                       </div>
+//                       <div style={{ width: "150px", textAlign: "center" }}>
+//                         <img
+//                           // src={pkgGroup[0].image}
+//                           // alt={pkgGroup[0].name}
+//                          src={resolvePkgImage(currentPkg)}
+//                           alt={currentPkg.name}
+//                           style={{
+//                             width: "80%",
+//                             height: "100px",
+//                             objectFit: "cover",
+//                             borderRadius: "8px",
+//                             marginBottom: "-15px",
+//                           }}
+//                         />
+//                         {/* {getQuantity(pkgGroup[0].name, service) > 0 ? ( */}
+//                         {getQuantity(currentPkg.name, service) > 0 ? (
+//                           <div
+//                             style={{
+//                               display: "inline-flex",
+//                               alignItems: "center",
+//                               border: "1px solid red",
+//                               borderRadius: "20px",
+//                               overflow: "hidden",
+//                               backgroundColor: "white",
+//                             }}
+//                           >
+//                             <button
+//                               onClick={() =>
+//                                 updateCartItem(
+//                                   currentPkg.name,
+//                                   currentPkg.price,
+//                                   -1,
+//                                   service,
+//                                   currentPkg.teamMembers,
+//                                   currentPkg.duration,
+//                                   currentPkg.coinsForVendor
+//                                 )
+//                               }
+//                               style={{
+//                                 padding: "5px 10px",
+//                                 backgroundColor: "#fff",
+//                                 border: "none",
+//                                 fontSize: "16px",
+//                                 color: "red",
+//                                 cursor: "pointer",
+//                               }}
+//                             >
+//                               −
+//                             </button>
+//                             <span
+//                               style={{ padding: "5px 15px", fontSize: "14px" }}
+//                             >
+//                               {getQuantity(pkgGroup[0].name, service)}{" "}
+//                             </span>
+//                             <button
+//                               onClick={() =>
+//                                 updateCartItem(
+//                                   currentPkg.name,
+//                                   currentPkg.price,
+//                                   1,
+//                                   service,
+//                                   currentPkg.teamMembers,
+//                                   currentPkg.duration,
+//                                   currentPkg.coinsForVendor
+//                                 )
+//                               }
+//                               style={{
+//                                 padding: "5px 10px",
+//                                 backgroundColor: "red",
+//                                 color: "#fff",
+//                                 border: "none",
+//                                 fontSize: "16px",
+//                                 cursor: "pointer",
+//                               }}
+//                             >
+//                               +
+//                             </button>
+//                           </div>
+//                         ) : (
+//                           (() => {
+//                             const isAnyInCart = pkgGroup.some((pkg) =>
+//                               cartItems.some(
+//                                 (item) =>
+//                                   item.name === pkg.name &&
+//                                   item.service.toLowerCase() ===
+//                                     service.toLowerCase()
+//                               )
+//                             );
+
+//                             if (isAnyInCart) {
+//                               const specificCartItem = cartItems.find(
+//                                 (cartItem) =>
+//                                   pkgGroup.some(
+//                                     (pkg) =>
+//                                       pkg.name === cartItem.name &&
+//                                       cartItem.service.toLowerCase() ===
+//                                         service.toLowerCase()
+//                                   )
+//                               );
+
+//                               if (specificCartItem) {
+//                                 return (
+//                                   <div
+//                                     onClick={() => {
+//                                       if (service === "Mini services") {
+//                                         updateCartItem(
+//                                           // pkgGroup[0].name,
+//                                           // pkgGroup[0].price,
+//                                           // 1,
+//                                           // service,
+//                                           // pkgGroup[0].teamMembers
+//                                           currentPkg.name,
+//                                           currentPkg.price,
+//                                           1,
+//                                           service,
+//                                           currentPkg.teamMembers,
+//                                           currentPkg.duration,
+//                                           currentPkg.coinsForVendor
+//                                         );
+//                                       } else {
+//                                         openModal(pkgGroup, service);
+//                                       }
+//                                     }}
+//                                     style={{
+//                                       display: "inline-flex",
+//                                       alignItems: "center",
+//                                       border: "1px solid red",
+//                                       borderRadius: "20px",
+//                                       overflow: "hidden",
+//                                       backgroundColor: "white",
+//                                     }}
+//                                   >
+//                                     <button
+//                                       style={{
+//                                         padding: "5px 10px",
+//                                         backgroundColor: "#fff",
+//                                         border: "none",
+//                                         fontSize: "16px",
+//                                         color: "red",
+//                                         cursor: "pointer",
+//                                       }}
+//                                     >
+//                                       −
+//                                     </button>
+//                                     <span
+//                                       style={{
+//                                         padding: "5px 15px",
+//                                         fontSize: "14px",
+//                                       }}
+//                                     >
+//                                       {specificCartItem.quantity}
+//                                     </span>
+//                                     <button
+//                                       style={{
+//                                         padding: "5px 10px",
+//                                         backgroundColor: "red",
+//                                         color: "#fff",
+//                                         border: "none",
+//                                         fontSize: "16px",
+//                                         cursor: "pointer",
+//                                       }}
+//                                     >
+//                                       +
+//                                     </button>
+//                                   </div>
+//                                 );
+//                               }
+//                               return (
+//                                 <button
+//                                   disabled
+//                                   style={{
+//                                     backgroundColor: "red",
+//                                     color: "#fff",
+//                                     border: "none",
+//                                     borderRadius: "15px",
+//                                     padding: "8px 15px",
+//                                     fontSize: "14px",
+//                                     cursor: "not-allowed",
+//                                   }}
+//                                 >
+//                                   Error
+//                                 </button>
+//                               );
+//                             } else {
+//                               // If no variant from this group is in the cart, show the "Add" button
+//                               return (
+//                                 <button
+//                                   onClick={() => {
+//                                     if (service === "Mini services") {
+//                                       updateCartItem(
+//                                         pkgGroup[0].name,
+//                                         pkgGroup[0].price,
+//                                         1,
+//                                         service,
+//                                         pkgGroup[0].teamMembers,
+//                                         pkgGroup[0].duration,
+//                                         pkgGroup[0].coinsForVendor
+//                                       );
+//                                     } else {
+//                                       openModal(pkgGroup, service);
+//                                     }
+//                                   }}
+//                                   style={{
+//                                     backgroundColor: "red",
+//                                     color: "#fff",
+//                                     border: "none",
+//                                     borderRadius: "15px",
+//                                     padding: "8px 15px",
+//                                     fontSize: "14px",
+//                                     cursor: "pointer",
+//                                   }}
+//                                 >
+//                                   Add
+//                                 </button>
+//                               );
+//                             }
+//                           })()
+//                         )}
+//                       </div>
+//                     </div>
+//                   );
+//                 }
+//               )}
+//             </div>
+//           ))}
+//           <style>
+//             {`
+//               .scroll-section::-webkit-scrollbar {
+//                 display: none;
+//               }
+//               .scroll-section {
+//                 -ms-overflow-style: none;
+//                 scrollbar-width: none;
+//               }
+//             `}
+//           </style>
+//         </div>
+//       </div>
+//       <div
+//         style={{
+//           width: "450px",
+//           backgroundColor: "#fff",
+//           padding: "20px",
+//           borderRadius: "10px",
+//           boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+//           maxHeight: "600px",
+//           display: "flex",
+//           flexDirection: "column",
+//         }}
+//       >
+//         <h2
+//           style={{
+//             fontSize: "20px",
+//             fontWeight: "600",
+//             marginBottom: "20px",
+//           }}
+//         >
+//           Cart
+//         </h2>
+//         {cartItems.length > 0 ? (
+//           <div
+//             style={{
+//               overflowY: "auto",
+//               overflowX: "hidden",
+//               flex: 1,
+//               marginBottom: "10px",
+//               scrollbarWidth: "none",
+//               msOverflowStyle: "none",
+//             }}
+//             className="hide-scroll"
+//           >
+//             {cartItems.map((item, index) => (
+//               <div
+//                 className="row"
+//                 key={index}
+//                 style={{ marginBottom: "15px", alignItems: "center" }}
+//               >
+//                 <p
+//                   className="col-md-5"
+//                   style={{
+//                     fontSize: "14px",
+//                     color: "#333",
+//                     marginBottom: "5px",
+//                   }}
+//                 >
+//                   {item.service} - {item.name}
+//                 </p>
+//                 <p
+//                   className="col-md-5"
+//                   style={{
+//                     fontSize: "14px",
+//                     color: "#333",
+//                     marginBottom: "5px",
+//                   }}
+//                 >
+//                   TEAM MEMEBRS {item.teamMembers}
+//                 </p>
+//                 <div
+//                   className="col-md-4"
+//                   style={{
+//                     display: "flex",
+//                     alignItems: "center",
+//                     gap: "10px",
+//                     marginBottom: "5px",
+//                   }}
+//                 >
+//                   <button
+//                     onClick={() =>
+//                       updateCartItem(
+//                         item.name,
+//                         item.price,
+//                         -1,
+//                         item.service,
+//                         item.teamMembers,
+//                         item.duration
+//                       )
+//                     }
+//                     style={{
+//                       backgroundColor: "#f0f0f0",
+//                       border: "none",
+//                       color: "red",
+//                       padding: "5px 10px",
+//                       borderRadius: "5px",
+//                       cursor: "pointer",
+//                     }}
+//                   >
+//                     -
+//                   </button>
+//                   <span>{item.quantity}</span>
+//                   <button
+//                     onClick={() =>
+//                       updateCartItem(
+//                         item.name,
+//                         item.price,
+//                         1,
+//                         item.service,
+//                         item.teamMembers,
+//                         item.duration
+//                       )
+//                     }
+//                     style={{
+//                       backgroundColor: "#f0f0f0",
+//                       border: "none",
+//                       color: "red",
+//                       padding: "5px 10px",
+//                       borderRadius: "5px",
+//                       cursor: "pointer",
+//                     }}
+//                   >
+//                     +
+//                   </button>
+//                 </div>
+//                 <p
+//                   className="col-md-3"
+//                   style={{
+//                     fontSize: "14px",
+//                     color: "#333",
+//                     fontWeight: "600",
+//                   }}
+//                 >
+//                   ₹{item.price * item.quantity}
+//                 </p>
+//               </div>
+//             ))}
+
+//             {minimumAmount > TotalPrice ? (
+//               <div
+//                 className="row"
+//                 style={{
+//                   backgroundColor: "lightgrey",
+//                   padding: "6px",
+//                   borderRadius: "5px",
+//                   marginBottom: "10px",
+//                 }}
+//               >
+//                 <div className="text-center" style={{ fontSize: "12px" }}>
+//                   Shop for ₹{balanceamount} more to checkout
+//                 </div>
+//               </div>
+//             ) : (
+//               ""
+//             )}
+
+//             <div className="d-flex" style={{ justifyContent: "space-between" }}>
+//               <div className="" style={{ fontSize: "13px" }}>
+//                 ₹{TotalPrice}
+//               </div>
+//               <div className="" style={{ fontSize: "13px" }}>
+//                 Total Price
+//               </div>
+//             </div>
+
+//             <button
+//               // onClick={() => {
+//               //   minimumAmount > TotalPrice ? null : setShowSlotModal(true);
+//               // }}
+
+//               onClick={handleProceedToSlotSelection}
+//               style={{
+//                 width: "100%",
+//                 backgroundColor:
+//                   minimumAmount > TotalPrice ? "rgb(0 0 0 / 9%)" : "#fff",
+//                 color:
+//                   minimumAmount > TotalPrice ? "rgba(0, 0, 0, 0.125)" : "red",
+//                 border: minimumAmount > TotalPrice ? 0 : "1px solid red",
+//                 padding: "10px",
+//                 borderRadius: "20px",
+//                 fontSize: "14px",
+//                 fontWeight: "600",
+//                 // cursor: "pointer",
+//                 marginBottom: "10px",
+//                 cursor: minimumAmount > TotalPrice ? "not-allowed" : "pointer",
+//                 marginTop: "10px",
+//               }}
+//             >
+//               {/* ₹{totalPrice}  */}
+//               Proceed for Slot Selection
+//             </button>
+//           </div>
+//         ) : (
+//           <>
+//             <div style={{ textAlign: "center", marginBottom: "20px" }}>
+//               <img
+//                 src="https://img.icons8.com/ios/50/000000/shopping-cart.png"
+//                 alt="Empty Cart"
+//                 style={{
+//                   width: "50px",
+//                   height: "50px",
+//                   marginBottom: "10px",
+//                 }}
+//               />
+//               <p style={{ fontSize: "14px", color: "#666" }}>
+//                 No items in your cart
+//               </p>
+//             </div>
+//           </>
+//         )}
+//         <div
+//           style={{
+//             display: "flex",
+//             justifyContent: "space-between",
+//             alignItems: "flex-start",
+//           }}
+//         >
+//           <div>
+//             <h3
+//               style={{
+//                 fontSize: "16px",
+//                 fontWeight: "600",
+//                 marginBottom: "10px",
+//               }}
+//             >
+//               Homjee Promise
+//             </h3>
+//             <ul
+//               style={{
+//                 padding: 0,
+//                 listStyle: "none",
+//                 fontSize: "14px",
+//                 color: "#333",
+//               }}
+//             >
+//               <li
+//                 style={{
+//                   display: "flex",
+//                   alignItems: "center",
+//                   marginBottom: "5px",
+//                 }}
+//               >
+//                 <span style={{ marginRight: "5px" }}>✔</span> Verified
+//                 Professionals
+//               </li>
+//               <li
+//                 style={{
+//                   display: "flex",
+//                   alignItems: "center",
+//                   marginBottom: "5px",
+//                 }}
+//               >
+//                 <span style={{ marginRight: "5px" }}>✔</span> Safe Chemicals
+//               </li>
+//               <li style={{ display: "flex", alignItems: "center" }}>
+//                 <span style={{ marginRight: "5px" }}>✔</span> Superior Stain
+//                 Removal
+//               </li>
+//             </ul>
+//           </div>
+//           <img
+//             src={sparkling}
+//             alt="Sparkling Clean Hygienic"
+//             style={{ width: "60px", height: "60px", borderRadius: "50%" }}
+//           />
+//         </div>
+//       </div>
+//       <SlotSelectionModal
+//         show={showSlotModal}
+//         onClose={handleCloseSlotModal}
+//         handleSelectSlot={handleSelectSlot}
+//         fetchAvailableSlots={fetchAvailableSlots}
+//       />
+
+//       {/* Modal */}
+//       {ModalComponent && selectedPackageGroup && (
+//         <ModalComponent
+//           pkgGroup={selectedPackageGroup}
+//           closeModal={closeModal}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default DeepCleaningPackages;
+
 import React, { useContext, useRef, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CartContext } from "./CartContext";
@@ -72,6 +1056,1045 @@ const modalComponents = {
   "Unfurnished bungalow/duplex": UnfurnishedBungalowModal,
   "Mini services": MiniServicesModal,
 };
+
+const resolvePkgImage = (pkg) => {
+  try {
+    const key = String(pkg?.image || "").trim();
+    if (!key) return "/media/placeholder.webp";
+    return `/media/${key}.webp`;
+  } catch (e) {
+    return "/media/placeholder.webp";
+  }
+};
+
+const getSelectedAddressFromSession = () => {
+  try {
+    const raw = sessionStorage.getItem("selectedAddress");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("selectedAddress parse error", e);
+    return null;
+  }
+};
+
+const getSelectedCityFromSession = () => {
+  try {
+    const addr = getSelectedAddressFromSession();
+    return String(addr?.city || "").trim();
+  } catch (e) {
+    console.error("getSelectedCityFromSession error", e);
+    return "";
+  }
+};
+
+const getCityConfigForPackage = (pkg, city) => {
+  try {
+    if (!pkg || !Array.isArray(pkg.cityConfigs)) return null;
+
+    const normalizedCity = String(city || "")
+      .trim()
+      .toLowerCase();
+
+    if (!normalizedCity) return pkg.cityConfigs[0] || null;
+
+    return (
+      pkg.cityConfigs.find(
+        (cfg) =>
+          String(cfg.city || "")
+            .trim()
+            .toLowerCase() === normalizedCity,
+      ) ||
+      pkg.cityConfigs[0] ||
+      null
+    );
+  } catch (e) {
+    console.error("getCityConfigForPackage error", e);
+    return null;
+  }
+};
+
+const DeepCleaningPackages = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [showSlotModal, setShowSlotModal] = useState(false);
+  const [minimumAmount, setMinimumAmount] = useState(0);
+  const [cleaningServices, setCleaningServices] = useState({});
+  const [selectedCity, setSelectedCity] = useState("");
+  // Function to handle closing the slot modal
+  const handleCloseSlotModal = () => {
+    setShowSlotModal(false);
+  };
+  const { selectedSlot, setSelectedSlot } = useSelectedSlotContext();
+
+ const getLatLngFromSession = () => {
+  try {
+    const addr = sessionStorage.getItem("selectedAddress");
+    if (!addr) return null;
+
+    const parsed = JSON.parse(addr);
+
+    return {
+      lat: Number(parsed.latitude),
+      lng: Number(parsed.longitude),
+      city: String(parsed.city || "").trim(),
+    };
+  } catch (e) {
+    console.error("getLatLngFromSession error", e);
+    return null;
+  }
+};
+
+  const mapCartItemsToServices = (items) => {
+    try {
+      return items.map((item) => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        service: item.service,
+        teamMembers: Number(item.teamMembers || 1),
+        duration: Number(item.duration || 0),
+      }));
+    } catch (e) {
+      console.error("mapCartItemsToServices error", e);
+      return [];
+    }
+  };
+
+  const fetchConfig = async () => {
+    try {
+      setLoading(true);
+
+      const cityFromSession = getSelectedCityFromSession();
+      setSelectedCity(cityFromSession);
+
+      const res = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.FETCH_PACKAGE_CATALOG}`,
+        {
+          params: {
+            serviceType: "deep_cleaning",
+            city: cityFromSession || undefined,
+          },
+        },
+      );
+
+      const catalog = res?.data?.data?.data || {};
+      setCleaningServices(catalog);
+    } catch (e) {
+      console.log("package error", e?.response?.data?.message || e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
+  const fetchAvailableSlots = async (date) => {
+    try {
+      const location = getLatLngFromSession();
+      if (!location) return [];
+
+      const payload = {
+        serviceType: "deep_cleaning",
+        date,
+        lat: location.lat,
+        lng: location.lng,
+        city: location.city,
+        services: mapCartItemsToServices(cartItems),
+      };
+
+      console.log("slot payload >>>", payload);
+
+      const res = await fetch(
+        `${API_BASE_URL}/slots/website/get-available-slots`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      const data = await res.json();
+      if (!data.success) return [];
+
+      return data.slots || [];
+    } catch (err) {
+      console.error("fetchAvailableSlots error", err);
+      return [];
+    }
+  };
+  const handleProceedToSlotSelection = async () => {
+    if (minimumAmount > TotalPrice) return;
+
+    const today = new Date().toISOString().split("T")[0];
+    const slots = await fetchAvailableSlots(today);
+
+    sessionStorage.setItem("availableSlots", JSON.stringify(slots));
+    setShowSlotModal(true);
+  };
+
+  // Function to handle selecting a slot
+  const handleSelectSlot = (slot) => {
+    // console.log("slot", slot);
+    setSelectedSlot(slot);
+    sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
+    setShowSlotModal(false);
+    navigate("/checkout", {
+      state: {
+        serviceType: "deep_cleaning",
+      },
+    });
+  };
+
+  const { cartItems, updateCartItem, getQuantity } = useContext(CartContext);
+
+  console.log("cartItems checking team members>>>", cartItems);
+
+  const serviceRefs = useRef({});
+  const [selectedPackageGroup, setSelectedPackageGroup] = useState(null);
+
+  const getDisplayTitle = (service) => {
+    if (service.includes("bungalow")) {
+      return service.split(" ")[0] + " Bungalow/Duplex";
+    }
+    return service;
+  };
+
+  // console.log("selectedSlot from context api>>>", selectedSlot);
+
+  const groupPackages = (packages) => {
+    const grouped = {};
+    packages.forEach((pkg) => {
+      const baseName = pkg.name.split(" - ")[0];
+      if (!grouped[baseName]) {
+        grouped[baseName] = [];
+      }
+      grouped[baseName].push(pkg);
+    });
+    return Object.values(grouped);
+  };
+
+  const openModal = (pkgGroup, service) => {
+    setSelectedPackageGroup(pkgGroup);
+    navigate(
+      `/deep-cleaning-packages?modal=${service
+        .toLowerCase()
+        .replace(/ /g, "-")}`,
+    );
+  };
+
+  const closeModal = () => {
+    setSelectedPackageGroup(null);
+    navigate("/deep-cleaning-packages");
+  };
+
+  const scrollToService = (service) => {
+    if (serviceRefs.current[service]) {
+      serviceRefs.current[service].scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Get modal type from query parameter
+  const query = new URLSearchParams(location.search);
+  const modalType = query.get("modal");
+  const ModalComponent = modalType
+    ? modalComponents[
+        Object.keys(modalComponents).find(
+          (key) => key.toLowerCase().replace(/ /g, "-") === modalType,
+        )
+      ]
+    : null;
+
+  // Set selected package group based on modal type
+  useEffect(() => {
+    try {
+      if (!modalType) return;
+      if (!cleaningServices || Object.keys(cleaningServices).length === 0)
+        return;
+
+      const service = Object.keys(modalComponents).find(
+        (key) => key.toLowerCase().replace(/ /g, "-") === modalType,
+      );
+
+      if (!service) return;
+
+      if (!selectedPackageGroup) {
+        const grouped = groupPackages(cleaningServices[service] || []);
+        if (grouped.length > 0) {
+          setSelectedPackageGroup(grouped[0]);
+        }
+      }
+    } catch (e) {
+      console.error("modal init error", e);
+    }
+  }, [modalType, cleaningServices, selectedPackageGroup]);
+
+  const TotalPrice = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
+  // console.log("TotalPrice", TotalPrice);
+
+  // const advancedAmount = 10000;
+
+  const fetchMinimumAmount = async () => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.GET_MINIMUM_ORDERS_VALUE}`,
+      );
+      const json = await res.json();
+      if (!json.success)
+        throw new Error(json.message || "Failed to fetch Minimum Amount");
+      setMinimumAmount(json.data.amount || 0);
+    } catch (err) {
+      console.error("GET Minimum Amount:", err.message);
+    }
+  };
+  useEffect(() => {
+    fetchMinimumAmount();
+  }, []);
+
+  const balanceamount = minimumAmount - TotalPrice;
+
+  // console.log("minimumAmount", minimumAmount);
+  const getResolvedPkgGroup = (pkgGroup) => {
+    try {
+      return (pkgGroup || [])
+        .map((pkg) => {
+          const cityConfig = getCityConfigForPackage(pkg, selectedCity);
+          if (!cityConfig) return null;
+
+          return {
+            ...pkg,
+            price: Number(cityConfig.price || 0),
+            teamMembers: Number(cityConfig.teamMembers || 0),
+            duration: Number(cityConfig.duration || 0),
+            coinsForVendor: Number(cityConfig.coinsForVendor || 0),
+            city: cityConfig.city || "",
+            cityId: cityConfig.cityId || null,
+          };
+        })
+        .filter(Boolean);
+    } catch (e) {
+      console.error("getResolvedPkgGroup error", e);
+      return [];
+    }
+  };
+
+  return (
+    <div
+      style={{
+        maxWidth: "1400px",
+        margin: "0 auto",
+        padding: "20px",
+        display: "flex",
+        gap: "20px",
+        marginTop: "4%",
+        backgroundColor: "#fff",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      {/* Left Sidebar - Service Selection */}
+      <div
+        style={{
+          width: "450px",
+          backgroundColor: "#fff",
+          padding: "20px",
+          borderRadius: "10px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          maxHeight: "350px",
+          overflowY: "auto",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+        className="hide-scrollbar"
+      >
+        <style>
+          {`
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
+        <h2
+          style={{ fontSize: "14px", fontWeight: "700", marginBottom: "20px" }}
+        >
+          Select a service
+        </h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {Object.keys(cleaningServices || {}).map((service, index) => (
+            <div
+              key={index}
+              onClick={() => scrollToService(service)}
+              style={{
+                width: "calc(33.33% - 6.66px)",
+                textAlign: "center",
+                cursor: "pointer",
+                padding: "5px",
+                backgroundColor: "#fff",
+                borderRadius: "5px",
+              }}
+            >
+              <img
+                src={serviceImages[service]}
+                alt={service}
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  objectFit: "cover",
+                  borderRadius: "5px",
+                  marginBottom: "5px",
+                }}
+              />
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#333",
+                  textTransform: "capitalize",
+                }}
+              >
+                {service}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Middle Section - Service Details */}
+      <div
+        style={{
+          flex: 1,
+          maxWidth: "900px",
+          // padding: "20px",
+        }}
+      >
+        <div
+          style={{
+            maxHeight: "600px",
+            overflowY: "auto",
+            width: "500px",
+            paddingRight: "10px",
+            marginBottom: "30px",
+            position: "relative", // Ensure the container is positioned for sticky child
+          }}
+          className="scroll-section"
+        >
+          {Object.keys(cleaningServices).map((service, serviceIndex) => (
+            <div
+              key={serviceIndex}
+              ref={(el) => (serviceRefs.current[service] = el)}
+            >
+              <h2
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "600",
+                  position: "sticky",
+                  top: "0",
+                  backgroundColor: "#fff",
+                  zIndex: 1,
+                  paddingBottom: "10px",
+                }}
+              >
+                {getDisplayTitle(service)}
+              </h2>
+
+              {groupPackages(cleaningServices[service] || []).map(
+                (pkgGroup, index) => {
+                  try {
+                    const currentPkg = pkgGroup[0];
+                    const currentCityConfig = getCityConfigForPackage(
+                      currentPkg,
+                      selectedCity,
+                    );
+
+                    if (!currentPkg || !currentCityConfig) return null;
+
+                    return (
+                      <div
+                        key={`${serviceIndex}-${index}`}
+                        style={{
+                          border: "1px solid #e0e0e0",
+                          borderRadius: "10px",
+                          padding: "15px",
+                          marginBottom: "20px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: "20px",
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <h3
+                            style={{
+                              fontSize: "16px",
+                              fontWeight: "600",
+                              marginBottom: "8px",
+                            }}
+                          >
+                            {currentPkg.name.split(" - ")[0]}
+                          </h3>
+
+                          <p style={{ margin: "0", color: "#333" }}>
+                            Starts at ₹{currentCityConfig.price}
+                          </p>
+
+                          <ul
+                            style={{
+                              paddingLeft: "20px",
+                              fontSize: "13px",
+                              margin: "10px 0",
+                            }}
+                          >
+                            <li>{currentPkg.details}</li>
+                            <li>{currentPkg.extras}</li>
+                          </ul>
+
+                          <p
+                            style={{
+                              color: "red",
+                              fontSize: "14px",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => openModal(pkgGroup, service)}
+                          >
+                            View details
+                          </p>
+                        </div>
+
+                        <div style={{ width: "150px", textAlign: "center" }}>
+                          <img
+                            src={resolvePkgImage(currentPkg)}
+                            alt={currentPkg.name}
+                            style={{
+                              width: "80%",
+                              height: "100px",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                              marginBottom: "-15px",
+                            }}
+                          />
+
+                          {getQuantity(currentPkg.name, service) > 0 ? (
+                            <div
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                border: "1px solid red",
+                                borderRadius: "20px",
+                                overflow: "hidden",
+                                backgroundColor: "white",
+                              }}
+                            >
+                              <button
+                                onClick={() =>
+                                  updateCartItem(
+                                    currentPkg.name,
+                                    currentCityConfig.price,
+                                    -1,
+                                    service,
+                                    currentCityConfig.teamMembers,
+                                    currentCityConfig.duration,
+                                    currentCityConfig.coinsForVendor,
+                                  )
+                                }
+                                style={{
+                                  padding: "5px 10px",
+                                  backgroundColor: "#fff",
+                                  border: "none",
+                                  fontSize: "16px",
+                                  color: "red",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                −
+                              </button>
+
+                              <span
+                                style={{
+                                  padding: "5px 15px",
+                                  fontSize: "14px",
+                                }}
+                              >
+                                {getQuantity(currentPkg.name, service)}
+                              </span>
+
+                              <button
+                                onClick={() =>
+                                  updateCartItem(
+                                    currentPkg.name,
+                                    currentCityConfig.price,
+                                    1,
+                                    service,
+                                    currentCityConfig.teamMembers,
+                                    currentCityConfig.duration,
+                                    currentCityConfig.coinsForVendor,
+                                  )
+                                }
+                                style={{
+                                  padding: "5px 10px",
+                                  backgroundColor: "red",
+                                  color: "#fff",
+                                  border: "none",
+                                  fontSize: "16px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
+                            (() => {
+                              const isAnyInCart = pkgGroup.some((pkg) =>
+                                cartItems.some(
+                                  (item) =>
+                                    item.name === pkg.name &&
+                                    item.service.toLowerCase() ===
+                                      service.toLowerCase(),
+                                ),
+                              );
+
+                              if (isAnyInCart) {
+                                const specificCartItem = cartItems.find(
+                                  (cartItem) =>
+                                    pkgGroup.some(
+                                      (pkg) =>
+                                        pkg.name === cartItem.name &&
+                                        cartItem.service.toLowerCase() ===
+                                          service.toLowerCase(),
+                                    ),
+                                );
+
+                                if (specificCartItem) {
+                                  return (
+                                    <div
+                                      onClick={() => {
+                                        try {
+                                          if (service === "Mini services") {
+                                            updateCartItem(
+                                              currentPkg.name,
+                                              currentCityConfig.price,
+                                              1,
+                                              service,
+                                              currentCityConfig.teamMembers,
+                                              currentCityConfig.duration,
+                                              currentCityConfig.coinsForVendor,
+                                            );
+                                          } else {
+                                            openModal(pkgGroup, service);
+                                          }
+                                        } catch (e) {
+                                          console.error("cart update error", e);
+                                        }
+                                      }}
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        border: "1px solid red",
+                                        borderRadius: "20px",
+                                        overflow: "hidden",
+                                        backgroundColor: "white",
+                                      }}
+                                    >
+                                      <button
+                                        style={{
+                                          padding: "5px 10px",
+                                          backgroundColor: "#fff",
+                                          border: "none",
+                                          fontSize: "16px",
+                                          color: "red",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        −
+                                      </button>
+                                      <span
+                                        style={{
+                                          padding: "5px 15px",
+                                          fontSize: "14px",
+                                        }}
+                                      >
+                                        {specificCartItem.quantity}
+                                      </span>
+                                      <button
+                                        style={{
+                                          padding: "5px 10px",
+                                          backgroundColor: "red",
+                                          color: "#fff",
+                                          border: "none",
+                                          fontSize: "16px",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <button
+                                    disabled
+                                    style={{
+                                      backgroundColor: "red",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "15px",
+                                      padding: "8px 15px",
+                                      fontSize: "14px",
+                                      cursor: "not-allowed",
+                                    }}
+                                  >
+                                    Error
+                                  </button>
+                                );
+                              }
+
+                              return (
+                                <button
+                                  onClick={() => {
+                                    try {
+                                      if (service === "Mini services") {
+                                        const defaultPkg = pkgGroup[0];
+                                        const defaultCityConfig =
+                                          getCityConfigForPackage(
+                                            defaultPkg,
+                                            selectedCity,
+                                          );
+
+                                        if (!defaultPkg || !defaultCityConfig)
+                                          return;
+
+                                        updateCartItem(
+                                          defaultPkg.name,
+                                          defaultCityConfig.price,
+                                          1,
+                                          service,
+                                          defaultCityConfig.teamMembers,
+                                          defaultCityConfig.duration,
+                                          defaultCityConfig.coinsForVendor,
+                                        );
+                                      } else {
+                                        openModal(pkgGroup, service);
+                                      }
+                                    } catch (e) {
+                                      console.error("add button error", e);
+                                    }
+                                  }}
+                                  style={{
+                                    backgroundColor: "red",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "15px",
+                                    padding: "8px 15px",
+                                    fontSize: "14px",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Add
+                                </button>
+                              );
+                            })()
+                          )}
+                        </div>
+                      </div>
+                    );
+                  } catch (e) {
+                    console.error("package render error", e);
+                    return null;
+                  }
+                },
+              )}
+            </div>
+          ))}
+          <style>
+            {`
+              .scroll-section::-webkit-scrollbar {
+                display: none;
+              }
+              .scroll-section {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+            `}
+          </style>
+        </div>
+      </div>
+      <div
+        style={{
+          width: "450px",
+          backgroundColor: "#fff",
+          padding: "20px",
+          borderRadius: "10px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          maxHeight: "600px",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "20px",
+            fontWeight: "600",
+            marginBottom: "20px",
+          }}
+        >
+          Cart
+        </h2>
+        {cartItems.length > 0 ? (
+          <div
+            style={{
+              overflowY: "auto",
+              overflowX: "hidden",
+              flex: 1,
+              marginBottom: "10px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+            className="hide-scroll"
+          >
+            {cartItems.map((item, index) => (
+              <div
+                className="row"
+                key={index}
+                style={{ marginBottom: "15px", alignItems: "center" }}
+              >
+                <p
+                  className="col-md-5"
+                  style={{
+                    fontSize: "14px",
+                    color: "#333",
+                    marginBottom: "5px",
+                  }}
+                >
+                  {item.service} - {item.name}
+                </p>
+                <p
+                  className="col-md-5"
+                  style={{
+                    fontSize: "14px",
+                    color: "#333",
+                    marginBottom: "5px",
+                  }}
+                >
+                  TEAM MEMEBRS {item.teamMembers}
+                </p>
+                <div
+                  className="col-md-4"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    marginBottom: "5px",
+                  }}
+                >
+                  <button
+                    onClick={() =>
+                      updateCartItem(
+                        item.name,
+                        item.price,
+                        -1,
+                        item.service,
+                        item.teamMembers,
+                        item.duration,
+                      )
+                    }
+                    style={{
+                      backgroundColor: "#f0f0f0",
+                      border: "none",
+                      color: "red",
+                      padding: "5px 10px",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button
+                    onClick={() =>
+                      updateCartItem(
+                        item.name,
+                        item.price,
+                        1,
+                        item.service,
+                        item.teamMembers,
+                        item.duration,
+                      )
+                    }
+                    style={{
+                      backgroundColor: "#f0f0f0",
+                      border: "none",
+                      color: "red",
+                      padding: "5px 10px",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+                <p
+                  className="col-md-3"
+                  style={{
+                    fontSize: "14px",
+                    color: "#333",
+                    fontWeight: "600",
+                  }}
+                >
+                  ₹{item.price * item.quantity}
+                </p>
+              </div>
+            ))}
+
+            {minimumAmount > TotalPrice ? (
+              <div
+                className="row"
+                style={{
+                  backgroundColor: "lightgrey",
+                  padding: "6px",
+                  borderRadius: "5px",
+                  marginBottom: "10px",
+                }}
+              >
+                <div className="text-center" style={{ fontSize: "12px" }}>
+                  Shop for ₹{balanceamount} more to checkout
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+            <div className="d-flex" style={{ justifyContent: "space-between" }}>
+              <div className="" style={{ fontSize: "13px" }}>
+                ₹{TotalPrice}
+              </div>
+              <div className="" style={{ fontSize: "13px" }}>
+                Total Price
+              </div>
+            </div>
+
+            <button
+              // onClick={() => {
+              //   minimumAmount > TotalPrice ? null : setShowSlotModal(true);
+              // }}
+
+              onClick={handleProceedToSlotSelection}
+              style={{
+                width: "100%",
+                backgroundColor:
+                  minimumAmount > TotalPrice ? "rgb(0 0 0 / 9%)" : "#fff",
+                color:
+                  minimumAmount > TotalPrice ? "rgba(0, 0, 0, 0.125)" : "red",
+                border: minimumAmount > TotalPrice ? 0 : "1px solid red",
+                padding: "10px",
+                borderRadius: "20px",
+                fontSize: "14px",
+                fontWeight: "600",
+                // cursor: "pointer",
+                marginBottom: "10px",
+                cursor: minimumAmount > TotalPrice ? "not-allowed" : "pointer",
+                marginTop: "10px",
+              }}
+            >
+              {/* ₹{totalPrice}  */}
+              Proceed for Slot Selection
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <img
+                src="https://img.icons8.com/ios/50/000000/shopping-cart.png"
+                alt="Empty Cart"
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  marginBottom: "10px",
+                }}
+              />
+              <p style={{ fontSize: "14px", color: "#666" }}>
+                No items in your cart
+              </p>
+            </div>
+          </>
+        )}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <div>
+            <h3
+              style={{
+                fontSize: "16px",
+                fontWeight: "600",
+                marginBottom: "10px",
+              }}
+            >
+              Homjee Promise
+            </h3>
+            <ul
+              style={{
+                padding: 0,
+                listStyle: "none",
+                fontSize: "14px",
+                color: "#333",
+              }}
+            >
+              <li
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "5px",
+                }}
+              >
+                <span style={{ marginRight: "5px" }}>✔</span> Verified
+                Professionals
+              </li>
+              <li
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "5px",
+                }}
+              >
+                <span style={{ marginRight: "5px" }}>✔</span> Safe Chemicals
+              </li>
+              <li style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ marginRight: "5px" }}>✔</span> Superior Stain
+                Removal
+              </li>
+            </ul>
+          </div>
+          <img
+            src={sparkling}
+            alt="Sparkling Clean Hygienic"
+            style={{ width: "60px", height: "60px", borderRadius: "50%" }}
+          />
+        </div>
+      </div>
+      <SlotSelectionModal
+        show={showSlotModal}
+        onClose={handleCloseSlotModal}
+        handleSelectSlot={handleSelectSlot}
+        fetchAvailableSlots={fetchAvailableSlots}
+      />
+
+      {/* Modal */}
+      {ModalComponent && selectedPackageGroup && (
+        <ModalComponent
+          pkgGroup={getResolvedPkgGroup(selectedPackageGroup)}
+          closeModal={closeModal}
+        />
+      )}
+    </div>
+  );
+};
+
+export default DeepCleaningPackages;
 
 // const cleaningServices = {
 //   "Furnished apartment": [
@@ -904,915 +2927,3 @@ const modalComponents = {
 //     },
 //   ],
 // };
-
-
-
-const resolvePkgImage = (pkg) => {
-  try {
-    const key = String(pkg?.image || "").trim();
-    if (!key) return "/media/placeholder.webp";
-    return `/media/${key}.webp`;
-  } catch (e) {
-    return "/media/placeholder.webp";
-  }
-};
-
-
-const DeepCleaningPackages = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [showSlotModal, setShowSlotModal] = useState(false);
-  const [minimumAmount, setMinimumAmount] = useState(0);
-  const [cleaningServices, setCleaningServices] = useState({});
-
-  // Function to handle closing the slot modal
-  const handleCloseSlotModal = () => {
-    setShowSlotModal(false);
-  };
-  const { selectedSlot, setSelectedSlot } = useSelectedSlotContext();
-
-  const getLatLngFromSession = () => {
-    const addr = sessionStorage.getItem("selectedAddress");
-    if (!addr) return null;
-
-    const parsed = JSON.parse(addr);
-    return {
-      lat: Number(parsed.latitude),
-      lng: Number(parsed.longitude),
-    };
-  };
-
-  const mapCartItemsToServices = (items) => {
-    return items.map((item) => ({
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      service: item.service,
-      teamMembers: Number(item.teamMembers || 1),
-      duration: Number(item.duration || 0), // already in minutes ✅
-    }));
-  };
-
-  const fetchConfig = async () => {
-    try {
-      setLoading(true);
-      // setError("");
-      const res = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.FETCH_PACKAGE_CATALOG}`
-      );
-      const catalog = res?.data?.data?.data || {};
-      setCleaningServices(catalog);
-      // setConfig(res.data.data);
-    } catch (e) {
-      console.log("package error", e?.response?.data?.message || e.message);
-      // setError(e?.response?.data?.message || e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchConfig();
-  }, []);
-
-  const fetchAvailableSlots = async (date) => {
-    const location = getLatLngFromSession();
-    if (!location) return [];
-
-    const payload = {
-      serviceType: "deep_cleaning",
-      date,
-      lat: location.lat,
-      lng: location.lng,
-      services: mapCartItemsToServices(cartItems),
-    };
-
-    const res = await fetch(
-      `${API_BASE_URL}/slots/website/get-available-slots`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    const data = await res.json();
-    if (!data.success) return [];
-
-    return data.slots || [];
-  };
-
-  const handleProceedToSlotSelection = async () => {
-    if (minimumAmount > TotalPrice) return;
-
-    const today = new Date().toISOString().split("T")[0];
-    const slots = await fetchAvailableSlots(today);
-
-    sessionStorage.setItem("availableSlots", JSON.stringify(slots));
-    setShowSlotModal(true);
-  };
-
-  // Function to handle selecting a slot
-  const handleSelectSlot = (slot) => {
-    // console.log("slot", slot);
-    setSelectedSlot(slot);
-    sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
-    setShowSlotModal(false);
-    navigate("/checkout", {
-      state: {
-        serviceType: "deep_cleaning",
-      },
-    });
-  };
-
-  const { cartItems, updateCartItem, getQuantity } = useContext(CartContext);
-
-  console.log("cartItems checking team members>>>", cartItems);
-
-  const serviceRefs = useRef({});
-  const [selectedPackageGroup, setSelectedPackageGroup] = useState(null);
-
-  const getDisplayTitle = (service) => {
-    if (service.includes("bungalow")) {
-      return service.split(" ")[0] + " Bungalow/Duplex";
-    }
-    return service;
-  };
-
-  // console.log("selectedSlot from context api>>>", selectedSlot);
-
-  const groupPackages = (packages) => {
-    const grouped = {};
-    packages.forEach((pkg) => {
-      const baseName = pkg.name.split(" - ")[0];
-      if (!grouped[baseName]) {
-        grouped[baseName] = [];
-      }
-      grouped[baseName].push(pkg);
-    });
-    return Object.values(grouped);
-  };
-
-  const openModal = (pkgGroup, service) => {
-    setSelectedPackageGroup(pkgGroup);
-    navigate(
-      `/deep-cleaning-packages?modal=${service
-        .toLowerCase()
-        .replace(/ /g, "-")}`
-    );
-  };
-
-  const closeModal = () => {
-    setSelectedPackageGroup(null);
-    navigate("/deep-cleaning-packages");
-  };
-
-  const scrollToService = (service) => {
-    if (serviceRefs.current[service]) {
-      serviceRefs.current[service].scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  // Get modal type from query parameter
-  const query = new URLSearchParams(location.search);
-  const modalType = query.get("modal");
-  const ModalComponent = modalType
-    ? modalComponents[
-        Object.keys(modalComponents).find(
-          (key) => key.toLowerCase().replace(/ /g, "-") === modalType
-        )
-      ]
-    : null;
-
-  // Set selected package group based on modal type
-  useEffect(() => {
-    if (modalType) {
-      const service = Object.keys(modalComponents).find(
-        (key) => key.toLowerCase().replace(/ /g, "-") === modalType
-      );
-      if (service && !selectedPackageGroup) {
-        const firstPkgGroup = groupPackages(cleaningServices[service])[0];
-        setSelectedPackageGroup(firstPkgGroup);
-      }
-    }
-  }, [modalType]);
-
-  const TotalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  // console.log("TotalPrice", TotalPrice);
-
-  // const advancedAmount = 10000;
-
-  const fetchMinimumAmount = async () => {
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}${API_ENDPOINTS.GET_MINIMUM_ORDERS_VALUE}`
-      );
-      const json = await res.json();
-      if (!json.success)
-        throw new Error(json.message || "Failed to fetch Minimum Amount");
-      setMinimumAmount(json.data.amount || 0);
-    } catch (err) {
-      console.error("GET Minimum Amount:", err.message);
-    }
-  };
-  useEffect(() => {
-    fetchMinimumAmount();
-  }, []);
-
-  const balanceamount = minimumAmount - TotalPrice;
-
-  // console.log("minimumAmount", minimumAmount);
-
-  return (
-    <div
-      style={{
-        maxWidth: "1400px",
-        margin: "0 auto",
-        padding: "20px",
-        display: "flex",
-        gap: "20px",
-        marginTop: "4%",
-        backgroundColor: "#fff",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      {/* Left Sidebar - Service Selection */}
-      <div
-        style={{
-          width: "450px",
-          backgroundColor: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          maxHeight: "350px",
-          overflowY: "auto",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
-        className="hide-scrollbar"
-      >
-        <style>
-          {`
-            .hide-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-          `}
-        </style>
-        <h2
-          style={{ fontSize: "14px", fontWeight: "700", marginBottom: "20px" }}
-        >
-          Select a service
-        </h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-          {Object.keys(cleaningServices || {}).map((service, index) => (
-            <div
-              key={index}
-              onClick={() => scrollToService(service)}
-              style={{
-                width: "calc(33.33% - 6.66px)",
-                textAlign: "center",
-                cursor: "pointer",
-                padding: "5px",
-                backgroundColor: "#fff",
-                borderRadius: "5px",
-              }}
-            >
-              <img
-                src={serviceImages[service]}
-                alt={service}
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  objectFit: "cover",
-                  borderRadius: "5px",
-                  marginBottom: "5px",
-                }}
-              />
-              <p
-                style={{
-                  fontSize: "10px",
-                  color: "#333",
-                  textTransform: "capitalize",
-                }}
-              >
-                {service}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Middle Section - Service Details */}
-      <div
-        style={{
-          flex: 1,
-          maxWidth: "900px",
-          // padding: "20px",
-        }}
-      >
-        <div
-          style={{
-            maxHeight: "600px",
-            overflowY: "auto",
-            width: "500px",
-            paddingRight: "10px",
-            marginBottom: "30px",
-            position: "relative", // Ensure the container is positioned for sticky child
-          }}
-          className="scroll-section"
-        >
-          {Object.keys(cleaningServices).map((service, serviceIndex) => (
-            <div
-              key={serviceIndex}
-              ref={(el) => (serviceRefs.current[service] = el)}
-            >
-              <h2
-                style={{
-                  fontSize: "22px",
-                  fontWeight: "600",
-                  // marginBottom: "20px",
-                  position: "sticky",
-                  top: "0",
-                  backgroundColor: "#fff",
-                  zIndex: 1,
-                  paddingBottom: "10px",
-                }}
-              >
-                {getDisplayTitle(service)}
-              </h2>
-              {groupPackages(cleaningServices[service]).map(
-                (pkgGroup, index) => {
-                  const currentPkg =
-                    pkgGroup.find((pkg) => pkg.teamMembers !== undefined) ||
-                    pkgGroup[0];
-                  // console.log("currentPkg", currentPkg);
-                  return (
-                    <div
-                      key={`${serviceIndex}-${index}`}
-                      style={{
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "10px",
-                        padding: "15px",
-                        marginBottom: "20px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "20px",
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <h3
-                          style={{
-                            fontSize: "16px",
-                            fontWeight: "600",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          {currentPkg.name.split(" - ")[0]}
-                          {/* {pkgGroup[0].name.split(" - ")[0]} */}
-                          {/* cleaning */}
-                        </h3>
-                        <p style={{ margin: "0", color: "#333" }}>
-                          {/* Starts at ₹{pkgGroup[0].price} */}
-                          Starts at ₹{currentPkg.price}
-                        </p>
-                        <ul
-                          style={{
-                            paddingLeft: "20px",
-                            fontSize: "13px",
-                            margin: "10px 0",
-                          }}
-                        >
-                          <li>{currentPkg.details}</li>
-                          <li>{currentPkg.extras}</li>
-                          {/* <li>{pkgGroup[0].details}</li>
-                          <li>{pkgGroup[0].extras}</li> */}
-                        </ul>
-                        <p
-                          style={{
-                            color: "red",
-                            fontSize: "14px",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => openModal(pkgGroup, service)}
-                        >
-                          View details
-                        </p>
-                      </div>
-                      <div style={{ width: "150px", textAlign: "center" }}>
-                        <img
-                          // src={pkgGroup[0].image}
-                          // alt={pkgGroup[0].name}
-                         src={resolvePkgImage(currentPkg)}
-                          alt={currentPkg.name}
-                          style={{
-                            width: "80%",
-                            height: "100px",
-                            objectFit: "cover",
-                            borderRadius: "8px",
-                            marginBottom: "-15px",
-                          }}
-                        />
-                        {/* {getQuantity(pkgGroup[0].name, service) > 0 ? ( */}
-                        {getQuantity(currentPkg.name, service) > 0 ? (
-                          <div
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              border: "1px solid red",
-                              borderRadius: "20px",
-                              overflow: "hidden",
-                              backgroundColor: "white",
-                            }}
-                          >
-                            <button
-                              onClick={() =>
-                                updateCartItem(
-                                  currentPkg.name,
-                                  currentPkg.price,
-                                  -1,
-                                  service,
-                                  currentPkg.teamMembers,
-                                  currentPkg.duration,
-                                  currentPkg.coinsForVendor
-                                )
-                              }
-                              style={{
-                                padding: "5px 10px",
-                                backgroundColor: "#fff",
-                                border: "none",
-                                fontSize: "16px",
-                                color: "red",
-                                cursor: "pointer",
-                              }}
-                            >
-                              −
-                            </button>
-                            <span
-                              style={{ padding: "5px 15px", fontSize: "14px" }}
-                            >
-                              {getQuantity(pkgGroup[0].name, service)}{" "}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateCartItem(
-                                  currentPkg.name,
-                                  currentPkg.price,
-                                  1,
-                                  service,
-                                  currentPkg.teamMembers,
-                                  currentPkg.duration,
-                                  currentPkg.coinsForVendor
-                                )
-                              }
-                              style={{
-                                padding: "5px 10px",
-                                backgroundColor: "red",
-                                color: "#fff",
-                                border: "none",
-                                fontSize: "16px",
-                                cursor: "pointer",
-                              }}
-                            >
-                              +
-                            </button>
-                          </div>
-                        ) : (
-                          (() => {
-                            const isAnyInCart = pkgGroup.some((pkg) =>
-                              cartItems.some(
-                                (item) =>
-                                  item.name === pkg.name &&
-                                  item.service.toLowerCase() ===
-                                    service.toLowerCase()
-                              )
-                            );
-
-                            if (isAnyInCart) {
-                              const specificCartItem = cartItems.find(
-                                (cartItem) =>
-                                  pkgGroup.some(
-                                    (pkg) =>
-                                      pkg.name === cartItem.name &&
-                                      cartItem.service.toLowerCase() ===
-                                        service.toLowerCase()
-                                  )
-                              );
-
-                              if (specificCartItem) {
-                                return (
-                                  <div
-                                    onClick={() => {
-                                      if (service === "Mini services") {
-                                        updateCartItem(
-                                          // pkgGroup[0].name,
-                                          // pkgGroup[0].price,
-                                          // 1,
-                                          // service,
-                                          // pkgGroup[0].teamMembers
-                                          currentPkg.name,
-                                          currentPkg.price,
-                                          1,
-                                          service,
-                                          currentPkg.teamMembers,
-                                          currentPkg.duration,
-                                          currentPkg.coinsForVendor
-                                        );
-                                      } else {
-                                        openModal(pkgGroup, service);
-                                      }
-                                    }}
-                                    style={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      border: "1px solid red",
-                                      borderRadius: "20px",
-                                      overflow: "hidden",
-                                      backgroundColor: "white",
-                                    }}
-                                  >
-                                    <button
-                                      style={{
-                                        padding: "5px 10px",
-                                        backgroundColor: "#fff",
-                                        border: "none",
-                                        fontSize: "16px",
-                                        color: "red",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      −
-                                    </button>
-                                    <span
-                                      style={{
-                                        padding: "5px 15px",
-                                        fontSize: "14px",
-                                      }}
-                                    >
-                                      {specificCartItem.quantity}
-                                    </span>
-                                    <button
-                                      style={{
-                                        padding: "5px 10px",
-                                        backgroundColor: "red",
-                                        color: "#fff",
-                                        border: "none",
-                                        fontSize: "16px",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                );
-                              }
-                              return (
-                                <button
-                                  disabled
-                                  style={{
-                                    backgroundColor: "red",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "15px",
-                                    padding: "8px 15px",
-                                    fontSize: "14px",
-                                    cursor: "not-allowed",
-                                  }}
-                                >
-                                  Error
-                                </button>
-                              );
-                            } else {
-                              // If no variant from this group is in the cart, show the "Add" button
-                              return (
-                                <button
-                                  onClick={() => {
-                                    if (service === "Mini services") {
-                                      updateCartItem(
-                                        pkgGroup[0].name,
-                                        pkgGroup[0].price,
-                                        1,
-                                        service,
-                                        pkgGroup[0].teamMembers,
-                                        pkgGroup[0].duration,
-                                        pkgGroup[0].coinsForVendor
-                                      );
-                                    } else {
-                                      openModal(pkgGroup, service);
-                                    }
-                                  }}
-                                  style={{
-                                    backgroundColor: "red",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "15px",
-                                    padding: "8px 15px",
-                                    fontSize: "14px",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  Add
-                                </button>
-                              );
-                            }
-                          })()
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-          ))}
-          <style>
-            {`
-              .scroll-section::-webkit-scrollbar {
-                display: none;
-              }
-              .scroll-section {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-              }
-            `}
-          </style>
-        </div>
-      </div>
-      <div
-        style={{
-          width: "450px",
-          backgroundColor: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          maxHeight: "600px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "20px",
-            fontWeight: "600",
-            marginBottom: "20px",
-          }}
-        >
-          Cart
-        </h2>
-        {cartItems.length > 0 ? (
-          <div
-            style={{
-              overflowY: "auto",
-              overflowX: "hidden",
-              flex: 1,
-              marginBottom: "10px",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
-            className="hide-scroll"
-          >
-            {cartItems.map((item, index) => (
-              <div
-                className="row"
-                key={index}
-                style={{ marginBottom: "15px", alignItems: "center" }}
-              >
-                <p
-                  className="col-md-5"
-                  style={{
-                    fontSize: "14px",
-                    color: "#333",
-                    marginBottom: "5px",
-                  }}
-                >
-                  {item.service} - {item.name}
-                </p>
-                <p
-                  className="col-md-5"
-                  style={{
-                    fontSize: "14px",
-                    color: "#333",
-                    marginBottom: "5px",
-                  }}
-                >
-                  TEAM MEMEBRS {item.teamMembers}
-                </p>
-                <div
-                  className="col-md-4"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    marginBottom: "5px",
-                  }}
-                >
-                  <button
-                    onClick={() =>
-                      updateCartItem(
-                        item.name,
-                        item.price,
-                        -1,
-                        item.service,
-                        item.teamMembers,
-                        item.duration
-                      )
-                    }
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      color: "red",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button
-                    onClick={() =>
-                      updateCartItem(
-                        item.name,
-                        item.price,
-                        1,
-                        item.service,
-                        item.teamMembers,
-                        item.duration
-                      )
-                    }
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      border: "none",
-                      color: "red",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-                <p
-                  className="col-md-3"
-                  style={{
-                    fontSize: "14px",
-                    color: "#333",
-                    fontWeight: "600",
-                  }}
-                >
-                  ₹{item.price * item.quantity}
-                </p>
-              </div>
-            ))}
-
-            {minimumAmount > TotalPrice ? (
-              <div
-                className="row"
-                style={{
-                  backgroundColor: "lightgrey",
-                  padding: "6px",
-                  borderRadius: "5px",
-                  marginBottom: "10px",
-                }}
-              >
-                <div className="text-center" style={{ fontSize: "12px" }}>
-                  Shop for ₹{balanceamount} more to checkout
-                </div>
-              </div>
-            ) : (
-              ""
-            )}
-
-            <div className="d-flex" style={{ justifyContent: "space-between" }}>
-              <div className="" style={{ fontSize: "13px" }}>
-                ₹{TotalPrice}
-              </div>
-              <div className="" style={{ fontSize: "13px" }}>
-                Total Price
-              </div>
-            </div>
-
-            <button
-              // onClick={() => {
-              //   minimumAmount > TotalPrice ? null : setShowSlotModal(true);
-              // }}
-
-              onClick={handleProceedToSlotSelection}
-              style={{
-                width: "100%",
-                backgroundColor:
-                  minimumAmount > TotalPrice ? "rgb(0 0 0 / 9%)" : "#fff",
-                color:
-                  minimumAmount > TotalPrice ? "rgba(0, 0, 0, 0.125)" : "red",
-                border: minimumAmount > TotalPrice ? 0 : "1px solid red",
-                padding: "10px",
-                borderRadius: "20px",
-                fontSize: "14px",
-                fontWeight: "600",
-                // cursor: "pointer",
-                marginBottom: "10px",
-                cursor: minimumAmount > TotalPrice ? "not-allowed" : "pointer",
-                marginTop: "10px",
-              }}
-            >
-              {/* ₹{totalPrice}  */}
-              Proceed for Slot Selection
-            </button>
-          </div>
-        ) : (
-          <>
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              <img
-                src="https://img.icons8.com/ios/50/000000/shopping-cart.png"
-                alt="Empty Cart"
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  marginBottom: "10px",
-                }}
-              />
-              <p style={{ fontSize: "14px", color: "#666" }}>
-                No items in your cart
-              </p>
-            </div>
-          </>
-        )}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <h3
-              style={{
-                fontSize: "16px",
-                fontWeight: "600",
-                marginBottom: "10px",
-              }}
-            >
-              Homjee Promise
-            </h3>
-            <ul
-              style={{
-                padding: 0,
-                listStyle: "none",
-                fontSize: "14px",
-                color: "#333",
-              }}
-            >
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "5px",
-                }}
-              >
-                <span style={{ marginRight: "5px" }}>✔</span> Verified
-                Professionals
-              </li>
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "5px",
-                }}
-              >
-                <span style={{ marginRight: "5px" }}>✔</span> Safe Chemicals
-              </li>
-              <li style={{ display: "flex", alignItems: "center" }}>
-                <span style={{ marginRight: "5px" }}>✔</span> Superior Stain
-                Removal
-              </li>
-            </ul>
-          </div>
-          <img
-            src={sparkling}
-            alt="Sparkling Clean Hygienic"
-            style={{ width: "60px", height: "60px", borderRadius: "50%" }}
-          />
-        </div>
-      </div>
-      <SlotSelectionModal
-        show={showSlotModal}
-        onClose={handleCloseSlotModal}
-        handleSelectSlot={handleSelectSlot}
-        fetchAvailableSlots={fetchAvailableSlots}
-      />
-
-      {/* Modal */}
-      {ModalComponent && selectedPackageGroup && (
-        <ModalComponent
-          pkgGroup={selectedPackageGroup}
-          closeModal={closeModal}
-        />
-      )}
-    </div>
-  );
-};
-
-export default DeepCleaningPackages;

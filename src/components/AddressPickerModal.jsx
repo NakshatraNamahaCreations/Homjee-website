@@ -19,9 +19,9 @@ const loadGoogleMapsPlaces = () => {
 
         // ✅ if script already exists, wait for it
         const existing = Array.from(
-          document.querySelectorAll("script[src]")
+          document.querySelectorAll("script[src]"),
         ).find((s) =>
-          s.src.includes("https://maps.googleapis.com/maps/api/js")
+          s.src.includes("https://maps.googleapis.com/maps/api/js"),
         );
 
         if (existing) {
@@ -82,11 +82,11 @@ const extractCity = (addressComponents = []) => {
     const cityComp =
       addressComponents.find((c) => c.types?.includes("locality")) ||
       addressComponents.find((c) =>
-        c.types?.includes("administrative_area_level_2")
+        c.types?.includes("administrative_area_level_2"),
       ) ||
       addressComponents.find((c) => c.types?.includes("sublocality")) ||
       addressComponents.find((c) =>
-        c.types?.includes("administrative_area_level_1")
+        c.types?.includes("administrative_area_level_1"),
       );
 
     return safe(cityComp?.long_name, "");
@@ -106,8 +106,6 @@ export default function AddressPickerModal({
   initialHouseFlat = "",
   initialLandmark = "",
   initialCity = "",
-
-
 }) {
   const mapRef = useRef(null);
   const mapDivRef = useRef(null);
@@ -213,40 +211,51 @@ export default function AddressPickerModal({
 
   /* ----------------------- Set location everywhere ------------------------ */
   const setFromLatLng = async (pos, placeMeta = null) => {
-    try {
-      setLatLng(pos);
+  try {
+    const oldLat = Number(latLng?.lat || 0);
+    const oldLng = Number(latLng?.lng || 0);
+    const newLat = Number(pos?.lat || 0);
+    const newLng = Number(pos?.lng || 0);
 
-      // map + marker update
-      try {
-        if (markerRef.current) {
-          markerRef.current.setPosition(pos);
-          markerRef.current.setDraggable(true); // ✅ ALWAYS draggable
-        }
-        if (mapRef.current) {
-          mapRef.current.panTo(pos);
-          if (mapRef.current.getZoom() < 14) mapRef.current.setZoom(15);
-        }
-      } catch (e) {
-        console.error("Error updating map/marker:", e);
-      }
+    const locationChanged =
+      Math.abs(oldLat - newLat) > 0.000001 ||
+      Math.abs(oldLng - newLng) > 0.000001;
 
-      // address from autocomplete
-      if (placeMeta?.formatted) {
-        setSelectedAddress(placeMeta.formatted);
-        setSelectedCity(extractCity(placeMeta.components || []));
-        setSearchText(""); // ✅ keep search blank after selection
-        return;
-      }
-
-      // reverse geocode
-      const { formatted, city } = await reverseGeocode(pos);
-      setSelectedAddress(formatted);
-      setSelectedCity(city);
-      setSearchText(""); // ✅ keep search blank
-    } catch (e) {
-      console.error("setFromLatLng error:", e);
+    if (locationChanged) {
+      setHouseNumber("");
+      setLandmark("");
     }
-  };
+
+    setLatLng(pos);
+
+    try {
+      if (markerRef.current) {
+        markerRef.current.setPosition(pos);
+        markerRef.current.setDraggable(true);
+      }
+      if (mapRef.current) {
+        mapRef.current.panTo(pos);
+        if (mapRef.current.getZoom() < 14) mapRef.current.setZoom(15);
+      }
+    } catch (e) {
+      console.error("Error updating map/marker:", e);
+    }
+
+    if (placeMeta?.formatted) {
+      setSelectedAddress(placeMeta.formatted);
+      setSelectedCity(extractCity(placeMeta.components || []));
+      setSearchText("");
+      return;
+    }
+
+    const { formatted, city } = await reverseGeocode(pos);
+    setSelectedAddress(formatted);
+    setSelectedCity(city);
+    setSearchText("");
+  } catch (e) {
+    console.error("setFromLatLng error:", e);
+  }
+};
 
   /* --------------------------- Create Map (once) -------------------------- */
   useEffect(() => {
@@ -279,12 +288,12 @@ export default function AddressPickerModal({
 
       // ✅ attach listeners ALWAYS
       mapClickListenerRef.current = mapRef.current.addListener("click", (e) =>
-        setFromLatLng({ lat: e.latLng.lat(), lng: e.latLng.lng() })
+        setFromLatLng({ lat: e.latLng.lat(), lng: e.latLng.lng() }),
       );
 
       markerDragListenerRef.current = markerRef.current.addListener(
         "dragend",
-        (e) => setFromLatLng({ lat: e.latLng.lat(), lng: e.latLng.lng() })
+        (e) => setFromLatLng({ lat: e.latLng.lat(), lng: e.latLng.lng() }),
       );
 
       // ✅ important: resize after modal paint
@@ -368,7 +377,7 @@ export default function AddressPickerModal({
           // ✅ set selected address + keep search blank after selection
           setFromLatLng(
             { lat, lng },
-            { formatted, components: place.address_components }
+            { formatted, components: place.address_components },
           );
         } catch (e) {
           console.error("Autocomplete place_changed error:", e);
@@ -388,11 +397,15 @@ export default function AddressPickerModal({
       // clear listeners
       try {
         if (mapClickListenerRef.current) {
-          window.google?.maps?.event?.removeListener(mapClickListenerRef.current);
+          window.google?.maps?.event?.removeListener(
+            mapClickListenerRef.current,
+          );
           mapClickListenerRef.current = null;
         }
         if (markerDragListenerRef.current) {
-          window.google?.maps?.event?.removeListener(markerDragListenerRef.current);
+          window.google?.maps?.event?.removeListener(
+            markerDragListenerRef.current,
+          );
           markerDragListenerRef.current = null;
         }
         if (acListenerRef.current) {
@@ -465,9 +478,7 @@ export default function AddressPickerModal({
 
   /* ----------------------------- UI -------------------------------------- */
   const isSaveDisabled =
-    !mapsReady ||
-    !selectedAddress?.trim() ||
-    !houseNumber?.trim();
+    !mapsReady || !selectedAddress?.trim() || !houseNumber?.trim();
 
   return (
     <Modal
@@ -492,7 +503,15 @@ export default function AddressPickerModal({
             <Form.Control
               ref={searchInputRef}
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchText(value);
+
+                if (value.trim()) {
+                  setHouseNumber("");
+                  setLandmark("");
+                }
+              }}
               placeholder="Search new address..."
               autoComplete="off"
               style={{ marginBottom: 10 }}
@@ -557,18 +576,15 @@ export default function AddressPickerModal({
 
             <Form.Group className="mb-3">
               <Form.Label>
-                House/Flat Number{" "}
-                <span style={{ color: "red" }}>*</span>
+                House/Flat Number <span style={{ color: "red" }}>*</span>
               </Form.Label>
               <Form.Control
                 value={houseNumber}
                 onChange={(e) => setHouseNumber(e.target.value)}
                 placeholder={"Enter House/Flat Number"}
-                disabled={ !mapsReady}
-          
+                disabled={!mapsReady}
                 style={{
-                  backgroundColor:  "white",
-                
+                  backgroundColor: "white",
                 }}
               />
             </Form.Group>
@@ -578,12 +594,10 @@ export default function AddressPickerModal({
               <Form.Control
                 value={landmark}
                 onChange={(e) => setLandmark(e.target.value)}
-                placeholder={ "Enter Landmark"}
-                disabled={ !mapsReady}
-  
+                placeholder={"Enter Landmark"}
+                disabled={!mapsReady}
                 style={{
-                  backgroundColor:  "white",
-         
+                  backgroundColor: "white",
                 }}
               />
             </Form.Group>
@@ -600,7 +614,7 @@ export default function AddressPickerModal({
               }}
               disabled={isSaveDisabled}
             >
-             Save & Proceed
+              Save & Proceed
             </Button>
 
             <div style={{ marginTop: 8, fontSize: 12, color: "#888" }}>
@@ -1317,4 +1331,3 @@ export default function AddressPickerModal({
 //     </Modal>
 //   );
 // }
-

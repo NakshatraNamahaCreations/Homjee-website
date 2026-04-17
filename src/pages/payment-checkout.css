@@ -1,0 +1,72 @@
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #28a745; /* solid green dot */
+  display: block;
+}
+
+/* wrapper creates the transparent pulsing ring */
+.pulse-wrapper {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-wrapper::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(40, 167, 69, 0.25); /* transparent green */
+  animation: pulseRing 1.4s ease-out infinite;
+}
+
+/* optional: also make inner dot breathe slightly */
+.status-dot {
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+.modal-open {
+  overflow: hidden !important;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@media (max-width: 576px) {
+  .booking-header-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .booking-header-row .text-end {
+    text-align: left !important;
+  }
+}

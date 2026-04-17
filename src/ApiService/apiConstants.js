@@ -29,7 +29,9 @@ export const API_ENDPOINTS = {
   // SERVICE CONFIG
   GET_SERVICE_PRICE_CONFIG: "/service/latest",
   GET_DEEPCLEANING_PACKAGES: "/deeppackage/deep-cleaning-packages",
-  GET_MINIMUM_ORDERS_VALUE: "/minimumorder/minimum-orders",
+  // GET_MINIMUM_ORDERS_VALUE: "/minimumorder/minimum-orders",
+  GET_PRICING_CONFIG: "/service/get-pricing-config/city/",
+  GET_MINIMUM_ORDERS_VALUE: "/minimumorder/get-minimum-orders/city/",
 
   // VENDOR-RATING
   WRITE_VENDOR_RATING: "/ratings/vendor-ratings/add",
@@ -42,9 +44,8 @@ export const API_ENDPOINTS = {
 
   // ADMIN
   FETCH_PACKAGE_CATALOG: "/admin/cleaning-catalog/fetch",
-  UPDATE_PACKAGE_CATALOG: "/admin/cleaning-catalog/update"
+  UPDATE_PACKAGE_CATALOG: "/admin/cleaning-catalog/update",
 };
-
 
 // Akash 68884d7c02bf3a539293ec61
 // 9595951104

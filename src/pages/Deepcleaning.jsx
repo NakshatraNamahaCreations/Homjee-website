@@ -46,6 +46,7 @@ import "swiper/css/pagination";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
+import { createEnquiryLead } from "../utils/enquiryLead";
 // import { NotificationManager } from "react-notifications";
 import Autocomplete from "react-google-autocomplete";
 import { useSelectedSlotContext } from "../utils/SlotContext";
@@ -71,6 +72,8 @@ const setStoredUser = (user) => {
     console.error("setStoredUser error", e);
   }
 };
+
+const SERVICE_TYPE = "deep_cleaning";
 
 const Deepcleaning = () => {
   const navigate = useNavigate();
@@ -178,6 +181,13 @@ const Deepcleaning = () => {
 
       // ✅ Store user in session
       sessionStorage.setItem("user", JSON.stringify(result.data));
+
+      // Capture lead immediately — survives drop-off before checkout
+      createEnquiryLead({
+        user: result.data,
+        serviceType: SERVICE_TYPE,
+        formName: "Website Deep Cleaning Lead",
+      });
 
       // ✅ Get isNewUser correctly
       const isNewUserFlag = Boolean(result.isNewUser);

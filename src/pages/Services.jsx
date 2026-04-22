@@ -45,6 +45,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
+import { createEnquiryLead } from "../utils/enquiryLead";
 import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
 import SlotSelectionModal from "./SlotSelectionModal";
@@ -232,6 +233,13 @@ useEffect(() => {
 
       // ✅ Store user in session
       sessionStorage.setItem("user", JSON.stringify(result.data));
+
+      // Capture lead immediately — survives drop-off before checkout
+      createEnquiryLead({
+        user: result.data,
+        serviceType: SERVICE_TYPE,
+        formName: "Website House Painting Lead",
+      });
 
       // ✅ Get isNewUser correctly
       const isNewUserFlag = Boolean(result.isNewUser);

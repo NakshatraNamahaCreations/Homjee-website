@@ -1,5 +1,5 @@
-// export const API_BASE_URL = "http://localhost:9000/api"; // development
-export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
+export const API_BASE_URL = "http://localhost:9000/api"; // development
+// export const API_BASE_URL = "https://homjee-backend.onrender.com/api"; // production
 
 export const API_ENDPOINTS = {
   // USER AUTH
@@ -13,6 +13,8 @@ export const API_ENDPOINTS = {
 
   // BOOKINGS
   CREATE_BOOKINGS: "/bookings/create-user-booking",
+  CREATE_ENQUIRY_LEAD: "/bookings/create-enquiry-lead",
+  UPDATE_ENQUIRY: "/bookings/update-user-enquiry/",
   GET_BOOKINGS_BY_BOOKING_ID: "/bookings/get-bookings-by-bookingid/",
   GET_BOOKINGS_BY_CUSTOMER_ID: "/bookings/get-bookings-by-customerid",
   PROCEED_TO_PAY: "/bookings/make-payment",

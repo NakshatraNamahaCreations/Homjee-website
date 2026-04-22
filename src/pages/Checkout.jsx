@@ -19,6 +19,10 @@ import "./checkout.css";
 import AddressPickerModal from "../components/AddressPickerModal";
 import { payWithRazorpay } from "../payments/payWithRazorpay";
 import PopupModal from "../utils/PopupModal";
+import {
+  getEnquiryBookingId,
+  clearEnquiryBookingId,
+} from "../utils/enquiryLead";
 
 const getStoredUser = () => {
   try {
@@ -531,6 +535,23 @@ const Checkout = () => {
     }
   };
 
+  // Finalizes the pre-created enquiry (from OTP verify) by updating it with
+  // full data and, if an online payment is needed, generating a Razorpay order.
+  // Falls back to the legacy createBooking flow if no enquiryBookingId is found
+  // (e.g. a stale session or direct nav into checkout).
+  const finalizeBookingRequest = async (payload) => {
+    const enquiryBookingId = getEnquiryBookingId();
+
+    if (enquiryBookingId) {
+      return putRequest(
+        `${API_ENDPOINTS.UPDATE_ENQUIRY}${enquiryBookingId}`,
+        { ...payload, finalize: true },
+      );
+    }
+
+    return postRequest(API_ENDPOINTS.CREATE_BOOKINGS, payload);
+  };
+
   const handleProceedToCheckout = async () => {
     try {
       setIsLoading(true);
@@ -568,40 +589,34 @@ const Checkout = () => {
 
         const payload = { ...data, isEnquiry: false };
 
-        // ✅ Always create booking first
-        const result = await postRequest(
-          API_ENDPOINTS.CREATE_BOOKINGS,
-          payload,
-        );
+        const result = await finalizeBookingRequest(payload);
 
-        // NOTE: postRequest usually returns JSON directly, not axios response
-        // so use result.bookingId, not result.data.bookingId
         const bookingId = result?.bookingId || result?.booking?._id;
         const razorpayOrder = result?.razorpayOrder;
 
         if (!bookingId)
-          throw new Error("bookingId missing from createBooking response");
+          throw new Error("bookingId missing from finalize response");
 
         // ✅ If site visit charge is 0, no need to open Razorpay
         if (amountToPay <= 0 || !razorpayOrder) {
-          // your old behaviour
-          setShowPaintingConfirm(true); // or alert(result.message)
+          setShowPaintingConfirm(true);
           setIsLoading(false);
           return;
         }
 
-        // ✅ Open Razorpay for site visit
+        // ✅ Open Razorpay for site visit — payment-verify flips isEnquiry:false
         await payWithRazorpay({
           bookingId,
           razorpayOrder,
           customer: data?.customer,
           API_BASE_URL,
           onSuccess: () => {
+            clearEnquiryBookingId();
             setPrompt({
               promptTile: "Payment successful",
               promptBody: "Payment successful & booking confirmed",
             });
-            setNavigationDecision("/"); // 🟢 navigate home
+            setNavigationDecision("/");
             setShowMessageModal(true);
             setIsLoading(false);
           },
@@ -620,12 +635,11 @@ const Checkout = () => {
       }
 
       // ✅ DEEP CLEANING (first installment)
-      const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
+      const result = await finalizeBookingRequest(data);
 
       const bookingId = result?.bookingId || result?.booking?._id;
       const razorpayOrder = result?.razorpayOrder;
 
-      // if your backend returns razorpayOrder for deep_cleaning first payment
       if (razorpayOrder && bookingId) {
         await payWithRazorpay({
           bookingId,
@@ -633,12 +647,13 @@ const Checkout = () => {
           customer: data?.customer,
           API_BASE_URL,
           onSuccess: () => {
+            clearEnquiryBookingId();
             setShowMessageModal(true);
             setPrompt({
               promptTile: "Payment successful",
               promptBody: "Payment successful & booking confirmed",
             });
-            setNavigationDecision("/"); // 🟢 navigate
+            setNavigationDecision("/");
             setShowMessageModal(true);
             setIsLoading(false);
           },
@@ -648,7 +663,7 @@ const Checkout = () => {
               promptTile: "Payment Failed",
               promptBody: msg || "Payment failed",
             });
-            setNavigationDecision("close"); // 🟢 just close
+            setNavigationDecision("close");
             setShowMessageModal(true);
             setIsLoading(false);
           },
@@ -660,7 +675,7 @@ const Checkout = () => {
         promptTile: "Success",
         promptBody: result?.message || "Booking successful",
       });
-      setNavigationDecision("/"); // 🟢 navigate home
+      setNavigationDecision("/");
       setShowMessageModal(true);
       setIsLoading(false);
     } catch (error) {
@@ -1410,11 +1425,8 @@ const Checkout = () => {
                 ...data,
                 isEnquiry: true,
               };
-              const result = await postRequest(
-                API_ENDPOINTS.CREATE_BOOKINGS,
-                payload,
-              );
-              alert(result.message || "Enquiry created");
+              const result = await finalizeBookingRequest(payload);
+              alert(result?.message || "Enquiry created");
             }}
           >
             No
@@ -1428,11 +1440,9 @@ const Checkout = () => {
                 ...data,
                 isEnquiry: false,
               };
-              const result = await postRequest(
-                API_ENDPOINTS.CREATE_BOOKINGS,
-                payload,
-              );
-              alert(result.message || "Booking successful");
+              const result = await finalizeBookingRequest(payload);
+              clearEnquiryBookingId();
+              alert(result?.message || "Booking successful");
             }}
           >
             Yes

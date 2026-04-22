@@ -47,6 +47,7 @@ import Autocomplete from "react-google-autocomplete";
 import { useAddressContext } from "../utils/AddressContext";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
+import { createEnquiryLead } from "../utils/enquiryLead";
 import moment from "moment";
 import GlobalLoader from "../utils/GlobalLoader";
 import AddressPickerModal from "../components/AddressPickerModal";
@@ -69,6 +70,8 @@ const setStoredUser = (user) => {
     console.error("setStoredUser error", e);
   }
 };
+
+const SERVICE_TYPE = "packers_&_movers";
 
 const Packersmovers = () => {
   const navigate = useNavigate();
@@ -180,6 +183,13 @@ const Packersmovers = () => {
 
       // ✅ Store user in session
       sessionStorage.setItem("user", JSON.stringify(result.data));
+
+      // Capture lead immediately — survives drop-off before checkout
+      createEnquiryLead({
+        user: result.data,
+        serviceType: SERVICE_TYPE,
+        formName: "Website Packers & Movers Lead",
+      });
 
       // ✅ Get isNewUser correctly
       const isNewUserFlag = Boolean(result.isNewUser);

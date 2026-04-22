@@ -377,6 +377,7 @@ const DeepCleaningPackages = () => {
       setMinimumAmount("");
     }
   };
+
   useEffect(() => {
     minimumOrderValue();
   }, [selectedCity.trim()]);

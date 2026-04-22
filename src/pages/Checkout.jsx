@@ -543,10 +543,10 @@ const Checkout = () => {
     const enquiryBookingId = getEnquiryBookingId();
 
     if (enquiryBookingId) {
-      return putRequest(
-        `${API_ENDPOINTS.UPDATE_ENQUIRY}${enquiryBookingId}`,
-        { ...payload, finalize: true },
-      );
+      return putRequest(`${API_ENDPOINTS.UPDATE_ENQUIRY}${enquiryBookingId}`, {
+        ...payload,
+        finalize: true,
+      });
     }
 
     return postRequest(API_ENDPOINTS.CREATE_BOOKINGS, payload);
@@ -597,9 +597,18 @@ const Checkout = () => {
         if (!bookingId)
           throw new Error("bookingId missing from finalize response");
 
-        // ✅ If site visit charge is 0, no need to open Razorpay
+        // ✅ If site visit charge is 0, no need to open Razorpay.
+        // Skip the confirmation modal and confirm the booking directly —
+        // finalizeBookingRequest above was already called with isEnquiry:false.
         if (amountToPay <= 0 || !razorpayOrder) {
-          setShowPaintingConfirm(true);
+          // setShowPaintingConfirm(true);
+          clearEnquiryBookingId();
+          setPrompt({
+            promptTile: "Booking confirmed",
+            promptBody: result?.message || "Booking confirmed",
+          });
+          setNavigationDecision("/");
+          setShowMessageModal(true);
           setIsLoading(false);
           return;
         }
@@ -1351,28 +1360,38 @@ const Checkout = () => {
                 borderTopRightRadius: "10px",
               }}
             >
-              <div
-                style={{
-                  marginBottom: "10px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
-                <span
-                  style={{ fontSize: "17px", color: "black", fontWeight: 600 }}
+              {!(isHousePainting && Number(siteVisitCharge || 0) === 0) && (
+                <div
+                  style={{
+                    marginBottom: "10px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  Amount to pay end
-                </span>
-                <span
-                  style={{ fontSize: "17px", color: "black", fontWeight: 600 }}
-                >
-                  ₹
-                  {serviceType === "house_painting"
-                    ? // ? siteVisitCharge
-                      siteVisitCharge
-                    : addPrice()}
-                </span>
-              </div>
+                  <span
+                    style={{
+                      fontSize: "17px",
+                      color: "black",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Amount to pay end
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "17px",
+                      color: "black",
+                      fontWeight: 600,
+                    }}
+                  >
+                    ₹
+                    {serviceType === "house_painting"
+                      ? // ? siteVisitCharge
+                        siteVisitCharge
+                      : addPrice()}
+                  </span>
+                </div>
+              )}
               <div style={{ marginBottom: "15px" }}>
                 <button
                   onClick={handleProceedToCheckout}
@@ -1393,7 +1412,11 @@ const Checkout = () => {
                     opacity: isLoading ? 0.7 : 1,
                   }}
                 >
-                  {isLoading ? "Processing..." : "Proceed to Pay"}
+                  {isLoading
+                    ? "Processing..."
+                    : isHousePainting && Number(siteVisitCharge || 0) === 0
+                      ? "Confirm Booking"
+                      : "Proceed to Pay"}
                 </button>
               </div>
             </div>
@@ -1401,7 +1424,10 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* House Painting Confirmation Modal */}
+      {/* House Painting Confirmation Modal — no longer used.
+          For site-visit-free house painting the "Confirm Booking" button
+          now finalizes the booking directly without this confirmation step. */}
+      {/*
       <Modal
         show={showPaintingConfirm}
         centered
@@ -1449,6 +1475,7 @@ const Checkout = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+      */}
 
       {/* Slot Selection Modal */}
       <SlotSelectionModal

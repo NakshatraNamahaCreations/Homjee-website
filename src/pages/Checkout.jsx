@@ -112,7 +112,30 @@ const Checkout = () => {
   });
 
   const { setAddressDataContext } = useAddressContext();
-  const { cartItems, updateCartItem } = useContext(CartContext);
+  const { cartItems, updateCartItem, setCartItems } = useContext(CartContext);
+
+  // Wipes booking-related state after a successful payment so the next
+  // checkout starts clean. Keeps the logged-in `user` so the customer
+  // isn't kicked out of the session.
+  const clearBookingSession = () => {
+    try {
+      setCartItems([]);
+    } catch (e) {
+      console.error("clearBookingSession setCartItems error", e);
+    }
+    try {
+      sessionStorage.removeItem("cartItems");
+      sessionStorage.removeItem("selectedAddress");
+      sessionStorage.removeItem("selectedSlots");
+      sessionStorage.removeItem("isNewUser");
+    } catch (e) {
+      console.error("clearBookingSession storage error", e);
+    }
+    setSelectedAddress(null);
+    setSelectedSlot(null);
+    setAddressDataContext?.(null);
+    clearEnquiryBookingId();
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const [showAddress, setShowAddress] = useState(false);
@@ -597,7 +620,7 @@ const Checkout = () => {
         // finalizeBookingRequest above was already called with isEnquiry:false.
         if (amountToPay <= 0 || !razorpayOrder) {
           // setShowPaintingConfirm(true);
-          clearEnquiryBookingId();
+          clearBookingSession();
           setPrompt({
             promptTile: "Booking confirmed",
             promptBody: result?.message || "Booking confirmed",
@@ -615,7 +638,7 @@ const Checkout = () => {
           customer: data?.customer,
           API_BASE_URL,
           onSuccess: () => {
-            clearEnquiryBookingId();
+            clearBookingSession();
             setPrompt({
               promptTile: "Payment successful",
               promptBody: "Payment successful & booking confirmed",
@@ -651,7 +674,7 @@ const Checkout = () => {
           customer: data?.customer,
           API_BASE_URL,
           onSuccess: () => {
-            clearEnquiryBookingId();
+            clearBookingSession();
             setShowMessageModal(true);
             setPrompt({
               promptTile: "Payment successful",

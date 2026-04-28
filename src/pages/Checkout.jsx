@@ -22,7 +22,10 @@ import PopupModal from "../utils/PopupModal";
 import {
   getEnquiryBookingId,
   clearEnquiryBookingId,
+  patchEnquiry,
+  finalizeBookingRequest,
 } from "../utils/enquiryLead";
+import { resolveServiceCity } from "../utils/serviceCity";
 
 const getStoredUser = () => {
   try {
@@ -258,10 +261,13 @@ const Checkout = () => {
 
   const fetchPricingConfig = async () => {
     try {
-      if (!selectedAddress?.city || !selectedAddress?.city.trim()) return;
+      // Resolve satellite cities (e.g. Pimpri-Chinchwad → Pune) so the
+      // lookup hits the canonical service-area config.
+      const lookupCity = resolveServiceCity(selectedAddress?.city);
+      if (!lookupCity) return;
 
       const res = await fetch(
-        `${API_BASE_URL}${API_ENDPOINTS.GET_PRICING_CONFIG}${encodeURIComponent(selectedAddress?.city.trim())}`,
+        `${API_BASE_URL}${API_ENDPOINTS.GET_PRICING_CONFIG}${encodeURIComponent(lookupCity)}`,
       );
 
       const data = await res.json();
@@ -381,6 +387,9 @@ const Checkout = () => {
 
       clearSelectedSlot();
 
+      // Reflect the address change on the in-flight enquiry immediately.
+      patchEnquiry({ address: addressObj });
+
       setShowAddress(false);
     } catch (error) {
       console.error("handleSaveAddressFromModal error:", error);
@@ -429,6 +438,9 @@ const Checkout = () => {
     setSelectedSlot(slot);
     setSlotWarning("");
     setShowSlotModal(false);
+
+    // Reflect the slot change on the in-flight enquiry immediately.
+    patchEnquiry({ selectedSlot: slot });
   };
 
   const checkEnquiry = () => {
@@ -533,23 +545,6 @@ const Checkout = () => {
     if (navigationDecision && navigationDecision !== "close") {
       navigate(navigationDecision);
     }
-  };
-
-  // Finalizes the pre-created enquiry (from OTP verify) by updating it with
-  // full data and, if an online payment is needed, generating a Razorpay order.
-  // Falls back to the legacy createBooking flow if no enquiryBookingId is found
-  // (e.g. a stale session or direct nav into checkout).
-  const finalizeBookingRequest = async (payload) => {
-    const enquiryBookingId = getEnquiryBookingId();
-
-    if (enquiryBookingId) {
-      return putRequest(`${API_ENDPOINTS.UPDATE_ENQUIRY}${enquiryBookingId}`, {
-        ...payload,
-        finalize: true,
-      });
-    }
-
-    return postRequest(API_ENDPOINTS.CREATE_BOOKINGS, payload);
   };
 
   const handleProceedToCheckout = async () => {
@@ -1375,7 +1370,7 @@ const Checkout = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Amount to pay end
+                    Amount to pay
                   </span>
                   <span
                     style={{
@@ -1386,8 +1381,7 @@ const Checkout = () => {
                   >
                     ₹
                     {serviceType === "house_painting"
-                      ? // ? siteVisitCharge
-                        siteVisitCharge
+                      ? siteVisitCharge
                       : addPrice()}
                   </span>
                 </div>

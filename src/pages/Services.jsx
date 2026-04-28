@@ -45,7 +45,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
-import { createEnquiryLead } from "../utils/enquiryLead";
+import { createEnquiryLead, patchEnquiry } from "../utils/enquiryLead";
 import { useAddressContext } from "../utils/AddressContext";
 import Autocomplete from "react-google-autocomplete";
 import SlotSelectionModal from "./SlotSelectionModal";
@@ -453,6 +453,10 @@ useEffect(() => {
       sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
       setShowAddress(false);
 
+      // Push address to the in-flight enquiry so a drop-off here still
+      // leaves an enriched lead for the admin.
+      patchEnquiry({ address: addressObj });
+
       await handleProceedToSlotSelection();
     } catch (error) {
       console.error("💥 handleSaveAddressFromModal error:", error);
@@ -641,6 +645,11 @@ useEffect(() => {
     setSelectedSlot(slot);
     sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
     setShowSlotModal(false);
+
+    // Flush the chosen slot to the enquiry so dropping off before checkout
+    // still leaves date+time on the lead.
+    patchEnquiry({ selectedSlot: slot });
+
     navigate("/checkout", {
       state: {
         serviceType: "house_painting",

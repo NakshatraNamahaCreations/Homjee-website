@@ -47,7 +47,12 @@ import Autocomplete from "react-google-autocomplete";
 import { useAddressContext } from "../utils/AddressContext";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
-import { createEnquiryLead } from "../utils/enquiryLead";
+import {
+  createEnquiryLead,
+  patchEnquiry,
+  finalizeBookingRequest,
+  clearEnquiryBookingId,
+} from "../utils/enquiryLead";
 import moment from "moment";
 import GlobalLoader from "../utils/GlobalLoader";
 import AddressPickerModal from "../components/AddressPickerModal";
@@ -572,12 +577,18 @@ const Packersmovers = () => {
 
   const handleProceedToCheckout = async () => {
     try {
-      const result = await postRequest(API_ENDPOINTS.CREATE_BOOKINGS, data);
-      console.log("Booking Success", result);
+      // Updates the enquiry created at OTP verify (preferred) or falls back
+      // to creating a new booking if the session was lost. Avoids the
+      // duplicate-record problem where the OTP enquiry stays orphaned and a
+      // separate "real" booking is created on submit.
+      const result = await finalizeBookingRequest(data);
+      console.log("Enquiry submitted:", result);
+      // Packers & movers is enquiry-only (no payment). The doc remains
+      // isEnquiry:true; clear the local id so a subsequent flow starts clean.
+      clearEnquiryBookingId();
       setShowSuccessModal(true);
-     
     } catch (error) {
-      console.error("Booking failed:", error);
+      console.error("Submission failed:", error);
     }
   };
 
@@ -604,6 +615,9 @@ const Packersmovers = () => {
           JSON.stringify(existingAddress),
         );
         setShowAddress(false);
+
+        // Push address to the in-flight enquiry.
+        patchEnquiry({ address: existingAddress });
 
         // Proceed to slot selection
         await handleProceedToCheckout();
@@ -643,6 +657,9 @@ const Packersmovers = () => {
       setAddressDataContext(addressObj);
       sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
       setShowAddress(false);
+
+      // Push address to the in-flight enquiry.
+      patchEnquiry({ address: addressObj });
 
       // Proceed to slot selection
       await handleProceedToCheckout();

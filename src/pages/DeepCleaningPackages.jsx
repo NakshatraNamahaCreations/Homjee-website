@@ -51,6 +51,7 @@ import thirtyfive from "/media/thirtyfive.webp";
 import SlotSelectionModal from "./SlotSelectionModal";
 import { useSelectedSlotContext } from "../utils/SlotContext";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
+import { resolveServiceCity, sameServiceCity } from "../utils/serviceCity";
 import axios from "axios";
 
 // Map services to their corresponding images
@@ -107,19 +108,14 @@ const getCityConfigForPackage = (pkg, city) => {
   try {
     if (!pkg || !Array.isArray(pkg.cityConfigs)) return null;
 
-    const normalizedCity = String(city || "")
-      .trim()
-      .toLowerCase();
+    // Resolve satellite cities (e.g. Pimpri-Chinchwad) to their canonical
+    // service-area name so a Pune-only package still matches.
+    const lookupCity = resolveServiceCity(city);
 
-    if (!normalizedCity) return pkg.cityConfigs[0] || null;
+    if (!lookupCity) return pkg.cityConfigs[0] || null;
 
     return (
-      pkg.cityConfigs.find(
-        (cfg) =>
-          String(cfg.city || "")
-            .trim()
-            .toLowerCase() === normalizedCity,
-      ) ||
+      pkg.cityConfigs.find((cfg) => sameServiceCity(cfg.city, lookupCity)) ||
       pkg.cityConfigs[0] ||
       null
     );
@@ -184,12 +180,17 @@ const DeepCleaningPackages = () => {
       const cityFromSession = getSelectedCityFromSession();
       setSelectedCity(cityFromSession);
 
+      // Send the canonical service-area name so the catalog filter on the
+      // server (or local matcher) finds Pune-area packages for users
+      // geocoded to Pimpri-Chinchwad etc.
+      const lookupCity = resolveServiceCity(cityFromSession);
+
       const res = await axios.get(
         `${API_BASE_URL}${API_ENDPOINTS.FETCH_PACKAGE_CATALOG}`,
         {
           params: {
             serviceType: "deep_cleaning",
-            city: cityFromSession || undefined,
+            city: lookupCity || undefined,
           },
         },
       );
@@ -353,10 +354,13 @@ const DeepCleaningPackages = () => {
 
   const minimumOrderValue = async () => {
     try {
-      if (!selectedCity || !selectedCity.trim()) return;
+      // Resolve satellite cities (e.g. Pimpri-Chinchwad → Pune) so the
+      // lookup hits the canonical service-area config.
+      const lookupCity = resolveServiceCity(selectedCity);
+      if (!lookupCity) return;
 
       const res = await fetch(
-        `${API_BASE_URL}${API_ENDPOINTS.GET_MINIMUM_ORDERS_VALUE}${encodeURIComponent(selectedCity.trim())}`,
+        `${API_BASE_URL}${API_ENDPOINTS.GET_MINIMUM_ORDERS_VALUE}${encodeURIComponent(lookupCity)}`,
       );
 
       const data = await res.json();

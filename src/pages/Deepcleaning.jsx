@@ -46,7 +46,7 @@ import "swiper/css/pagination";
 import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_ENDPOINTS } from "../ApiService/apiConstants";
 import { useAddressContext } from "../utils/AddressContext";
-import { createEnquiryLead } from "../utils/enquiryLead";
+import { createEnquiryLead, patchEnquiry } from "../utils/enquiryLead";
 // import { NotificationManager } from "react-notifications";
 import Autocomplete from "react-google-autocomplete";
 import { useSelectedSlotContext } from "../utils/SlotContext";
@@ -473,6 +473,9 @@ const Deepcleaning = () => {
         );
         setShowAddress(false);
 
+        // Push address to the in-flight enquiry.
+        patchEnquiry({ address: existingAddress });
+
         // Proceed to slot selection
         // await handleProceedToSlotSelection();
         navigate("/deep-cleaning-packages");
@@ -518,6 +521,10 @@ const Deepcleaning = () => {
       sessionStorage.setItem("selectedAddress", JSON.stringify(addressObj));
 
       setShowAddress(false);
+
+      // Push address to the in-flight enquiry.
+      patchEnquiry({ address: addressObj });
+
       navigate("/deep-cleaning-packages");
     } catch (error) {
       console.error("handleSaveAddressFromModal error:", error);
@@ -615,6 +622,11 @@ const Deepcleaning = () => {
     setSelectedSlot(slot);
     sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
     setShowSlotModal(false);
+
+    // Flush the chosen slot to the enquiry so dropping off before checkout
+    // still leaves date+time on the lead.
+    patchEnquiry({ selectedSlot: slot });
+
     navigate("/checkout", {
       state: {
         serviceType: "house-painters",

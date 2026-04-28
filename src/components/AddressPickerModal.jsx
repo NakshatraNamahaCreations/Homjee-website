@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { pickServiceCityFromComponents } from "../utils/serviceCity";
 
 const GOOGLE_MAPS_API_KEY =
   import.meta?.env?.VITE_GOOGLE_MAPS_KEY ||
@@ -77,19 +78,13 @@ const loadGoogleMapsPlaces = () => {
 const safe = (v, fallback = "") =>
   v === undefined || v === null ? fallback : v;
 
+// Resolves the address's city to the canonical service city
+// (e.g. Madivala / Indiranagar / Pimpri-Chinchwad → Bangalore / Pune).
+// Falls back to Google's locality/district when the address isn't in
+// any service area we've onboarded.
 const extractCity = (addressComponents = []) => {
   try {
-    const cityComp =
-      addressComponents.find((c) => c.types?.includes("locality")) ||
-      addressComponents.find((c) =>
-        c.types?.includes("administrative_area_level_2"),
-      ) ||
-      addressComponents.find((c) => c.types?.includes("sublocality")) ||
-      addressComponents.find((c) =>
-        c.types?.includes("administrative_area_level_1"),
-      );
-
-    return safe(cityComp?.long_name, "");
+    return safe(pickServiceCityFromComponents(addressComponents), "");
   } catch (e) {
     return "";
   }

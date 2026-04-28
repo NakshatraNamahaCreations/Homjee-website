@@ -207,6 +207,8 @@ const DeepCleaningPackages = () => {
     fetchConfig();
   }, []);
 
+  console.log("cleaningServices>>>", cleaningServices);
+
   const fetchAvailableSlots = async (date) => {
     try {
       const location = getLatLngFromSession();
@@ -302,8 +304,13 @@ const DeepCleaningPackages = () => {
   };
 
   const closeModal = () => {
-    setSelectedPackageGroup(null);
+    // Drop the `?modal=...` query first so the auto-init effect below sees
+    // `modalType === null` and short-circuits. If we cleared the package
+    // group first, the effect could briefly re-open the modal with the
+    // first group while the URL change was still in flight (the cause of
+    // the close-flicker).
     navigate("/deep-cleaning-packages");
+    setSelectedPackageGroup(null);
   };
 
   const scrollToService = (service) => {
@@ -323,7 +330,11 @@ const DeepCleaningPackages = () => {
       ]
     : null;
 
-  // Set selected package group based on modal type
+  // Initialise selectedPackageGroup when the URL has a modal query and
+  // the catalog is loaded. Intentionally does NOT depend on
+  // `selectedPackageGroup` — including it caused the close-flicker
+  // (effect re-fires on close → re-opens with the first group). The
+  // functional setState reads the current value safely.
   useEffect(() => {
     try {
       if (!modalType) return;
@@ -333,19 +344,17 @@ const DeepCleaningPackages = () => {
       const service = Object.keys(modalComponents).find(
         (key) => key.toLowerCase().replace(/ /g, "-") === modalType,
       );
-
       if (!service) return;
 
-      if (!selectedPackageGroup) {
+      setSelectedPackageGroup((current) => {
+        if (current) return current;
         const grouped = groupPackages(cleaningServices[service] || []);
-        if (grouped.length > 0) {
-          setSelectedPackageGroup(grouped[0]);
-        }
-      }
+        return grouped.length > 0 ? grouped[0] : null;
+      });
     } catch (e) {
       console.error("modal init error", e);
     }
-  }, [modalType, cleaningServices, selectedPackageGroup]);
+  }, [modalType, cleaningServices]);
 
   const TotalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,

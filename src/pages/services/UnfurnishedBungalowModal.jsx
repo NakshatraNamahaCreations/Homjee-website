@@ -163,7 +163,8 @@ const UnfurnishedBungalowModal = ({ pkgGroup, closeModal }) => {
                       }}
                     >
                       ₹{pkg.price || 0} •{" "}
-                      {pkg.name?.includes("Premium") ? "6 hrs" : "5 hrs"}
+                      {/* {pkg.name?.includes("Premium") ? "6 hrs" : "5 hrs"} */}
+                      {pkg.duration || "--:--"} Mins
                     </p>
                     <ul
                       style={{

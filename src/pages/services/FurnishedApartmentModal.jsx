@@ -25,11 +25,11 @@ const FurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
   // Calculate totals for footer
   const totalQuantity = pkgGroup.reduce(
     (total, pkg) => total + getQuantity(pkg.name, serviceName),
-    0
+    0,
   );
   const totalPrice = pkgGroup.reduce(
     (total, pkg) => total + getQuantity(pkg.name, serviceName) * pkg.price,
-    0
+    0,
   );
 
   return (
@@ -141,7 +141,8 @@ const FurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                   }}
                 >
                   ₹{pkg.price || 0} •{" "}
-                  {pkg.name?.includes("Premium") ? "6 hrs" : "5 hrs"}
+                  {/* {pkg.name?.includes("Premium") ? "6 hrs" : "5 hrs"} */}
+                  {pkg.duration || "--:--"} Mins
                 </p>
                 <ul
                   style={{
@@ -176,7 +177,7 @@ const FurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                           serviceName,
                           pkg.teamMembers,
                           pkg.duration,
-                          pkg.coinsForVendor
+                          pkg.coinsForVendor,
                         );
                       }}
                       style={{
@@ -204,7 +205,7 @@ const FurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                           serviceName,
                           pkg.teamMembers,
                           pkg.duration,
-                          pkg.coinsForVendor
+                          pkg.coinsForVendor,
                         );
                       }}
                       style={{
@@ -240,7 +241,7 @@ const FurnishedApartmentModal = ({ pkgGroup, closeModal }) => {
                         serviceName,
                         pkg.teamMembers,
                         pkg.duration,
-                        pkg.coinsForVendor
+                        pkg.coinsForVendor,
                       )
                     }
                     aria-label={`Add ${pkg.name} to cart`}

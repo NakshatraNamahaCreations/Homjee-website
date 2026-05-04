@@ -237,6 +237,17 @@ const DeepCleaningPackages = () => {
       const data = await res.json();
       if (!data.success) return [];
 
+      // Stash slotsWithVendors so handleSelectSlot can map slotTime → vendorIds
+      // when acquiring the Redis hold. Keep the return value as a plain array
+      // since SlotSelectionModal expects that shape (Array.isArray check).
+      try {
+        sessionStorage.setItem(
+          "slotsWithVendors",
+          JSON.stringify(data.slotsWithVendors || []),
+        );
+        sessionStorage.setItem("slotPickDate", date);
+      } catch (_) {}
+
       return data.slots || [];
     } catch (err) {
       console.error("fetchAvailableSlots error", err);
@@ -253,9 +264,71 @@ const DeepCleaningPackages = () => {
     setShowSlotModal(true);
   };
 
-  // Function to handle selecting a slot
-  const handleSelectSlot = (slot) => {
-    // console.log("slot", slot);
+  // Function to handle selecting a slot — also acquires a 10-min Redis
+  // hold so other customers can't grab the same slot while this user
+  // is in checkout. Tries each candidate vendor in order; if all are
+  // taken, asks the user to pick another slot.
+  //
+  // Modal contract: passes { date, time } (see SlotSelectionModal).
+  const handleSelectSlot = async (slot) => {
+    const date = slot?.date ||
+      sessionStorage.getItem("slotPickDate") ||
+      new Date().toISOString().split("T")[0];
+    const slotTime = slot?.time;
+
+    if (!slotTime) {
+      alert("Please pick a time slot.");
+      return;
+    }
+
+    let vendorIds = [];
+    try {
+      const sw = JSON.parse(sessionStorage.getItem("slotsWithVendors") || "[]");
+      vendorIds = sw.find((s) => s.slotTime === slotTime)?.vendorIds || [];
+    } catch (_) {}
+
+    if (!vendorIds.length) {
+      alert("This slot is no longer available. Please pick another.");
+      const refreshed = await fetchAvailableSlots(date);
+      sessionStorage.setItem("availableSlots", JSON.stringify(refreshed));
+      return;
+    }
+
+    const totalDuration = (cartItems || []).reduce(
+      (sum, item) => sum + Number(item.duration || 0) * Number(item.quantity || 1),
+      0,
+    );
+    let customerId = null;
+    try {
+      customerId = JSON.parse(sessionStorage.getItem("user") || "{}")?._id || null;
+    } catch (_) {}
+
+    const { acquireSlotHold, persistHold } = await import("../ApiService/slotHold");
+    const result = await acquireSlotHold({
+      vendorIds,
+      date,
+      slotTime,
+      durationMinutes: totalDuration || 30,
+      customerId,
+      serviceType: "deep_cleaning",
+    });
+
+    if (!result.ok) {
+      if (result.reason === "service_unavailable") {
+        alert("Reservation service is temporarily down. Please try again in a moment.");
+        return;
+      }
+      // all_held → that slot just got taken by another customer; refresh.
+      alert("This slot was just taken by another customer. Please pick another.");
+      const refreshed = await fetchAvailableSlots(date);
+      sessionStorage.setItem("availableSlots", JSON.stringify(refreshed));
+      return;
+    }
+
+    // Hold acquired. Persist it so checkout can release on cancel/back
+    // and pass it through to booking-create.
+    persistHold(result);
+
     setSelectedSlot(slot);
     sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
     setShowSlotModal(false);

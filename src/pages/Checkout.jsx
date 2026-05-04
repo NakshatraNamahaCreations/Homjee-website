@@ -1501,6 +1501,11 @@ const Checkout = () => {
         handleSelectSlot={handleSelectSlot}
         fetchAvailableSlots={fetchAvailableSlots}
         type="booking"
+        serviceDurationMinutes={(cartItems || []).reduce(
+          (sum, item) =>
+            sum + Number(item.duration || 0) * Number(item.quantity || 1),
+          0,
+        )}
       />
 
       {/* Address Picker Modal */}

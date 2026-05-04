@@ -1,5 +1,3 @@
-
-
 // import React, { useEffect, useState, useMemo } from "react";
 // import moment from "moment";
 
@@ -210,12 +208,24 @@
 import React, { useEffect, useState, useMemo } from "react";
 import moment from "moment";
 
+// Format minutes -> "2 hrs", "30 mins", "2 hrs 30 mins". Returns null if 0/invalid.
+const formatDuration = (mins) => {
+  const total = Number(mins) || 0;
+  if (total <= 0) return null;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  const hPart = h > 0 ? `${h} ${h === 1 ? "hr" : "hrs"}` : "";
+  const mPart = m > 0 ? `${m} ${m === 1 ? "min" : "mins"}` : "";
+  return [hPart, mPart].filter(Boolean).join(" ");
+};
+
 const SlotSelectionModal = ({
   show,
   onClose,
   handleSelectSlot,
   fetchAvailableSlots,
   type = "booking", // "booking" | "reschedule"
+  serviceDurationMinutes, // optional — total duration of selected services in minutes
 }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
@@ -289,7 +299,7 @@ const SlotSelectionModal = ({
           "YYYY-MM-DD hh A",
           "YYYY-MM-DD h A",
         ],
-        true
+        true,
       );
 
       return m.isValid() ? m : null;
@@ -372,10 +382,11 @@ const SlotSelectionModal = ({
         <h3 style={{ marginBottom: 5 }}>
           When should the professional arrive?
         </h3>
-        <p style={{ color: "#666", fontSize: 14 }}>
-          {/* optional: update based on your actual duration */}
-          {/* Service will take approx. 5 hrs */}
-        </p>
+        {formatDuration(serviceDurationMinutes) && (
+          <p style={{ color: "#666", fontSize: 14 }}>
+            Service will take approx. {formatDuration(serviceDurationMinutes)}
+          </p>
+        )}
 
         {/* Date Selection */}
         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
@@ -403,46 +414,81 @@ const SlotSelectionModal = ({
         {/* Time Slots */}
         <h4>Select start time</h4>
 
-        {loadingSlots && (
-          <p style={{ fontSize: 13, color: "#666" }}>
-            Fetching available slots...
-          </p>
-        )}
+        <style>{`
+          @keyframes slotSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
 
-        {!loadingSlots && filteredSlots.length === 0 && selectedDate && (
-          <p style={{ fontSize: 13, color: "#999" }}>
+        {loadingSlots ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "40px 0",
+              marginBottom: 20,
+              minHeight: 140,
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                border: "3px solid #f0f0f0",
+                borderTopColor: "#FF0000",
+                borderRadius: "50%",
+                animation: "slotSpin 0.8s linear infinite",
+              }}
+            />
+            <p style={{ fontSize: 13, color: "#666", marginTop: 12 }}>
+              Fetching available slots...
+            </p>
+          </div>
+        ) : filteredSlots.length === 0 && selectedDate ? (
+          <p
+            style={{
+              fontSize: 13,
+              color: "#999",
+              textAlign: "center",
+              padding: "30px 0",
+              marginBottom: 20,
+            }}
+          >
             No slots available for this date
           </p>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 10,
+              marginBottom: 20,
+            }}
+          >
+            {filteredSlots.map((time) => (
+              <button
+                key={time}
+                onClick={() => setSelectedTimeSlot(time)}
+                style={{
+                  padding: 10,
+                  borderRadius: 6,
+                  border:
+                    selectedTimeSlot === time
+                      ? "2px solid red"
+                      : "1px solid #ccc",
+                  background: selectedTimeSlot === time ? "red" : "#fff",
+                  color: selectedTimeSlot === time ? "#fff" : "#000",
+                  cursor: "pointer",
+                }}
+              >
+                {time}
+              </button>
+            ))}
+          </div>
         )}
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 10,
-            marginBottom: 20,
-          }}
-        >
-          {filteredSlots.map((time) => (
-            <button
-              key={time}
-              onClick={() => setSelectedTimeSlot(time)}
-              style={{
-                padding: 10,
-                borderRadius: 6,
-                border:
-                  selectedTimeSlot === time
-                    ? "2px solid red"
-                    : "1px solid #ccc",
-                background: selectedTimeSlot === time ? "red" : "#fff",
-                color: selectedTimeSlot === time ? "#fff" : "#000",
-                cursor: "pointer",
-              }}
-            >
-              {time}
-            </button>
-          ))}
-        </div>
 
         {/* Proceed */}
         <button

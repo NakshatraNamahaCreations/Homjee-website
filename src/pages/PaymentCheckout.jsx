@@ -1486,6 +1486,11 @@ function PaymentCheckout() {
         handleSelectSlot={handleSelectSlot}
         fetchAvailableSlots={fetchAvailableSlots}
         type="reschedule"
+        serviceDurationMinutes={(bookingData?.service || []).reduce(
+          (sum, s) =>
+            sum + Number(s.duration || 0) * Number(s.quantity || 1),
+          0,
+        )}
       />
 
       <PaymentSuccessModal

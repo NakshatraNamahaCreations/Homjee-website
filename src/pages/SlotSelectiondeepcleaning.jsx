@@ -28,7 +28,7 @@ const SlotSelectiondeepcleaning = ({
     .filter(
       (slot, index, self) =>
         index ===
-        self.findIndex((s) => s.date === slot.date && s.time === slot.time)
+        self.findIndex((s) => s.date === slot.date && s.time === slot.time),
     )
     .map((slot) => slot.time);
 

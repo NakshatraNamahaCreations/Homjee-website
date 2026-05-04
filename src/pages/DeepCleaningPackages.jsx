@@ -1203,6 +1203,11 @@ const DeepCleaningPackages = () => {
         onClose={handleCloseSlotModal}
         handleSelectSlot={handleSelectSlot}
         fetchAvailableSlots={fetchAvailableSlots}
+        serviceDurationMinutes={(cartItems || []).reduce(
+          (sum, item) =>
+            sum + Number(item.duration || 0) * Number(item.quantity || 1),
+          0,
+        )}
       />
 
       {/* Modal */}

@@ -226,7 +226,7 @@ const DeepCleaningPackages = () => {
       console.log("slot payload >>>", payload);
 
       const res = await fetch(
-        `${API_BASE_URL}/slots/website/get-available-slots`,
+        `${API_BASE_URL}${API_ENDPOINTS.GET_WEBSITE_AVAILABLE_SLOTS}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -271,7 +271,8 @@ const DeepCleaningPackages = () => {
   //
   // Modal contract: passes { date, time } (see SlotSelectionModal).
   const handleSelectSlot = async (slot) => {
-    const date = slot?.date ||
+    const date =
+      slot?.date ||
       sessionStorage.getItem("slotPickDate") ||
       new Date().toISOString().split("T")[0];
     const slotTime = slot?.time;
@@ -295,15 +296,18 @@ const DeepCleaningPackages = () => {
     }
 
     const totalDuration = (cartItems || []).reduce(
-      (sum, item) => sum + Number(item.duration || 0) * Number(item.quantity || 1),
+      (sum, item) =>
+        sum + Number(item.duration || 0) * Number(item.quantity || 1),
       0,
     );
     let customerId = null;
     try {
-      customerId = JSON.parse(sessionStorage.getItem("user") || "{}")?._id || null;
+      customerId =
+        JSON.parse(sessionStorage.getItem("user") || "{}")?._id || null;
     } catch (_) {}
 
-    const { acquireSlotHold, persistHold } = await import("../ApiService/slotHold");
+    const { acquireSlotHold, persistHold } =
+      await import("../ApiService/slotHold");
     const result = await acquireSlotHold({
       vendorIds,
       date,
@@ -315,11 +319,15 @@ const DeepCleaningPackages = () => {
 
     if (!result.ok) {
       if (result.reason === "service_unavailable") {
-        alert("Reservation service is temporarily down. Please try again in a moment.");
+        alert(
+          "Reservation service is temporarily down. Please try again in a moment.",
+        );
         return;
       }
       // all_held → that slot just got taken by another customer; refresh.
-      alert("This slot was just taken by another customer. Please pick another.");
+      alert(
+        "This slot was just taken by another customer. Please pick another.",
+      );
       const refreshed = await fetchAvailableSlots(date);
       sessionStorage.setItem("availableSlots", JSON.stringify(refreshed));
       return;

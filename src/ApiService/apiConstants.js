@@ -11,6 +11,12 @@ export const API_ENDPOINTS = {
   SAVE_ADDRESS: "/user/save-address/",
   GET_ADDRESS: "/user/get-user-address/",
 
+  // SLOTS
+  GET_AVAILABLE_SLOTS: "/slots/available-slots",
+  GET_WEBSITE_AVAILABLE_SLOTS: "/slots/website/get-available-slots",
+  HOLD_SLOT: "/slots/hold",
+  RELEASE_SLOT: "/slots/release",
+
   // BOOKINGS
   CREATE_BOOKINGS: "/bookings/create-user-booking",
   CREATE_ENQUIRY_LEAD: "/bookings/create-enquiry-lead",

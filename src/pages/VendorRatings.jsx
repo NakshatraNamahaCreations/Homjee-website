@@ -36,7 +36,7 @@ export default function VendorRatings() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `${API_BASE_URL}${API_ENDPOINTS.GET_VENDOR_RATING_BY_ID}?vendorId=${vendorId}&bookingId=${bookingId}&customerId=${customerId}`
+          `${API_BASE_URL}${API_ENDPOINTS.GET_VENDOR_RATING_BY_ID}?vendorId=${vendorId}&bookingId=${bookingId}&customerId=${customerId}`,
         );
 
         if (res.data?.isLocked) {
@@ -87,7 +87,7 @@ export default function VendorRatings() {
 
       const res = await axios.post(
         `${API_BASE_URL}${API_ENDPOINTS.WRITE_VENDOR_RATING}`,
-        payload
+        payload,
       );
 
       // success handling based on server response
@@ -251,13 +251,11 @@ export default function VendorRatings() {
             </div>
             <div
               style={{
-                color: "#e9e9e9ff",
                 marginTop: 3,
                 color: "#1f1f1f",
                 fontSize: 14,
                 lineHeight: "18px",
                 fontWeight: 400,
-                color: "#1a1a1aff",
               }}
             >
               Posting publicly across Homjee

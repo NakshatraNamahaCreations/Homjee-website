@@ -231,6 +231,7 @@ const SlotSelectionModal = ({
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotReason, setSlotReason] = useState(null);
 
   const dates = useMemo(() => {
     const today = new Date();
@@ -266,10 +267,18 @@ const SlotSelectionModal = ({
       try {
         setLoadingSlots(true);
         setAvailableSlots([]);
+        setSlotReason(null);
         setSelectedTimeSlot(null);
 
-        const slots = await fetchAvailableSlots(selectedDate);
-        setAvailableSlots(Array.isArray(slots) ? slots : []);
+        // Accept either legacy array shape or the new { slots, reason }
+        // object so this modal stays compatible with every parent's
+        // fetchAvailableSlots — Services.jsx returns the object form,
+        // Checkout/PaymentCheckout still return an array.
+        const result = await fetchAvailableSlots(selectedDate);
+        const list = Array.isArray(result) ? result : result?.slots || [];
+        const reason = Array.isArray(result) ? null : result?.reason || null;
+        setAvailableSlots(list);
+        setSlotReason(reason);
       } catch (err) {
         console.error("Failed to fetch slots", err);
       } finally {
@@ -457,7 +466,7 @@ const SlotSelectionModal = ({
               marginBottom: 20,
             }}
           >
-            No slots available for this date
+            {slotReason || "No slots available for this date"}
           </p>
         ) : (
           <div

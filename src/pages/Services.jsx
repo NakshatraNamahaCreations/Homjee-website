@@ -598,18 +598,28 @@ useEffect(() => {
     return {
       lat: Number(parsed.latitude),
       lng: Number(parsed.longitude),
+      city: parsed.city || "",
     };
   };
 
+  // Returns { slots, reason } — reason is the backend's failure-cause
+  // message when no slots are available (e.g. "No vendors available within
+  // service radius", "All available vendors are already booked for this
+  // date"). The modal surfaces it so we don't show a generic "no slots"
+  // when something more diagnostic is available.
   const fetchAvailableSlots = async (date) => {
     const location = getLatLngFromSession();
-    if (!location) return [];
+    if (!location) return { slots: [], reason: null };
 
     const payload = {
       serviceType: SERVICE_TYPE, // 🔥 dynamic
       date,
       lat: location.lat,
       lng: location.lng,
+      // Pre-filter the vendor pool by city at the DB layer so we don't
+      // haversine-check vendors from other cities (cuts log noise + work).
+      // Backend tolerates this being missing.
+      city: location.city || undefined,
     };
 
     try {
@@ -623,18 +633,21 @@ useEffect(() => {
       );
 
       const data = await res.json();
-      if (!data.success) return [];
+      if (!data.success) return { slots: [], reason: data?.message || null };
 
-      return data.slots || [];
+      return {
+        slots: data.slots || [],
+        reason: data?.reason?.message || null,
+      };
     } catch (err) {
       console.error("Slot fetch failed", err);
-      return [];
+      return { slots: [], reason: null };
     }
   };
 
   const handleProceedToSlotSelection = async () => {
     const today = new Date().toISOString().split("T")[0];
-    const slots = await fetchAvailableSlots(today);
+    const { slots } = await fetchAvailableSlots(today);
     sessionStorage.setItem("availableSlots", JSON.stringify(slots));
     setShowSlotModal(true);
   };

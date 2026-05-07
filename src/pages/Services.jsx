@@ -47,6 +47,7 @@ import { getRequest, postRequest, putRequest } from "../ApiService/apiHelper";
 import { API_BASE_URL, API_ENDPOINTS } from "../ApiService/apiConstants";
 import { createEnquiryLead, patchEnquiry } from "../utils/enquiryLead";
 import { useAddressContext } from "../utils/AddressContext";
+import { pickServiceCityFromComponents } from "../utils/serviceCity";
 import Autocomplete from "react-google-autocomplete";
 import SlotSelectionModal from "./SlotSelectionModal";
 import { useSelectedSlotContext } from "../utils/SlotContext";
@@ -607,19 +608,62 @@ useEffect(() => {
   // service radius", "All available vendors are already booked for this
   // date"). The modal surfaces it so we don't show a generic "no slots"
   // when something more diagnostic is available.
+  // Reverse-geocode lat/lng → service city via Google. Used as fallback
+  // when sessionStorage's selectedAddress was saved without a city
+  // (e.g. legacy data, geocoder unavailable at save-time).
+  const resolveCityFromLatLng = (lat, lng) =>
+    new Promise((resolve) => {
+      try {
+        if (!window.google?.maps?.Geocoder) return resolve("");
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status !== "OK" || !results?.length) return resolve("");
+          const city =
+            pickServiceCityFromComponents(
+              results[0].address_components || [],
+            ) || "";
+          resolve(city);
+        });
+      } catch (_) {
+        resolve("");
+      }
+    });
+
   const fetchAvailableSlots = async (date) => {
     const location = getLatLngFromSession();
     if (!location) return { slots: [], reason: null };
+
+    // City is mandatory for HP — backend reads PricingConfig.vendorCoins by
+    // city to gate vendor eligibility. If session lacks it, derive from
+    // lat/lng via reverse-geocode and persist back so future calls skip the
+    // round-trip.
+    let city = location.city;
+    if (!city && location.lat && location.lng) {
+      city = await resolveCityFromLatLng(location.lat, location.lng);
+      if (city) {
+        try {
+          const stored = JSON.parse(
+            sessionStorage.getItem("selectedAddress") || "{}",
+          );
+          stored.city = city;
+          sessionStorage.setItem("selectedAddress", JSON.stringify(stored));
+        } catch (_) {}
+      }
+    }
+
+    if (!city) {
+      return {
+        slots: [],
+        reason: "Could not determine your city. Please re-select your address.",
+      };
+    }
 
     const payload = {
       serviceType: SERVICE_TYPE, // 🔥 dynamic
       date,
       lat: location.lat,
       lng: location.lng,
-      // Pre-filter the vendor pool by city at the DB layer so we don't
-      // haversine-check vendors from other cities (cuts log noise + work).
-      // Backend tolerates this being missing.
-      city: location.city || undefined,
+      city,
     };
 
     try {
@@ -634,6 +678,16 @@ useEffect(() => {
 
       const data = await res.json();
       if (!data.success) return { slots: [], reason: data?.message || null };
+
+      // Stash slotsWithVendors so handleSelectSlot can map slotTime → vendorIds
+      // when acquiring the Redis hold. Mirror of DeepCleaningPackages flow.
+      try {
+        sessionStorage.setItem(
+          "slotsWithVendors",
+          JSON.stringify(data.slotsWithVendors || []),
+        );
+        sessionStorage.setItem("slotPickDate", date);
+      } catch (_) {}
 
       return {
         slots: data.slots || [],
@@ -652,9 +706,66 @@ useEffect(() => {
     setShowSlotModal(true);
   };
 
-  // Function to handle selecting a slot
-  const handleSelectSlot = (slot) => {
-    // console.log("slot", slot);
+  // Function to handle selecting a slot — also acquires a 10-min Redis
+  // hold so other customers can't grab the same slot while this user
+  // is in checkout. Mirrors DeepCleaningPackages flow.
+  const handleSelectSlot = async (slot) => {
+    const date =
+      slot?.date ||
+      sessionStorage.getItem("slotPickDate") ||
+      new Date().toISOString().split("T")[0];
+    const slotTime = slot?.time;
+
+    if (!slotTime) {
+      alert("Please pick a time slot.");
+      return;
+    }
+
+    let vendorIds = [];
+    try {
+      const sw = JSON.parse(sessionStorage.getItem("slotsWithVendors") || "[]");
+      vendorIds = sw.find((s) => s.slotTime === slotTime)?.vendorIds || [];
+    } catch (_) {}
+
+    if (!vendorIds.length) {
+      alert("This slot is no longer available. Please pick another.");
+      await fetchAvailableSlots(date);
+      return;
+    }
+
+    let customerId = null;
+    try {
+      customerId =
+        JSON.parse(sessionStorage.getItem("user") || "{}")?._id || null;
+    } catch (_) {}
+
+    const { acquireSlotHold, persistHold } =
+      await import("../ApiService/slotHold");
+    const result = await acquireSlotHold({
+      vendorIds,
+      date,
+      slotTime,
+      durationMinutes: 30, // HP site visit is fixed at 30 min (backend HP_DURATION)
+      customerId,
+      serviceType: "house_painting",
+    });
+
+    if (!result.ok) {
+      if (result.reason === "service_unavailable") {
+        alert(
+          "Reservation service is temporarily down. Please try again in a moment.",
+        );
+        return;
+      }
+      alert(
+        "This slot was just taken by another customer. Please pick another.",
+      );
+      await fetchAvailableSlots(date);
+      return;
+    }
+
+    persistHold(result);
+
     setSelectedSlot(slot);
     sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
     setShowSlotModal(false);

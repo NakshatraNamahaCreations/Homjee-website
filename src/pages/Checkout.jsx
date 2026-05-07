@@ -25,7 +25,10 @@ import {
   patchEnquiry,
   finalizeBookingRequest,
 } from "../utils/enquiryLead";
-import { resolveServiceCity } from "../utils/serviceCity";
+import {
+  resolveServiceCity,
+  pickServiceCityFromComponents,
+} from "../utils/serviceCity";
 
 const getStoredUser = () => {
   try {
@@ -328,6 +331,27 @@ const Checkout = () => {
 
   console.log("Pricing config - siteVisitCharge:", siteVisitCharge);
 
+  // Reverse-geocode lat/lng → service city. Fallback for when
+  // selectedAddress was saved without a city (legacy data, geocoder
+  // unavailable at save-time).
+  const resolveCityFromLatLng = (lat, lng) =>
+    new Promise((resolve) => {
+      try {
+        if (!window.google?.maps?.Geocoder) return resolve("");
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status !== "OK" || !results?.length) return resolve("");
+          resolve(
+            pickServiceCityFromComponents(
+              results[0].address_components || [],
+            ) || "",
+          );
+        });
+      } catch (_) {
+        resolve("");
+      }
+    });
+
   const fetchAvailableSlots = async (date) => {
     try {
       const loc = getLatLngFromSelectedAddress();
@@ -341,7 +365,28 @@ const Checkout = () => {
         return [];
       }
 
-      const basePayload = { serviceType, date, lat: loc.lat, lng: loc.lng };
+      // City is mandatory for HP (backend reads PricingConfig.vendorCoins by
+      // city) and used for DC packages. Resolve from selectedAddress, then
+      // reverse-geocode as fallback.
+      let city = resolveServiceCity(selectedAddress?.city || "");
+      if (!city) {
+        city = await resolveCityFromLatLng(loc.lat, loc.lng);
+      }
+      if (!city) {
+        console.warn("Could not resolve city for slot fetch");
+        setSlotWarning(
+          "Could not determine your city. Please re-select your address.",
+        );
+        return [];
+      }
+
+      const basePayload = {
+        serviceType,
+        date,
+        lat: loc.lat,
+        lng: loc.lng,
+        city,
+      };
 
       const payload =
         serviceType === "deep_cleaning"

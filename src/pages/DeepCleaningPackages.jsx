@@ -212,7 +212,7 @@ const DeepCleaningPackages = () => {
   const fetchAvailableSlots = async (date) => {
     try {
       const location = getLatLngFromSession();
-      if (!location) return [];
+      if (!location) return { slots: [], unavailableSlots: [], reason: null };
 
       const payload = {
         serviceType: "deep_cleaning",
@@ -235,11 +235,12 @@ const DeepCleaningPackages = () => {
       );
 
       const data = await res.json();
-      if (!data.success) return [];
+      if (!data.success) {
+        return { slots: [], unavailableSlots: [], reason: null };
+      }
 
       // Stash slotsWithVendors so handleSelectSlot can map slotTime → vendorIds
-      // when acquiring the Redis hold. Keep the return value as a plain array
-      // since SlotSelectionModal expects that shape (Array.isArray check).
+      // when acquiring the Redis hold.
       try {
         sessionStorage.setItem(
           "slotsWithVendors",
@@ -248,19 +249,30 @@ const DeepCleaningPackages = () => {
         sessionStorage.setItem("slotPickDate", date);
       } catch (_) {}
 
-      return data.slots || [];
+      // Return the object shape so the modal can render booked-out times
+      // as disabled tiles instead of hiding them (spec requirement —
+      // applies uniformly to HP and DC slot pickers).
+      return {
+        slots: data.slots || [],
+        unavailableSlots: data.unavailableSlots || [],
+        reason: data?.reason?.message || null,
+      };
     } catch (err) {
       console.error("fetchAvailableSlots error", err);
-      return [];
+      return { slots: [], unavailableSlots: [], reason: null };
     }
   };
   const handleProceedToSlotSelection = async () => {
     if (minimumAmount > TotalPrice) return;
 
     const today = new Date().toISOString().split("T")[0];
-    const slots = await fetchAvailableSlots(today);
-
-    sessionStorage.setItem("availableSlots", JSON.stringify(slots));
+    const result = await fetchAvailableSlots(today);
+    // Modal refetches by itself on open; sessionStorage cache keeps the
+    // array shape for any legacy reader (only the available list).
+    sessionStorage.setItem(
+      "availableSlots",
+      JSON.stringify(result?.slots || []),
+    );
     setShowSlotModal(true);
   };
 
@@ -291,7 +303,10 @@ const DeepCleaningPackages = () => {
     if (!vendorIds.length) {
       alert("This slot is no longer available. Please pick another.");
       const refreshed = await fetchAvailableSlots(date);
-      sessionStorage.setItem("availableSlots", JSON.stringify(refreshed));
+      sessionStorage.setItem(
+        "availableSlots",
+        JSON.stringify(refreshed?.slots || []),
+      );
       return;
     }
 
@@ -329,7 +344,10 @@ const DeepCleaningPackages = () => {
         "This slot was just taken by another customer. Please pick another.",
       );
       const refreshed = await fetchAvailableSlots(date);
-      sessionStorage.setItem("availableSlots", JSON.stringify(refreshed));
+      sessionStorage.setItem(
+        "availableSlots",
+        JSON.stringify(refreshed?.slots || []),
+      );
       return;
     }
 

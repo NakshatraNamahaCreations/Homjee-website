@@ -49,10 +49,16 @@ export async function acquireSlotHold({
 
       const data = await res.json();
       if (data?.success && data?.holdId) {
+        // Echo date + slotTime back so persistHold can write them to
+        // sessionStorage. Without this, Checkout's "does the user still
+        // own this slot?" check sees myHold.date === undefined and
+        // rejects every legitimate confirmation.
         return {
           ok: true,
           holdId: data.holdId,
           vendorId,
+          date,
+          slotTime,
           expiresInSeconds: data.expiresInSeconds || 600,
         };
       }

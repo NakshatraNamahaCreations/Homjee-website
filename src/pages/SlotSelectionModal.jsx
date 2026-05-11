@@ -230,6 +230,9 @@ const SlotSelectionModal = ({
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
+  // Slots whose vendors are all booked/held — rendered as disabled tiles
+  // so the user can see them but can't select them. Spec requirement.
+  const [unavailableSlots, setUnavailableSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotReason, setSlotReason] = useState(null);
 
@@ -267,17 +270,22 @@ const SlotSelectionModal = ({
       try {
         setLoadingSlots(true);
         setAvailableSlots([]);
+        setUnavailableSlots([]);
         setSlotReason(null);
         setSelectedTimeSlot(null);
 
-        // Accept either legacy array shape or the new { slots, reason }
-        // object so this modal stays compatible with every parent's
-        // fetchAvailableSlots — Services.jsx returns the object form,
-        // Checkout/PaymentCheckout still return an array.
+        // Accept either legacy array shape or the new
+        // { slots, unavailableSlots, reason } object. unavailableSlots is
+        // optional — when present, those tiles render disabled so users
+        // can see them but can't pick them.
         const result = await fetchAvailableSlots(selectedDate);
         const list = Array.isArray(result) ? result : result?.slots || [];
+        const unavailable = Array.isArray(result)
+          ? []
+          : result?.unavailableSlots || [];
         const reason = Array.isArray(result) ? null : result?.reason || null;
         setAvailableSlots(list);
+        setUnavailableSlots(unavailable);
         setSlotReason(reason);
       } catch (err) {
         console.error("Failed to fetch slots", err);
@@ -318,37 +326,56 @@ const SlotSelectionModal = ({
     }
   };
 
-  // ✅ Filter: if selected date is today -> show only slots after now + 2 hours
+  // ✅ Merge available + unavailable into a single time-ordered list so we
+  // can render them side-by-side. Unavailable tiles are rendered disabled
+  // (visible but not clickable) per spec.
+  // For today, slots earlier than now+2h are dropped entirely.
   const filteredSlots = useMemo(() => {
     try {
-      if (!selectedDate) return availableSlots;
+      if (!selectedDate) {
+        return (availableSlots || []).map((t) => ({
+          time: t,
+          available: true,
+        }));
+      }
 
       const isToday = selectedDate === moment().format("YYYY-MM-DD");
-      if (!isToday) return availableSlots;
+      const minTime = isToday ? moment().add(2, "hours") : null;
 
-      const minTime = moment().add(2, "hours");
+      const merged = [
+        ...(availableSlots || []).map((t) => ({ time: t, available: true })),
+        ...(unavailableSlots || []).map((t) => ({ time: t, available: false })),
+      ];
 
-      return (availableSlots || []).filter((t) => {
-        const slotDT = toSlotDateTime(selectedDate, t);
+      // Sort by parsed time so tiles appear chronologically regardless of
+      // backend ordering of the two arrays.
+      merged.sort((a, b) => {
+        const ta = toSlotDateTime(selectedDate, a.time);
+        const tb = toSlotDateTime(selectedDate, b.time);
+        if (!ta || !tb) return 0;
+        return ta.valueOf() - tb.valueOf();
+      });
 
-        // if parsing fails, DON'T hide it (safer)
-        if (!slotDT) return true;
-
+      if (!minTime) return merged;
+      return merged.filter((s) => {
+        const slotDT = toSlotDateTime(selectedDate, s.time);
+        if (!slotDT) return true; // if parsing fails, don't hide it
         return slotDT.isSameOrAfter(minTime);
       });
     } catch (e) {
       console.error("filteredSlots error:", e);
-      return availableSlots;
+      return (availableSlots || []).map((t) => ({ time: t, available: true }));
     }
-  }, [availableSlots, selectedDate]);
+  }, [availableSlots, unavailableSlots, selectedDate]);
 
   // if currently selected slot becomes invalid after filtering, clear it
   useEffect(() => {
     try {
       if (!selectedTimeSlot) return;
-
-      const stillExists = filteredSlots.includes(selectedTimeSlot);
-      if (!stillExists) setSelectedTimeSlot(null);
+      const stillSelectable = filteredSlots.some(
+        (s) => s.time === selectedTimeSlot && s.available,
+      );
+      if (!stillSelectable) setSelectedTimeSlot(null);
     } catch (e) {
       console.error("selectedTimeSlot validate error:", e);
     }
@@ -477,29 +504,55 @@ const SlotSelectionModal = ({
               marginBottom: 20,
             }}
           >
-            {filteredSlots.map((time) => (
-              <button
-                key={time}
-                onClick={() => setSelectedTimeSlot(time)}
-                style={{
-                  padding: 10,
-                  borderRadius: 6,
-                  border:
-                    selectedTimeSlot === time
+            {filteredSlots.map(({ time, available }) => {
+              const isSelected = selectedTimeSlot === time;
+              return (
+                <button
+                  key={time}
+                  disabled={!available}
+                  title={
+                    available ? undefined : "Not available — already booked"
+                  }
+                  onClick={() => available && setSelectedTimeSlot(time)}
+                  style={{
+                    padding: 10,
+                    borderRadius: 6,
+                    position: "relative",
+                    border: isSelected
                       ? "2px solid red"
-                      : "1px solid #ccc",
-                  background: selectedTimeSlot === time ? "red" : "#fff",
-                  color: selectedTimeSlot === time ? "#fff" : "#000",
-                  cursor: "pointer",
-                }}
-              >
-                {time}
-              </button>
-            ))}
+                      : available
+                        ? "1px solid #ccc"
+                        : "1px dashed #ddd",
+                    background: isSelected
+                      ? "red"
+                      : available
+                        ? "#fff"
+                        : "#f5f5f5",
+                    color: isSelected ? "#fff" : available ? "#000" : "#aaa",
+                    cursor: available ? "pointer" : "not-allowed",
+                    textDecoration: available ? "none" : "line-through",
+                  }}
+                >
+                  {time}
+                  {/* {!available && (
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "#999",
+                        marginTop: 2,
+                        textDecoration: "none",
+                      }}
+                    >
+                      Not available
+                    </div>
+                  )} */}
+                </button>
+              );
+            })}
           </div>
         )}
 
-        {/* Proceed */}
+        {/* Proceed — acquires the Redis hold and navigates to checkout. */}
         <button
           disabled={!canProceed}
           onClick={() => {

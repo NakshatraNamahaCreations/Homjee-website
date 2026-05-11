@@ -691,6 +691,9 @@ useEffect(() => {
 
       return {
         slots: data.slots || [],
+        // Booked/held times — modal renders these as disabled tiles so the
+        // customer can see the slot exists but can't select it.
+        unavailableSlots: data.unavailableSlots || [],
         reason: data?.reason?.message || null,
       };
     } catch (err) {
@@ -706,9 +709,10 @@ useEffect(() => {
     setShowSlotModal(true);
   };
 
-  // Function to handle selecting a slot — also acquires a 10-min Redis
-  // hold so other customers can't grab the same slot while this user
-  // is in checkout. Mirrors DeepCleaningPackages flow.
+  // Acquires a 10-min Redis hold + navigates to checkout. Called when the
+  // user clicks "Proceed to checkout" in the slot modal. Hold guarantees
+  // that other customers see this slot as unavailable (disabled tile)
+  // while this customer completes payment.
   const handleSelectSlot = async (slot) => {
     const date =
       slot?.date ||
@@ -745,7 +749,7 @@ useEffect(() => {
       vendorIds,
       date,
       slotTime,
-      durationMinutes: 30, // HP site visit is fixed at 30 min (backend HP_DURATION)
+      durationMinutes: 30, // HP site visit fixed at 30 min (backend HP_DURATION)
       customerId,
       serviceType: "house_painting",
     });

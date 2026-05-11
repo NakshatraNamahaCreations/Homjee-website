@@ -29,6 +29,7 @@ import {
   resolveServiceCity,
   pickServiceCityFromComponents,
 } from "../utils/serviceCity";
+import { clearPersistedHold } from "../ApiService/slotHold";
 
 const getStoredUser = () => {
   try {
@@ -118,8 +119,10 @@ const Checkout = () => {
   const { cartItems, updateCartItem, setCartItems } = useContext(CartContext);
 
   // Wipes booking-related state after a successful payment so the next
-  // checkout starts clean. Keeps the logged-in `user` so the customer
-  // isn't kicked out of the session.
+  // checkout starts clean — and so the user can't return later with stale
+  // selectedSlot/hold state and re-trigger the "slot still showing free"
+  // bug we just fixed. Keeps the logged-in `user` so the customer isn't
+  // kicked out of the session.
   const clearBookingSession = () => {
     try {
       setCartItems([]);
@@ -127,13 +130,31 @@ const Checkout = () => {
       console.error("clearBookingSession setCartItems error", e);
     }
     try {
+      // Cart + address + slot picks
       sessionStorage.removeItem("cartItems");
       sessionStorage.removeItem("selectedAddress");
       sessionStorage.removeItem("selectedSlots");
       sessionStorage.removeItem("isNewUser");
+      // Slot-picker scratch storage written by Services / DC / Checkout
+      // when fetching slots — must be cleared too, otherwise the next
+      // booking flow would inherit stale slotsWithVendors / date.
+      sessionStorage.removeItem("slotsWithVendors");
+      sessionStorage.removeItem("slotPickDate");
+      sessionStorage.removeItem("availableSlots");
     } catch (e) {
       console.error("clearBookingSession storage error", e);
     }
+    // Drop the persisted Redis hold record (the Redis key itself will
+    // expire on its own; the new booking now blocks the slot via the
+    // paid-but-unassigned commitments mechanism in the slot engine).
+    try {
+      clearPersistedHold();
+    } catch (_) {}
+    // Drop the enquiry-lead bookingId so the next checkout creates a
+    // fresh enquiry instead of trying to finalize the just-completed one.
+    try {
+      clearEnquiryBookingId();
+    } catch (_) {}
     setSelectedAddress(null);
     setSelectedSlot(null);
     setAddressDataContext?.(null);
@@ -353,16 +374,17 @@ const Checkout = () => {
     });
 
   const fetchAvailableSlots = async (date) => {
+    const empty = { slots: [], unavailableSlots: [], reason: null };
     try {
       const loc = getLatLngFromSelectedAddress();
       if (!loc) {
         console.warn("No lat/lng available in selectedAddress");
-        return [];
+        return empty;
       }
 
       if (!serviceType) {
         console.warn("serviceType missing in location.state");
-        return [];
+        return empty;
       }
 
       // City is mandatory for HP (backend reads PricingConfig.vendorCoins by
@@ -377,7 +399,7 @@ const Checkout = () => {
         setSlotWarning(
           "Could not determine your city. Please re-select your address.",
         );
-        return [];
+        return empty;
       }
 
       const basePayload = {
@@ -405,15 +427,37 @@ const Checkout = () => {
       const data = await res.json();
 
       if (!data?.success) {
-        return [];
+        return empty;
       }
 
-      const allSlots = data?.slots || [];
-      const filtered = filterSlotsTwoHoursAhead(date, allSlots);
+      // Stash slotsWithVendors + pick date so handleSelectSlot can look up
+      // vendorIds when acquiring the Redis hold for the edited slot.
+      // Without this, hold acquisition from Checkout's edit-slot flow would
+      // fail with "no_vendor" and the user couldn't reselect.
+      try {
+        sessionStorage.setItem(
+          "slotsWithVendors",
+          JSON.stringify(data.slotsWithVendors || []),
+        );
+        sessionStorage.setItem("slotPickDate", date);
+      } catch (_) {}
 
-      return filtered;
+      // Apply the same "no slots in the next 2 hours" filter to BOTH
+      // arrays so the disabled tiles also respect the cutoff — keeps
+      // the modal's visible grid consistent with Services.jsx.
+      const filtered = filterSlotsTwoHoursAhead(date, data?.slots || []);
+      const filteredUnavailable = filterSlotsTwoHoursAhead(
+        date,
+        data?.unavailableSlots || [],
+      );
+
+      return {
+        slots: filtered,
+        unavailableSlots: filteredUnavailable,
+        reason: data?.reason?.message || null,
+      };
     } catch (err) {
-      return [];
+      return empty;
     }
   };
 
@@ -501,7 +545,86 @@ const Checkout = () => {
     setShowSlotModal(false);
   };
 
-  const handleSelectSlot = (slot) => {
+  // Edit-slot from checkout. Mirrors Services.jsx flow so behavior is
+  // identical across slot pickers: release any prior hold, acquire a new
+  // hold for the picked slot, then commit the visual selection. Without
+  // this, editing the slot in checkout would leak the old hold and never
+  // reserve the new one — other customers would see the new slot as free.
+  const handleSelectSlot = async (slot) => {
+    const date =
+      slot?.date ||
+      sessionStorage.getItem("slotPickDate") ||
+      new Date().toISOString().split("T")[0];
+    const slotTime = slot?.time;
+
+    if (!slotTime) {
+      alert("Please pick a time slot.");
+      return;
+    }
+
+    let vendorIds = [];
+    try {
+      const sw = JSON.parse(sessionStorage.getItem("slotsWithVendors") || "[]");
+      vendorIds = sw.find((s) => s.slotTime === slotTime)?.vendorIds || [];
+    } catch (_) {}
+
+    if (!vendorIds.length) {
+      alert("This slot is no longer available. Please pick another.");
+      await fetchAvailableSlots(date);
+      return;
+    }
+
+    let customerId = null;
+    try {
+      customerId =
+        JSON.parse(sessionStorage.getItem("user") || "{}")?._id || null;
+    } catch (_) {}
+
+    // Duration depends on the flow: HP site visit is 30 min; DC sums the
+    // selected packages × quantity (backend uses this for clash math).
+    const durationMinutes =
+      serviceType === "house_painting"
+        ? 30
+        : (cartItems || []).reduce(
+            (sum, item) =>
+              sum + Number(item.duration || 0) * Number(item.quantity || 1),
+            0,
+          ) || 30;
+
+    const { acquireSlotHold, persistHold, releasePersistedHold } =
+      await import("../ApiService/slotHold");
+
+    // Release the previous hold (from initial slot pick or earlier edit)
+    // BEFORE acquiring the new one — otherwise the user is silently holding
+    // two vendor slots at once and other customers see fewer slots than
+    // they should.
+    await releasePersistedHold();
+
+    const result = await acquireSlotHold({
+      vendorIds,
+      date,
+      slotTime,
+      durationMinutes,
+      customerId,
+      serviceType,
+    });
+
+    if (!result.ok) {
+      if (result.reason === "service_unavailable") {
+        alert(
+          "Reservation service is temporarily down. Please try again in a moment.",
+        );
+        return;
+      }
+      alert(
+        "This slot was just taken by another customer. Please pick another.",
+      );
+      await fetchAvailableSlots(date);
+      return;
+    }
+
+    persistHold(result);
+
     sessionStorage.setItem("selectedSlots", JSON.stringify(slot));
     setSelectedSlot(slot);
     setSlotWarning("");
@@ -627,21 +750,48 @@ const Checkout = () => {
         return;
       }
 
-      const availableSlots = await fetchAvailableSlots(selectedSlot.date);
-      if (!availableSlots || availableSlots.length === 0) {
+      // Pre-flight slot revalidation before initiating payment.
+      //
+      // Strict rule (concurrency-safe):
+      //   - slot in availableSlots                          → proceed
+      //   - slot in unavailableSlots AND user holds it      → proceed (own hold)
+      //   - slot in unavailableSlots AND no matching hold   → reject
+      //     (someone else booked it OR our hold expired and was lost)
+      //
+      // Scenario this prevents: customer A picks 5 PM, walks away, hold
+      // expires; customer B grabs 5 PM and pays; A returns and tries to
+      // pay for the stale 5 PM in sessionStorage. Without this check, A
+      // would pay for an already-taken slot.
+      const slotResult = await fetchAvailableSlots(selectedSlot.date);
+      const availableSlots = slotResult?.slots || [];
+      const unavailable = slotResult?.unavailableSlots || [];
+
+      const { readPersistedHold, clearPersistedHold } = await import(
+        "../ApiService/slotHold"
+      );
+      const myHold = readPersistedHold();
+      const userHoldsThisSlot =
+        myHold &&
+        myHold.date === selectedSlot.date &&
+        myHold.slotTime === selectedSlot.time &&
+        (!myHold.expiresAt || myHold.expiresAt > Date.now());
+
+      const isAvailable = availableSlots.includes(selectedSlot.time);
+      const isUnavailable = unavailable.includes(selectedSlot.time);
+
+      const slotStillValid =
+        isAvailable || (isUnavailable && userHoldsThisSlot);
+
+      if (!slotStillValid) {
+        // Clear stale state so the user can't keep retrying with the
+        // same dead slot in sessionStorage.
+        clearPersistedHold();
+        sessionStorage.removeItem("selectedSlots");
+        setSelectedSlot(null);
         setSlotWarning(
-          "No slots available for this date. Please select another date.",
+          "This slot is no longer available. Please choose another slot.",
         );
         setShowSlotModal(true);
-        setIsLoading(false);
-        return;
-      }
-
-      const slotExists = availableSlots.includes(selectedSlot.time);
-      if (!slotExists) {
-        setSlotWarning(
-          "Selected slot is no longer available. Please select a different slot.",
-        );
         setIsLoading(false);
         return;
       }
@@ -743,6 +893,9 @@ const Checkout = () => {
         return;
       }
 
+      // Fallback success path (no Razorpay needed and no early return
+      // took us out earlier). Same cleanup as the paid paths.
+      clearBookingSession();
       setPrompt({
         promptTile: "Success",
         promptBody: result?.message || "Booking successful",

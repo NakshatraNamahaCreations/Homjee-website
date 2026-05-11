@@ -263,11 +263,18 @@ function PaymentCheckout() {
       const data = await res.json();
       console.log("Slots response =>", data);
 
-      if (!data?.success) return [];
-      return data.slots || [];
+      const empty = { slots: [], unavailableSlots: [], reason: null };
+      if (!data?.success) return empty;
+      // Object shape so the modal renders booked-out tiles as disabled
+      // — keeps the reschedule picker consistent with the booking picker.
+      return {
+        slots: data.slots || [],
+        unavailableSlots: data.unavailableSlots || [],
+        reason: data?.reason?.message || null,
+      };
     } catch (err) {
       console.error("fetchAvailableSlots error:", err);
-      return [];
+      return { slots: [], unavailableSlots: [], reason: null };
     }
   };
 
@@ -275,9 +282,11 @@ function PaymentCheckout() {
     // if (minimumAmount > TotalPrice) return;
 
     const today = new Date().toISOString().split("T")[0];
-    const slots = await fetchAvailableSlots(today);
-
-    sessionStorage.setItem("availableSlots", JSON.stringify(slots));
+    const result = await fetchAvailableSlots(today);
+    sessionStorage.setItem(
+      "availableSlots",
+      JSON.stringify(result?.slots || []),
+    );
     setShowSlotModal(true);
   };
 
